@@ -4,6 +4,7 @@
     { "src": "index.html", "use": "@vercel/static" },
     { "src": "styles.css", "use": "@vercel/static" },
     { "src": "app.js", "use": "@vercel/static" },
-    { "src": "image/**", "use": "@vercel/static" }
+    { "src": "image/**", "use": "@vercel/static" },
+    { "src": "*.mp4", "use": "@vercel/static" }
   ]
 }
