@@ -106,7 +106,23 @@
                 <span>시스템 정보</span>
             </div>
 
+            <!-- Media Player Icon -->
+            <div class="icon" style="top: 200px; left: 20px;" onclick="openWindow('mediaPlayerWindow')">
+                <div style="width:32px; height:32px; font-size:24px; margin:0 auto; text-align:center; line-height:32px;">🎬</div>
+                <span>미디어 플레이어</span>
+            </div>
 
+            <!-- Recycle Bin Icon -->
+            <div class="icon" style="top: 290px; left: 20px;" onclick="openRecycleBin()">
+                <div style="width:32px; height:32px; font-size:24px; margin:0 auto; text-align:center; line-height:32px;">🗑️</div>
+                <span>휴지통</span>
+            </div>
+
+            <!-- Readme Icon -->
+            <div class="icon" style="top: 380px; left: 20px;" onclick="openWindow('readmeWindow')">
+                <div style="width:32px; height:32px; font-size:24px; margin:0 auto; text-align:center; line-height:32px;">📄</div>
+                <span>readme.txt</span>
+            </div>
         </div>
 
         <div id="myDocWindow" class="window">
@@ -116,8 +132,103 @@
                     <div class="win-btn" onclick="closeWindow('myDocWindow')">✕</div>
                 </div>
             </div>
-            <div class="window-content">
-                <b>[ WINDOWS YUYEON에 오신 것을 환영합니다! ]</b>
+            <div class="window-content" style="padding: 10px; background-color: #fff; display: flex; gap: 16px; min-height: 120px; align-content: flex-start; flex-wrap: wrap; border-top: 2px solid #808080; border-left: 2px solid #808080; border-right: 2px solid #ffffff; border-bottom: 2px solid #ffffff; margin: 6px;">
+                <!-- Profile Text File -->
+                <div class="desktop-file" onclick="openWindow('profileTxtWindow')" style="cursor: pointer; text-align: center; width: 80px; display: flex; flex-direction: column; align-items: center; padding: 6px;">
+                    <div style="font-size: 32px; margin-bottom: 2px;">📄</div>
+                    <span style="font-size: 11px; color: #000; word-break: break-all;">프로필.txt</span>
+                </div>
+                <!-- Calendar File -->
+                <div class="desktop-file" onclick="openWindow('calendarWindow')" style="cursor: pointer; text-align: center; width: 80px; display: flex; flex-direction: column; align-items: center; padding: 6px;">
+                    <div style="font-size: 32px; margin-bottom: 2px;">📅</div>
+                    <span style="font-size: 11px; color: #000; word-break: break-all;">방송일정.calender</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notepad Window for profile.txt -->
+        <div id="profileTxtWindow" class="window" style="width: 440px; height: 320px; top: 90px; left: 160px; z-index: 15;">
+            <div class="window-header">
+                <span>📄 프로필.txt - 메모장</span>
+                <div class="window-buttons">
+                    <div class="win-btn" onclick="closeWindow('profileTxtWindow')">✕</div>
+                </div>
+            </div>
+            <div class="menu-bar" style="display: flex; gap: 10px; padding: 2px 6px; font-size: 11px; border-bottom: 1px solid #808080; background: #C0C0C0; color: #000;">
+                <span>파일(F)</span>
+                <span>편집(E)</span>
+                <span>서식(O)</span>
+                <span>도움말(H)</span>
+            </div>
+            <div class="window-content" style="padding: 0; background-color: #fff; border: none; margin: 2px; flex-grow: 1; display: flex; flex-direction: column;">
+                <textarea readonly style="width: 100%; height: 100%; resize: none; border: none; border-top: 2px solid #808080; border-left: 2px solid #808080; border-right: 2px solid #fff; border-bottom: 2px solid #fff; padding: 10px; font-family: 'Mona12', monospace; font-size: 12px; line-height: 1.6; outline: none; background: #fff; color: #000; box-sizing: border-box; flex-grow: 1;">이름 : 진유연
+생일 : 8월 13일
+MBTI : ISFJ
+팬 애칭 : 레임단(또는 레이미)
+
+[방송 일정]
+치지직 - 화, 수, 금, 토 PM 10:00 ~ AM 01:00
+유연ASMR - 일 PM 11:00 ~ AM 01:00</textarea>
+            </div>
+        </div>
+
+        <!-- Scheduler/Calendar Window -->
+        <div id="calendarWindow" class="window" style="width: 580px; height: 460px; top: 70px; left: 200px; z-index: 15;">
+            <div class="window-header">
+                <span>📅 방송일정.calender - 스케줄러</span>
+                <div class="window-buttons">
+                    <div class="win-btn" onclick="closeWindow('calendarWindow')">✕</div>
+                </div>
+            </div>
+            <div class="menu-bar" style="display: flex; gap: 10px; padding: 2px 6px; font-size: 11px; border-bottom: 1px solid #808080; background: #C0C0C0; color: #000;">
+                <span>파일(F)</span>
+                <span>보기(V)</span>
+                <span>도움말(H)</span>
+            </div>
+            <div class="window-content" style="padding: 6px; background-color: #C0C0C0; display: flex; flex-direction: column; gap: 6px; border: none; margin: 0; overflow: hidden;">
+                <!-- Month control -->
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #808080; color: #fff; padding: 4px 10px; font-weight: bold; border-top: 1px solid #000; border-left: 1px solid #000;">
+                    <button class="win-btn-large" onclick="prevMonth()" style="padding: 1px 6px; font-size: 11px; font-weight: bold; height: 20px; line-height: 12px;">◀</button>
+                    <span id="calendar-month-year" style="font-size: 12px; font-family: monospace;">2026년 8월</span>
+                    <button class="win-btn-large" onclick="nextMonth()" style="padding: 1px 6px; font-size: 11px; font-weight: bold; height: 20px; line-height: 12px;">▶</button>
+                </div>
+                
+                <!-- Calendar layout -->
+                <div style="display: flex; flex-direction: column; flex-grow: 1; background: #fff; border-top: 2px solid #808080; border-left: 2px solid #808080; border-right: 2px solid #fff; border-bottom: 2px solid #fff; overflow: hidden;">
+                    <!-- Weekdays header -->
+                    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); background: #e0e0e0; text-align: center; font-weight: bold; border-bottom: 1px solid #808080; font-size: 11px; padding: 4px 0; color: #000;">
+                        <div style="color: #ff0000;">일</div>
+                        <div>월</div>
+                        <div>화</div>
+                        <div>수</div>
+                        <div>목</div>
+                        <div>금</div>
+                        <div style="color: #0000ff;">토</div>
+                    </div>
+                    <!-- Days grid -->
+                    <div id="calendar-days" style="position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); flex-grow: 1; color: #000; font-size: 11px; overflow-y: auto;">
+                        <!-- Generated in JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notepad Window for readme.txt -->
+        <div id="readmeWindow" class="window" style="width: 440px; height: 280px; top: 110px; left: 160px; z-index: 15;">
+            <div class="window-header">
+                <span>📄 readme.txt - 메모장</span>
+                <div class="window-buttons">
+                    <div class="win-btn" onclick="closeWindow('readmeWindow')">✕</div>
+                </div>
+            </div>
+            <div class="menu-bar" style="display: flex; gap: 10px; padding: 2px 6px; font-size: 11px; border-bottom: 1px solid #808080; background: #C0C0C0; color: #000;">
+                <span>파일(F)</span>
+                <span>편집(E)</span>
+                <span>서식(O)</span>
+                <span>도움말(H)</span>
+            </div>
+            <div class="window-content" style="padding: 0; background-color: #fff; border: none; margin: 2px; flex-grow: 1; display: flex; flex-direction: column;">
+                <textarea readonly style="width: 100%; height: 100%; resize: none; border: none; border-top: 2px solid #808080; border-left: 2px solid #808080; border-right: 2px solid #fff; border-bottom: 2px solid #fff; padding: 10px; font-family: 'Mona12', monospace; font-size: 12px; line-height: 1.6; outline: none; background: #fff; color: #000; box-sizing: border-box; flex-grow: 1;">[ WINDOWS YUYEON에 오신 것을 환영합니다! ]</textarea>
             </div>
         </div>
 
@@ -139,10 +250,81 @@
             </div>
         </div>
 
+        <!-- YUYEON Media Player Window -->
+        <div id="mediaPlayerWindow" class="window" style="width: 480px; top: 120px; left: 180px; z-index: 15;">
+            <div class="window-header">
+                <span>🎬 YUYEON Media Player</span>
+                <div class="window-buttons">
+                    <div class="win-btn" onclick="closeWindow('mediaPlayerWindow')">✕</div>
+                </div>
+            </div>
+            <!-- Menu bar -->
+            <div class="menu-bar" style="display: flex; gap: 10px; padding: 2px 6px; font-size: 11px; border-bottom: 1px solid #808080; background: #C0C0C0; color: #000;">
+                <span>파일(F)</span>
+                <span>재생(P)</span>
+                <span>도움말(H)</span>
+            </div>
+            <div class="window-content" style="padding: 6px; background-color: #C0C0C0; display: flex; flex-direction: column; gap: 6px; min-height: auto; border: none; margin: 0;">
+                <!-- Video viewport -->
+                <div style="background: #000; border-top: 2px solid #808080; border-left: 2px solid #808080; border-right: 2px solid #ffffff; border-bottom: 2px solid #ffffff; display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; position: relative; overflow: hidden;">
+                    <video id="player-video" style="width: 100%; height: 100%; object-fit: contain;">
+                        <source src="CATCH SHORT.mp4" type="video/mp4">
+                    </video>
+                </div>
+                
+                <!-- Trackbar Timeline Slider -->
+                <div style="display: flex; align-items: center; gap: 6px; padding: 2px 4px;">
+                    <input type="range" id="player-timeline" value="0" min="0" max="100" style="flex-grow: 1; height: 8px; margin: 0;">
+                </div>
+
+                <!-- Controls & Playlist Layout -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 4px 6px 4px;">
+                    <!-- Player buttons -->
+                    <div style="display: flex; gap: 4px;">
+                        <button class="win-btn-large" id="btn-play" style="padding: 2px 8px; font-size: 11px;">▶</button>
+                        <button class="win-btn-large" id="btn-pause" style="padding: 2px 8px; font-size: 11px;">▮▮</button>
+                        <button class="win-btn-large" id="btn-stop" style="padding: 2px 8px; font-size: 11px;">■</button>
+                    </div>
+                    
+                    <!-- Video select playlist -->
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 11px; color: #000;">재생 목록:</span>
+                        <select id="player-playlist" style="font-size: 11px; padding: 1px; border-top: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #fff; border-bottom: 1px solid #fff; background: #fff; color: #000; outline: none; cursor: pointer;">
+                            <option value="CATCH SHORT.mp4">catch catch</option>
+                            <option value="공주의규칙 SHORT.mp4">공주의 규칙</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recycle Bin Alert Dialog (Easter Egg) -->
+        <div id="recycle-bin-alert" class="window" style="display: none; width: 360px; z-index: 9999; top: 40%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="window-header">
+                <span>Explorer</span>
+                <div class="window-buttons">
+                    <div class="win-btn" onclick="closeRecycleBinAlert()">✕</div>
+                </div>
+            </div>
+            <div class="window-content" style="padding: 16px; background-color: #C0C0C0;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <div style="font-size: 32px;">❌</div>
+                    <div style="font-size: 12px; color: #000; line-height: 1.5; font-family: sans-serif;">
+                        <strong>Fatal Exception 0E has occurred.</strong><br><br>
+                        휴지통을 비울 수 없습니다. 이미 인생의 모든 흑역사가 이곳에 기록되어 있어 삭제 권한이 제한되었습니다.
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="win-btn-large" style="width: 80px;" onclick="closeRecycleBinAlert()">확인</button>
+                </div>
+            </div>
+        </div>
+
         <div id="taskbar">
             <div id="start-button" onclick="toggleStartMenu()">
                 <span>🪟</span> 시작
             </div>
+            <div id="taskbar-items"></div>
         </div>
 
         <div id="start-menu">
@@ -159,6 +341,9 @@
                 </a>
                 <a class="menu-item" href="https://www.youtube.com/@YuYeon_ASMR" target="_blank">
                     <span>🎧</span> 유튜브 (ASMR)
+                </a>
+                <a class="menu-item" href="https://www.youtube.com/@%EC%9C%A0%EC%97%B0%EA%B4%B4%EB%8B%B4" target="_blank">
+                    <span>▶️</span> 유튜브 (유연괴담)
                 </a>
                 <a class="menu-item" href="https://discord.com/invite/ApJFcmzsuQ" target="_blank">
                     <span>💬</span> 디스코드
