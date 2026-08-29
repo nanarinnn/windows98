@@ -143,6 +143,16 @@
                     <div style="font-size: 32px; margin-bottom: 2px;">📅</div>
                     <span style="font-size: 11px; color: #000; word-break: break-all;">방송일정.calender</span>
                 </div>
+                <!-- YUYEON.png File -->
+                <div class="desktop-file" onclick="openImageViewer('YUYEON.png', 'YUYEON.png')" style="cursor: pointer; text-align: center; width: 80px; display: flex; flex-direction: column; align-items: center; padding: 6px;">
+                    <div style="font-size: 32px; margin-bottom: 2px;">🖼️</div>
+                    <span style="font-size: 11px; color: #000; word-break: break-all;">YUYEON.png</span>
+                </div>
+                <!-- YUYEON2.png File -->
+                <div class="desktop-file" onclick="openImageViewer('YUYEON2.png', 'YUYEON2.png')" style="cursor: pointer; text-align: center; width: 80px; display: flex; flex-direction: column; align-items: center; padding: 6px;">
+                    <div style="font-size: 32px; margin-bottom: 2px;">🖼️</div>
+                    <span style="font-size: 11px; color: #000; word-break: break-all;">YUYEON2.png</span>
+                </div>
             </div>
         </div>
 
@@ -293,6 +303,26 @@ MBTI : ISFJ
             </div>
         </div>
 
+        <!-- Image Viewer Window -->
+        <div id="imageViewerWindow" class="window" style="width: 400px; height: 350px; top: 110px; left: 220px; z-index: 15; display: none;">
+            <div class="window-header">
+                <span>🖼️ YUYEON.png - 이미지 뷰어</span>
+                <div class="window-buttons">
+                    <div class="win-btn" onclick="closeWindow('imageViewerWindow')">✕</div>
+                </div>
+            </div>
+            <div class="menu-bar" style="display: flex; gap: 10px; padding: 2px 6px; font-size: 11px; border-bottom: 1px solid #808080; background: #C0C0C0; color: #000;">
+                <span>파일(F)</span>
+                <span>보기(V)</span>
+                <span>도움말(H)</span>
+            </div>
+            <div class="window-content" style="padding: 10px; background-color: #808080; border: none; margin: 2px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: auto; border-top: 2px solid #808080; border-left: 2px solid #808080; border-right: 2px solid #fff; border-bottom: 2px solid #fff; box-shadow: inset 1px 1px 0px #000; height: calc(100% - 46px);">
+                <div style="background: #fff; padding: 4px; border: 1px solid #000; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); max-width: 100%; max-height: 100%; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+                    <img id="viewer-img" src="" alt="Image Preview" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;">
+                </div>
+            </div>
+        </div>
+
         <!-- Recycle Bin Alert Dialog (Easter Egg) -->
         <div id="recycle-bin-alert" class="window" style="display: none; width: 360px; z-index: 9999; top: 40%; left: 50%; transform: translate(-50%, -50%);">
             <div class="window-header">
@@ -320,6 +350,10 @@ MBTI : ISFJ
                 <span>🪟</span> 시작
             </div>
             <div id="taskbar-items"></div>
+            <div id="taskbar-clock">
+                <span style="font-size: 11px;">🔊</span>
+                <span id="clock-time">오후 1:17</span>
+            </div>
         </div>
 
         <div id="start-menu">

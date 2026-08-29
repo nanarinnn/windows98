@@ -3,7 +3,11 @@
 body {
     font-family: 'Mona12', monospace, sans-serif;
     font-size: 13px;
-    background-color: #008080;
+    background-color: #E5DBF4;
+    background-image: url('BACKGROUND.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -461,4 +465,21 @@ input[type=range]::-webkit-slider-thumb:active {
     text-align: center;
     margin-top: auto;
     margin-bottom: 3px;
+}
+
+#taskbar-clock {
+    height: 18px;
+    padding: 0 6px;
+    border-top: 1.5px solid #808080;
+    border-left: 1.5px solid #808080;
+    border-right: 1.5px solid #ffffff;
+    border-bottom: 1.5px solid #ffffff;
+    font-size: 11px;
+    background-color: #C0C0C0;
+    font-family: 'Mona12', monospace;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 4px;
+    box-shadow: inset 1px 1px 0px #000, inset -1px -1px 0px #dfdfdf;
 }

@@ -75,6 +75,22 @@ document.addEventListener("DOMContentLoaded", () => {
         makeDraggable(win);
     });
 
+    // Initialize taskbar clock
+    function updateClock() {
+        const clockEl = document.getElementById("clock-time");
+        if (!clockEl) return;
+        const now = new Date();
+        let hours = now.getHours();
+        const minutes = now.getMinutes();
+        const ampm = hours >= 12 ? '오후' : '오전';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // Hour '0' becomes '12'
+        const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+        clockEl.textContent = `${ampm} ${hours}:${minutesStr}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
     // Update taskbar elements initially
     updateTaskbar();
 });
@@ -132,7 +148,8 @@ const windowsList = [
     { id: 'mediaPlayerWindow', title: '🎬 미디어 플레이어' },
     { id: 'profileTxtWindow', title: '📄 프로필.txt' },
     { id: 'calendarWindow', title: '📅 방송일정' },
-    { id: 'readmeWindow', title: '📄 readme.txt' }
+    { id: 'readmeWindow', title: '📄 readme.txt' },
+    { id: 'imageViewerWindow', title: '🖼️ 이미지 뷰어' }
 ];
 
 // Desktop Window Management
@@ -387,4 +404,21 @@ function prevMonth() {
 function nextMonth() {
     currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
     renderCalendar();
+}
+
+function openImageViewer(imageSrc, imageName) {
+    const img = document.getElementById("viewer-img");
+    const titleSpan = document.querySelector("#imageViewerWindow .window-header span");
+    if (img && titleSpan) {
+        img.src = imageSrc;
+        titleSpan.textContent = `🖼️ ${imageName} - 이미지 뷰어`;
+        
+        // Dynamically update the taskbar title for this window
+        const winObj = windowsList.find(w => w.id === 'imageViewerWindow');
+        if (winObj) {
+            winObj.title = `🖼️ ${imageName}`;
+        }
+        
+        openWindow('imageViewerWindow');
+    }
 }
