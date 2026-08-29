@@ -483,3 +483,115 @@ input[type=range]::-webkit-slider-thumb:active {
     margin-right: 4px;
     box-shadow: inset 1px 1px 0px #000, inset -1px -1px 0px #dfdfdf;
 }
+
+@media (max-width: 768px) {
+    body {
+        background-size: cover;
+    }
+
+    #captcha-window {
+        width: 95% !important;
+        left: 2.5% !important;
+        margin: 12% auto !important;
+    }
+
+    .window {
+        width: 92vw !important;
+        height: auto !important;
+        max-height: calc(100vh - 60px) !important;
+        left: 4vw !important;
+        top: 20px !important;
+        resize: none !important;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    #profileTxtWindow {
+        height: 320px !important;
+    }
+
+    #calendarWindow {
+        height: auto !important;
+        max-height: calc(100vh - 60px) !important;
+    }
+    
+    .calendar-cell-day {
+        min-height: 48px !important;
+        padding: 2px !important;
+    }
+    
+    .calendar-cell-header {
+        font-size: 8.5px !important;
+        padding: 3px 1px !important;
+    }
+    
+    .date-number {
+        font-size: 8px !important;
+    }
+
+    .schedule-text {
+        font-size: 7.5px !important;
+        line-height: 1.15 !important;
+    }
+
+    #mediaPlayerWindow {
+        height: auto !important;
+    }
+
+    #imageViewerWindow {
+        height: 360px !important;
+    }
+
+    #myDocWindow {
+        height: auto !important;
+        min-height: 160px !important;
+    }
+
+    #readmeWindow {
+        height: 280px !important;
+    }
+    
+    #sysWindow {
+        height: auto !important;
+    }
+
+    #start-menu {
+        width: 170px !important;
+        left: 2px !important;
+        bottom: 28px !important;
+    }
+    
+    #start-menu-banner {
+        display: none !important;
+    }
+    
+    #start-menu-list {
+        width: 100% !important;
+    }
+    
+    .menu-item {
+        font-size: 11.5px !important;
+        padding: 8px 10px !important;
+    }
+
+    #taskbar-items {
+        margin-left: 6px !important;
+        gap: 3px !important;
+    }
+
+    .taskbar-item {
+        min-width: 32px !important;
+        max-width: 80px !important;
+        font-size: 9.5px !important;
+        padding: 0 4px !important;
+    }
+
+    #taskbar-clock {
+        padding: 0 4px !important;
+        font-size: 9.5px !important;
+        margin-right: 2px !important;
+    }
+    
+    #taskbar-clock span:first-child {
+        display: none !important;
+    }
+}
