@@ -1,0 +1,12 @@
+{
+  "name": "windows98-vtuber",
+  "version": "1.0.0",
+  "description": "Windows 98 themed VTuber Fan Page",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

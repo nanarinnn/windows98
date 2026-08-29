@@ -1,0 +1,342 @@
+@import url('https://cdn.jsdelivr.net/gh/MonadABXY/mona-font/web/mona.css');
+
+body {
+    font-family: 'Mona12', monospace, sans-serif;
+    font-size: 13px;
+    background-color: #008080;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    user-select: none;
+}
+
+#desktop {
+    position: relative;
+    height: calc(100vh - 28px);
+}
+
+/* 바탕화면 아이콘 */
+.icon {
+    position: absolute;
+    width: 80px;
+    text-align: center;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.icon:hover {
+    background-color: rgba(0, 0, 128, 0.3);
+    outline: 1px dotted #ffffff;
+}
+
+.folder-icon {
+    width: 32px;
+    height: 26px;
+    background-color: #d4af37;
+    margin: 0 auto;
+    position: relative;
+    border: 1px solid #000;
+}
+.folder-icon::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 0;
+    width: 12px;
+    height: 4px;
+    background-color: #d4af37;
+    border-top: 1px solid #000;
+    border-left: 1px solid #000;
+    border-right: 1px solid #000;
+}
+
+.icon span {
+    display: block;
+    margin-top: 4px;
+    font-size: 13px;
+    color: #ffffff;
+    text-shadow: 1px 1px #000000;
+}
+
+/* 윈도우 창 스타일 */
+.window {
+    position: absolute;
+    top: 60px;
+    left: 100px;
+    width: 460px;
+    background-color: #C0C0C0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 10;
+}
+
+.window-header {
+    background: linear-gradient(90deg, #000080, #1084d0);
+    color: #ffffff;
+    padding: 5px 8px;
+    font-weight: bold;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.window-buttons {
+    display: flex;
+    gap: 2px;
+}
+
+.win-btn {
+    width: 18px;
+    height: 16px;
+    background-color: #C0C0C0;
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-right: 1px solid #000000;
+    border-bottom: 1px solid #000000;
+    color: #000000;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 14px;
+    cursor: pointer;
+}
+
+.win-btn:active {
+    border-top: 1px solid #000000;
+    border-left: 2px solid #000000;
+    border-right: 1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+}
+
+.win-btn.disabled {
+    color: #808080;
+    cursor: not-allowed;
+    text-shadow: 1px 1px #fff;
+}
+
+/* 윈도우 창 내용 스타일 */
+.window-content {
+    padding: 16px;
+    background-color: #ffffff;
+    margin: 6px;
+    min-height: 160px;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* 윈도우 버튼 대형 */
+.win-btn-large {
+    padding: 4px 16px;
+    background-color: #C0C0C0;
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    color: #000000;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: inset 1px 1px 0px #fff;
+}
+
+.win-btn-large:active {
+    border-top: 2px solid #000000;
+    border-left: 2px solid #000000;
+    border-right: 1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+    box-shadow: none;
+}
+
+/* 하단 작업표시줄 */
+#taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 28px;
+    background-color: #C0C0C0;
+    border-top: 2px solid #ffffff;
+    display: flex;
+    align-items: center;
+    padding: 0 2px;
+    z-index: 1000;
+}
+
+#start-button {
+    height: 22px;
+    padding: 0 10px;
+    background-color: #C0C0C0;
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    font-weight: bold;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+#start-button:active, #start-button.active {
+    border-top: 2px solid #000000;
+    border-left: 2px solid #000000;
+    border-right: 1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+    padding: 1px 9px 0 11px;
+}
+
+/* 시작 메뉴 팝업창 스타일 */
+#start-menu {
+    position: fixed;
+    bottom: 28px;
+    left: 0;
+    width: 220px;
+    background-color: #C0C0C0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+    display: none;
+    z-index: 2000;
+    display: flex;
+}
+
+/* 시작 메뉴 좌측 세로 배너 */
+#start-menu-banner {
+    width: 24px;
+    background: linear-gradient(180deg, #000080, #1084d0);
+    color: #ffffff;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    text-align: center;
+    font-weight: bold;
+    padding: 6px 0;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+/* 시작 메뉴 목록 */
+#start-menu-list {
+    flex-grow: 1;
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.menu-item {
+    padding: 10px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #000;
+    text-decoration: none;
+}
+
+.menu-item:hover {
+    background-color: #000080;
+    color: #ffffff;
+}
+
+.menu-divider {
+    height: 1px;
+    background-color: #808080;
+    border-bottom: 1px solid #ffffff;
+    margin: 3px 0;
+}
+
+/* 캡차 오버레이 및 그리드 */
+#captcha-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #008080;
+    z-index: 5000;
+    overflow-y: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.captcha-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    row-gap: 16px;
+    column-gap: 8px;
+    max-width: 100%;
+    margin: 12px auto;
+}
+
+.captcha-cell {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    background-color: #e0e0e0;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.captcha-cell img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.captcha-cell.selected {
+    outline: 2px dotted #000080;
+    border-top: 2px solid #000000;
+    border-left: 2px solid #000000;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+}
+
+.captcha-cell.selected::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 128, 0.15);
+    pointer-events: none;
+}
+
+.captcha-cell .checkmark {
+    display: none;
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    width: 18px;
+    height: 18px;
+    background: #000080;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 18px;
+    border: 1px solid #fff;
+}
+
+.captcha-cell.selected .checkmark {
+    display: block;
+}
