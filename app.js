@@ -501,6 +501,7 @@ function confirmDarkWebWarning() {
     const desktop = document.getElementById("darkweb-desktop");
     warning.style.display = "none";
     desktop.style.display = "block";
+    openDarkWebReadme();
 }
 
 function disconnectDarkWeb() {

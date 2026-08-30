@@ -563,21 +563,20 @@ MBTI : ISFJ
             </div>
 
             <!-- Notepad Window for darkweb readme.txt -->
-            <div id="darkwebReadmeWindow" class="window" style="display: none; width: 440px; height: 280px; top: 140px; left: 180px; z-index: 1004;">
-                <div class="window-header">
+            <div id="darkwebReadmeWindow" class="window" style="display: none; width: 440px; height: 280px; top: 140px; left: 180px; z-index: 1004; background-color: #1a1a1a; border-top: 2px solid #555; border-left: 2px solid #555; border-right: 2px solid #000; border-bottom: 2px solid #000; box-shadow: 5px 5px 20px rgba(0,0,0,0.9); color: #00ff00; font-family: monospace; resize: both; overflow: hidden; position: absolute;">
+                <div class="window-header" style="background: #333; color: #ff0000; font-weight: bold; padding: 3px 6px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #555;">
                     <span>📄 readme.txt - 메모장</span>
                     <div class="window-buttons">
-                        <div class="win-btn" onclick="closeDarkWebReadme()">✕</div>
+                        <div class="win-btn" onclick="closeDarkWebReadme()" style="background: #222; color: #ff0000; border: 1px solid #555; cursor: pointer; padding: 0 4px; font-size: 10px; line-height: 1;">✕</div>
                     </div>
                 </div>
-                <div class="menu-bar" style="display: flex; gap: 10px; padding: 2px 6px; font-size: 11px; border-bottom: 1px solid #808080; background: #C0C0C0; color: #000;">
+                <div class="menu-bar" style="display: flex; gap: 10px; padding: 2px 6px; font-size: 11px; border-bottom: 1px solid #333; background: #222; color: #888;">
                     <span>파일(F)</span>
                     <span>편집(E)</span>
-                    <span>서식(O)</span>
                     <span>도움말(H)</span>
                 </div>
-                <div class="window-content" style="padding: 0; background-color: #fff; border: none; margin: 2px; flex-grow: 1; display: flex; flex-direction: column;">
-                    <textarea readonly style="width: 100%; height: 100%; resize: none; border: none; border-top: 2px solid #808080; border-left: 2px solid #808080; border-right: 2px solid #fff; border-bottom: 2px solid #fff; padding: 10px; font-family: 'Mona12', monospace; font-size: 12px; line-height: 1.6; outline: none; background: #fff; color: #000; box-sizing: border-box; flex-grow: 1;">[모든 영상, 텍스트 소스는 유연괴담이 저작권을 소유하고 있습니다]</textarea>
+                <div class="window-content" style="padding: 0; background-color: #0d0d0d; border: none; margin: 2px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
+                    <textarea readonly style="width: 100%; height: 100%; resize: none; border: none; padding: 10px; font-family: monospace; font-size: 12px; line-height: 1.6; outline: none; background: #0d0d0d; color: #00ff00; box-sizing: border-box; flex-grow: 1; border-top: 1px solid #333; overflow-y: auto;">[모든 영상, 텍스트 소스는 유연괴담이 저작권을 소유하고 있습니다]</textarea>
                 </div>
             </div>
 
