@@ -483,3 +483,8 @@ input[type=range]::-webkit-slider-thumb:active {
     margin-right: 4px;
     box-shadow: inset 1px 1px 0px #000, inset -1px -1px 0px #dfdfdf;
 }
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
