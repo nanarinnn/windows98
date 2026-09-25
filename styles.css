@@ -488,3 +488,66 @@ input[type=range]::-webkit-slider-thumb:active {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
 }
+
+
+/* Desktop & Dark Web Icons Auto-filling Column Containers */
+.desktop-icons-container {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    bottom: 35px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 10px 16px;
+    max-height: calc(100% - 50px);
+    z-index: 1;
+    pointer-events: auto;
+}
+
+.desktop-icons-container .icon {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: 80px;
+    margin: 0;
+    padding: 6px 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.darkweb-icons-container {
+    position: absolute;
+    top: 36px;
+    left: 16px;
+    bottom: 36px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 8px 16px;
+    max-height: calc(100% - 72px);
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.darkweb-icons-container .icon {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: 92px;
+    margin: 0;
+    padding: 6px 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.darkweb-icons-container .icon:hover {
+    background-color: rgba(128, 0, 0, 0.4);
+    outline: 1px dotted #ff0000;
+}

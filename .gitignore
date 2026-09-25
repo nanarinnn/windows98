@@ -3,3 +3,5 @@ node_modules/
 Thumbs.db
 .gemini/
 노래.mp4
+*.webm
+movies/videoplayback.webm
