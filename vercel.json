@@ -5,8 +5,19 @@
     { "src": "styles.css", "use": "@vercel/static" },
     { "src": "app.js", "use": "@vercel/static" },
     { "src": "image/**", "use": "@vercel/static" },
+    { "src": "movies/**", "use": "@vercel/static" },
     { "src": "*.mp4", "use": "@vercel/static" },
     { "src": "*.png", "use": "@vercel/static" },
-    { "src": "*.jpg", "use": "@vercel/static" }
+    { "src": "*.jpg", "use": "@vercel/static" },
+    { "src": "*.txt", "use": "@vercel/static" }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      },
+      "continue": true
+    }
   ]
 }

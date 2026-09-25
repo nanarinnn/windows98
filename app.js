@@ -1189,28 +1189,57 @@ function playCCTVVideo(src, fallbackText) {
         video.defaultMuted = true;
         video.playsInline = true;
         video.loop = true;
+        video.style.zIndex = '2';
+        video.style.display = 'block';
         if (video.setAttribute) {
             video.setAttribute('muted', '');
             video.setAttribute('playsinline', '');
+            video.setAttribute('autoplay', '');
         }
-        video.style.display = 'block';
         
         if (offlineBg) offlineBg.style.display = 'none';
         if (centerStatus) centerStatus.style.display = 'none';
         
-        const currentSrc = video.src || '';
+        video.onloadeddata = () => {
+            video.style.display = 'block';
+            if (offlineBg) offlineBg.style.display = 'none';
+            if (centerStatus) centerStatus.style.display = 'none';
+        };
+        video.onerror = () => {
+            console.warn('playCCTVVideo video load error:', src);
+            video.style.display = 'none';
+            if (offlineBg) offlineBg.style.display = 'block';
+            if (centerStatus) {
+                centerStatus.style.display = 'block';
+                centerStatus.textContent = fallbackText || 'FEED SIGNAL LOST';
+            }
+        };
+
+        const currentSrc = video.getAttribute('src') || video.src || '';
         if (!currentSrc.endsWith(src)) {
             video.src = src;
-            if (video.load) video.load();
         }
         
         const playPromise = video.play();
         if (playPromise !== undefined) {
             playPromise.then(() => {
+                video.style.display = 'block';
                 if (offlineBg) offlineBg.style.display = 'none';
                 if (centerStatus) centerStatus.style.display = 'none';
             }).catch(err => {
                 console.warn('playCCTVVideo autoplay note:', err);
+                video.muted = true;
+                video.play().catch(retryErr => {
+                    console.warn('playCCTVVideo retry note:', retryErr);
+                    if (fallbackText) {
+                        video.style.display = 'none';
+                        if (offlineBg) offlineBg.style.display = 'block';
+                        if (centerStatus) {
+                            centerStatus.style.display = 'block';
+                            centerStatus.textContent = fallbackText;
+                        }
+                    }
+                });
             });
         }
     }
@@ -1617,28 +1646,57 @@ function playCCTVVideoEP2(src, fallbackText) {
         video.defaultMuted = true;
         video.playsInline = true;
         video.loop = true;
+        video.style.zIndex = '2';
+        video.style.display = 'block';
         if (video.setAttribute) {
             video.setAttribute('muted', '');
             video.setAttribute('playsinline', '');
+            video.setAttribute('autoplay', '');
         }
-        video.style.display = 'block';
         
         if (offlineBg) offlineBg.style.display = 'none';
         if (centerStatus) centerStatus.style.display = 'none';
         
-        const currentSrc = video.src || '';
+        video.onloadeddata = () => {
+            video.style.display = 'block';
+            if (offlineBg) offlineBg.style.display = 'none';
+            if (centerStatus) centerStatus.style.display = 'none';
+        };
+        video.onerror = () => {
+            console.warn('playCCTVVideoEP2 video load error:', src);
+            video.style.display = 'none';
+            if (offlineBg) offlineBg.style.display = 'block';
+            if (centerStatus) {
+                centerStatus.style.display = 'block';
+                centerStatus.textContent = fallbackText || 'FEED SIGNAL LOST';
+            }
+        };
+
+        const currentSrc = video.getAttribute('src') || video.src || '';
         if (!currentSrc.endsWith(src)) {
             video.src = src;
-            if (video.load) video.load();
         }
         
         const playPromise = video.play();
         if (playPromise !== undefined) {
             playPromise.then(() => {
+                video.style.display = 'block';
                 if (offlineBg) offlineBg.style.display = 'none';
                 if (centerStatus) centerStatus.style.display = 'none';
             }).catch(err => {
                 console.warn('playCCTVVideoEP2 autoplay note:', err);
+                video.muted = true;
+                video.play().catch(retryErr => {
+                    console.warn('playCCTVVideoEP2 retry note:', retryErr);
+                    if (fallbackText) {
+                        video.style.display = 'none';
+                        if (offlineBg) offlineBg.style.display = 'block';
+                        if (centerStatus) {
+                            centerStatus.style.display = 'block';
+                            centerStatus.textContent = fallbackText;
+                        }
+                    }
+                });
             });
         }
     }
@@ -2041,29 +2099,57 @@ function playCCTVVideoEP3(src, fallbackText) {
         video.defaultMuted = true;
         video.playsInline = true;
         video.loop = true;
+        video.style.zIndex = '2';
+        video.style.display = 'block';
         if (video.setAttribute) {
             video.setAttribute('muted', '');
             video.setAttribute('playsinline', '');
+            video.setAttribute('autoplay', '');
         }
-        video.style.display = 'block';
         
         if (offlineBg) offlineBg.style.display = 'none';
         if (centerStatus) centerStatus.style.display = 'none';
         
-        const currentSrc = video.src || '';
+        video.onloadeddata = () => {
+            video.style.display = 'block';
+            if (offlineBg) offlineBg.style.display = 'none';
+            if (centerStatus) centerStatus.style.display = 'none';
+        };
+        video.onerror = () => {
+            console.warn('playCCTVVideoEP3 video load error:', src);
+            video.style.display = 'none';
+            if (offlineBg) offlineBg.style.display = 'block';
+            if (centerStatus) {
+                centerStatus.style.display = 'block';
+                centerStatus.textContent = fallbackText || 'FEED SIGNAL LOST';
+            }
+        };
+
+        const currentSrc = video.getAttribute('src') || video.src || '';
         if (!currentSrc.endsWith(src)) {
             video.src = src;
-            if (video.load) video.load();
         }
         
         const playPromise = video.play();
         if (playPromise !== undefined) {
             playPromise.then(() => {
+                video.style.display = 'block';
                 if (offlineBg) offlineBg.style.display = 'none';
                 if (centerStatus) centerStatus.style.display = 'none';
             }).catch(err => {
-                console.warn('EP3 video autoplay note:', err);
-                // Video is still displayed, do not hide unless error
+                console.warn('playCCTVVideoEP3 autoplay note:', err);
+                video.muted = true;
+                video.play().catch(retryErr => {
+                    console.warn('playCCTVVideoEP3 retry note:', retryErr);
+                    if (fallbackText) {
+                        video.style.display = 'none';
+                        if (offlineBg) offlineBg.style.display = 'block';
+                        if (centerStatus) {
+                            centerStatus.style.display = 'block';
+                            centerStatus.textContent = fallbackText;
+                        }
+                    }
+                });
             });
         }
     }
@@ -2444,28 +2530,57 @@ function playCCTVVideoEP4(src, fallbackText) {
         video.defaultMuted = true;
         video.playsInline = true;
         video.loop = true;
+        video.style.zIndex = '2';
+        video.style.display = 'block';
         if (video.setAttribute) {
             video.setAttribute('muted', '');
             video.setAttribute('playsinline', '');
+            video.setAttribute('autoplay', '');
         }
-        video.style.display = 'block';
         
         if (offlineBg) offlineBg.style.display = 'none';
         if (centerStatus) centerStatus.style.display = 'none';
         
-        const currentSrc = video.src || '';
+        video.onloadeddata = () => {
+            video.style.display = 'block';
+            if (offlineBg) offlineBg.style.display = 'none';
+            if (centerStatus) centerStatus.style.display = 'none';
+        };
+        video.onerror = () => {
+            console.warn('playCCTVVideoEP4 video load error:', src);
+            video.style.display = 'none';
+            if (offlineBg) offlineBg.style.display = 'block';
+            if (centerStatus) {
+                centerStatus.style.display = 'block';
+                centerStatus.textContent = fallbackText || 'FEED SIGNAL LOST';
+            }
+        };
+
+        const currentSrc = video.getAttribute('src') || video.src || '';
         if (!currentSrc.endsWith(src)) {
             video.src = src;
-            if (video.load) video.load();
         }
         
         const playPromise = video.play();
         if (playPromise !== undefined) {
             playPromise.then(() => {
+                video.style.display = 'block';
                 if (offlineBg) offlineBg.style.display = 'none';
                 if (centerStatus) centerStatus.style.display = 'none';
             }).catch(err => {
                 console.warn('playCCTVVideoEP4 autoplay note:', err);
+                video.muted = true;
+                video.play().catch(retryErr => {
+                    console.warn('playCCTVVideoEP4 retry note:', retryErr);
+                    if (fallbackText) {
+                        video.style.display = 'none';
+                        if (offlineBg) offlineBg.style.display = 'block';
+                        if (centerStatus) {
+                            centerStatus.style.display = 'block';
+                            centerStatus.textContent = fallbackText;
+                        }
+                    }
+                });
             });
         }
     }
@@ -2826,28 +2941,57 @@ function playCCTVVideoEP5(src, fallbackText) {
         video.defaultMuted = true;
         video.playsInline = true;
         video.loop = true;
+        video.style.zIndex = '2';
+        video.style.display = 'block';
         if (video.setAttribute) {
             video.setAttribute('muted', '');
             video.setAttribute('playsinline', '');
+            video.setAttribute('autoplay', '');
         }
-        video.style.display = 'block';
         
         if (offlineBg) offlineBg.style.display = 'none';
         if (centerStatus) centerStatus.style.display = 'none';
         
-        const currentSrc = video.src || '';
+        video.onloadeddata = () => {
+            video.style.display = 'block';
+            if (offlineBg) offlineBg.style.display = 'none';
+            if (centerStatus) centerStatus.style.display = 'none';
+        };
+        video.onerror = () => {
+            console.warn('playCCTVVideoEP5 video load error:', src);
+            video.style.display = 'none';
+            if (offlineBg) offlineBg.style.display = 'block';
+            if (centerStatus) {
+                centerStatus.style.display = 'block';
+                centerStatus.textContent = fallbackText || 'FEED SIGNAL LOST';
+            }
+        };
+
+        const currentSrc = video.getAttribute('src') || video.src || '';
         if (!currentSrc.endsWith(src)) {
             video.src = src;
-            if (video.load) video.load();
         }
         
         const playPromise = video.play();
         if (playPromise !== undefined) {
             playPromise.then(() => {
+                video.style.display = 'block';
                 if (offlineBg) offlineBg.style.display = 'none';
                 if (centerStatus) centerStatus.style.display = 'none';
             }).catch(err => {
                 console.warn('playCCTVVideoEP5 autoplay note:', err);
+                video.muted = true;
+                video.play().catch(retryErr => {
+                    console.warn('playCCTVVideoEP5 retry note:', retryErr);
+                    if (fallbackText) {
+                        video.style.display = 'none';
+                        if (offlineBg) offlineBg.style.display = 'block';
+                        if (centerStatus) {
+                            centerStatus.style.display = 'block';
+                            centerStatus.textContent = fallbackText;
+                        }
+                    }
+                });
             });
         }
     }
@@ -3224,22 +3368,63 @@ function playCCTVVideoEP6(src, fallbackText) {
     const offlineBg = document.getElementById('cctv-offline-bg-ep6');
     
     if (video) {
-        video.src = src;
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.loop = true;
+        video.style.zIndex = '2';
         video.style.display = 'block';
+        if (video.setAttribute) {
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
+            video.setAttribute('autoplay', '');
+        }
+        
         if (offlineBg) offlineBg.style.display = 'none';
         if (centerStatus) centerStatus.style.display = 'none';
         
-        video.play().then(() => {
+        video.onloadeddata = () => {
+            video.style.display = 'block';
             if (offlineBg) offlineBg.style.display = 'none';
             if (centerStatus) centerStatus.style.display = 'none';
-        }).catch(err => {
+        };
+        video.onerror = () => {
+            console.warn('playCCTVVideoEP6 video load error:', src);
             video.style.display = 'none';
             if (offlineBg) offlineBg.style.display = 'block';
             if (centerStatus) {
                 centerStatus.style.display = 'block';
-                centerStatus.textContent = fallbackText;
+                centerStatus.textContent = fallbackText || 'FEED SIGNAL LOST';
             }
-        });
+        };
+
+        const currentSrc = video.getAttribute('src') || video.src || '';
+        if (!currentSrc.endsWith(src)) {
+            video.src = src;
+        }
+        
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                video.style.display = 'block';
+                if (offlineBg) offlineBg.style.display = 'none';
+                if (centerStatus) centerStatus.style.display = 'none';
+            }).catch(err => {
+                console.warn('playCCTVVideoEP6 autoplay note:', err);
+                video.muted = true;
+                video.play().catch(retryErr => {
+                    console.warn('playCCTVVideoEP6 retry note:', retryErr);
+                    if (fallbackText) {
+                        video.style.display = 'none';
+                        if (offlineBg) offlineBg.style.display = 'block';
+                        if (centerStatus) {
+                            centerStatus.style.display = 'block';
+                            centerStatus.textContent = fallbackText;
+                        }
+                    }
+                });
+            });
+        }
     }
 }
 
@@ -3574,22 +3759,63 @@ function playCCTVVideoEP7(src, fallbackText) {
     const offlineBg = document.getElementById('cctv-offline-bg-ep7');
     
     if (video) {
-        video.src = src;
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.loop = true;
+        video.style.zIndex = '2';
         video.style.display = 'block';
+        if (video.setAttribute) {
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
+            video.setAttribute('autoplay', '');
+        }
+        
         if (offlineBg) offlineBg.style.display = 'none';
         if (centerStatus) centerStatus.style.display = 'none';
         
-        video.play().then(() => {
+        video.onloadeddata = () => {
+            video.style.display = 'block';
             if (offlineBg) offlineBg.style.display = 'none';
             if (centerStatus) centerStatus.style.display = 'none';
-        }).catch(err => {
+        };
+        video.onerror = () => {
+            console.warn('playCCTVVideoEP7 video load error:', src);
             video.style.display = 'none';
             if (offlineBg) offlineBg.style.display = 'block';
             if (centerStatus) {
                 centerStatus.style.display = 'block';
-                centerStatus.textContent = fallbackText;
+                centerStatus.textContent = fallbackText || 'FEED SIGNAL LOST';
             }
-        });
+        };
+
+        const currentSrc = video.getAttribute('src') || video.src || '';
+        if (!currentSrc.endsWith(src)) {
+            video.src = src;
+        }
+        
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                video.style.display = 'block';
+                if (offlineBg) offlineBg.style.display = 'none';
+                if (centerStatus) centerStatus.style.display = 'none';
+            }).catch(err => {
+                console.warn('playCCTVVideoEP7 autoplay note:', err);
+                video.muted = true;
+                video.play().catch(retryErr => {
+                    console.warn('playCCTVVideoEP7 retry note:', retryErr);
+                    if (fallbackText) {
+                        video.style.display = 'none';
+                        if (offlineBg) offlineBg.style.display = 'block';
+                        if (centerStatus) {
+                            centerStatus.style.display = 'block';
+                            centerStatus.textContent = fallbackText;
+                        }
+                    }
+                });
+            });
+        }
     }
 }
 
@@ -3924,22 +4150,63 @@ function playCCTVVideoEP8(src, fallbackText) {
     const offlineBg = document.getElementById('cctv-offline-bg-ep8');
     
     if (video) {
-        video.src = src;
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.loop = true;
+        video.style.zIndex = '2';
         video.style.display = 'block';
+        if (video.setAttribute) {
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
+            video.setAttribute('autoplay', '');
+        }
+        
         if (offlineBg) offlineBg.style.display = 'none';
         if (centerStatus) centerStatus.style.display = 'none';
         
-        video.play().then(() => {
+        video.onloadeddata = () => {
+            video.style.display = 'block';
             if (offlineBg) offlineBg.style.display = 'none';
             if (centerStatus) centerStatus.style.display = 'none';
-        }).catch(err => {
+        };
+        video.onerror = () => {
+            console.warn('playCCTVVideoEP8 video load error:', src);
             video.style.display = 'none';
             if (offlineBg) offlineBg.style.display = 'block';
             if (centerStatus) {
                 centerStatus.style.display = 'block';
-                centerStatus.textContent = fallbackText;
+                centerStatus.textContent = fallbackText || 'FEED SIGNAL LOST';
             }
-        });
+        };
+
+        const currentSrc = video.getAttribute('src') || video.src || '';
+        if (!currentSrc.endsWith(src)) {
+            video.src = src;
+        }
+        
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                video.style.display = 'block';
+                if (offlineBg) offlineBg.style.display = 'none';
+                if (centerStatus) centerStatus.style.display = 'none';
+            }).catch(err => {
+                console.warn('playCCTVVideoEP8 autoplay note:', err);
+                video.muted = true;
+                video.play().catch(retryErr => {
+                    console.warn('playCCTVVideoEP8 retry note:', retryErr);
+                    if (fallbackText) {
+                        video.style.display = 'none';
+                        if (offlineBg) offlineBg.style.display = 'block';
+                        if (centerStatus) {
+                            centerStatus.style.display = 'block';
+                            centerStatus.textContent = fallbackText;
+                        }
+                    }
+                });
+            });
+        }
     }
 }
 
@@ -4274,22 +4541,63 @@ function playCCTVVideoEP9(src, fallbackText) {
     const offlineBg = document.getElementById('cctv-offline-bg-ep9');
     
     if (video) {
-        video.src = src;
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.loop = true;
+        video.style.zIndex = '2';
         video.style.display = 'block';
+        if (video.setAttribute) {
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
+            video.setAttribute('autoplay', '');
+        }
+        
         if (offlineBg) offlineBg.style.display = 'none';
         if (centerStatus) centerStatus.style.display = 'none';
         
-        video.play().then(() => {
+        video.onloadeddata = () => {
+            video.style.display = 'block';
             if (offlineBg) offlineBg.style.display = 'none';
             if (centerStatus) centerStatus.style.display = 'none';
-        }).catch(err => {
+        };
+        video.onerror = () => {
+            console.warn('playCCTVVideoEP9 video load error:', src);
             video.style.display = 'none';
             if (offlineBg) offlineBg.style.display = 'block';
             if (centerStatus) {
                 centerStatus.style.display = 'block';
-                centerStatus.textContent = fallbackText;
+                centerStatus.textContent = fallbackText || 'FEED SIGNAL LOST';
             }
-        });
+        };
+
+        const currentSrc = video.getAttribute('src') || video.src || '';
+        if (!currentSrc.endsWith(src)) {
+            video.src = src;
+        }
+        
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                video.style.display = 'block';
+                if (offlineBg) offlineBg.style.display = 'none';
+                if (centerStatus) centerStatus.style.display = 'none';
+            }).catch(err => {
+                console.warn('playCCTVVideoEP9 autoplay note:', err);
+                video.muted = true;
+                video.play().catch(retryErr => {
+                    console.warn('playCCTVVideoEP9 retry note:', retryErr);
+                    if (fallbackText) {
+                        video.style.display = 'none';
+                        if (offlineBg) offlineBg.style.display = 'block';
+                        if (centerStatus) {
+                            centerStatus.style.display = 'block';
+                            centerStatus.textContent = fallbackText;
+                        }
+                    }
+                });
+            });
+        }
     }
 }
 
