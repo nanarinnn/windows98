@@ -544,6 +544,25 @@ function disconnectDarkWeb() {
     closeDarkWebAlert();
 }
 
+
+function openDarkWebFolderEP1() {
+    const el = document.getElementById('darkwebFolderWindowEP1');
+    if (el) {
+        highestZIndex++;
+        el.style.zIndex = highestZIndex;
+        el.style.display = 'block';
+        updateDarkWebTaskbar();
+    }
+}
+
+function closeDarkWebFolderEP1() {
+    const el = document.getElementById('darkwebFolderWindowEP1');
+    if (el) {
+        el.style.display = 'none';
+        updateDarkWebTaskbar();
+    }
+}
+
 function openDarkWebFolder() {
     const win = document.getElementById("darkwebFolderWindow");
     win.style.display = "flex";
@@ -3289,11 +3308,39 @@ function triggerGameClearEP5() {
 // ==========================================
 // CCTV Gaming Engine (EP.06 청림고등학교 2학년 3반 17번)
 // ==========================================
-let cctvHourEP6 = 8;
-let cctvMinuteEP6 = 30;
+let ep6Stage = 0;
 let cctvTimerEP6 = null;
 let cctvGameStateEP6 = 'idle';
 let cctvNoiseAnimIdEP6 = null;
+let cctvTimeStrEP6 = "TIME: 08:30:00 (아침 조회)";
+
+function setCAMTitleEP6(title) {
+    const el = document.getElementById('cctv-cam-title-ep6');
+    if (el) el.textContent = title;
+}
+
+function updateCCTVHUDEP6() {
+    const timeDisplay = document.getElementById('cctv-time-display-ep6');
+    const stateDisplay = document.getElementById('cctv-state-display-ep6');
+    if (timeDisplay) {
+        timeDisplay.textContent = cctvTimeStrEP6;
+    }
+    if (stateDisplay) {
+        if (cctvGameStateEP6 === 'idle') {
+            stateDisplay.textContent = 'STATUS: NORMAL';
+            stateDisplay.style.color = '#00ff00';
+        } else if (cctvGameStateEP6 === 'death') {
+            stateDisplay.textContent = 'STATUS: ERROR - FATAL';
+            stateDisplay.style.color = '#ff0000';
+        } else if (cctvGameStateEP6 === 'win') {
+            stateDisplay.textContent = 'STATUS: SURVIVED (DISMISSED)';
+            stateDisplay.style.color = '#00ff00';
+        } else {
+            stateDisplay.textContent = 'STATUS: WARNING - ANOMALY';
+            stateDisplay.style.color = '#ffff00';
+        }
+    }
+}
 
 function initCCTVNoiseEP6() {
     const canvas = document.getElementById('cctv-noise-canvas-ep6');
@@ -3325,35 +3372,44 @@ function initCCTVNoiseEP6() {
 
 function startCCTVGameEP6() {
     stopCCTVGameEP6();
-    cctvHourEP6 = 8;
-    cctvMinuteEP6 = 30;
+    ep6Stage = 0;
     cctvGameStateEP6 = 'idle';
+    cctvTimeStrEP6 = "TIME: 08:30:00 (아침 조회)";
     
     const blackout = document.getElementById('cctv-blackout-ep6');
     if (blackout) blackout.style.display = 'none';
     
     const centerStatus = document.getElementById('cctv-center-status-ep6');
     if (centerStatus) {
+        centerStatus.style.display = 'none';
         centerStatus.style.borderColor = '#00ff00';
         centerStatus.style.color = '#00ff00';
     }
     
+    setCAMTitleEP6("CH 01: CAM-CLASS [교실 정면 뷰] - 아침 조회 및 출석 점호");
     updateCCTVHUDEP6();
+    
     const logsContainer = document.getElementById('cctv-logs-ep6');
     if (logsContainer) {
-        logsContainer.innerHTML = '<div style="color: #888;">[SYSTEM] 청림고 2-3반 실시간 교실 감시 시스템 v6.17 로드 완료...</div>';
+        logsContainer.innerHTML = '<div style="color: #888;">[SYSTEM] 청림고등학교 2학년 3반 교실 실시간 학급 관제 콘솔 로드 완료...</div>';
     }
-    addCCTVLogEP6("[진입] 2학년 3반 아침 조회가 시작되었습니다. 출석부를 열고 아침 출석을 호명합니다.");
+    addCCTVLogEP6("[08:30:00] 2학년 3반 아침 조회가 시작되었습니다. 출석부를 열고 학생 명부를 호명하십시오.");
     
-    playCCTVVideoEP6('school_idle.mp4', '[FEED: CLASS_2_3_IDLE]');
+    playCCTVVideoEP6('movies/ep6_idle.mp4', '[FEED: CAM-CLASS CLASS_FRONT_VIEW]');
     clearCCTVChoicesEP6();
-    
-    cctvTimerEP6 = setInterval(tickCCTVGameEP6, 500);
     initCCTVNoiseEP6();
+    
+    // Automatically transition to Stage 1 after morning briefing
+    cctvTimerEP6 = setTimeout(() => {
+        if (cctvGameStateEP6 === 'idle') {
+            triggerEventA_EP6();
+        }
+    }, 2800);
 }
 
 function stopCCTVGameEP6() {
     if (cctvTimerEP6) {
+        clearTimeout(cctvTimerEP6);
         clearInterval(cctvTimerEP6);
         cctvTimerEP6 = null;
     }
@@ -3428,57 +3484,18 @@ function playCCTVVideoEP6(src, fallbackText) {
     }
 }
 
-function tickCCTVGameEP6() {
-    cctvMinuteEP6 += 5;
-    if (cctvMinuteEP6 >= 60) {
-        cctvMinuteEP6 = 0;
-        cctvHourEP6++;
+function addCCTVLogEP6(text, isWarning = false) {
+    const container = document.getElementById('cctv-logs-ep6');
+    if (!container) return;
+    const entry = document.createElement('div');
+    entry.style.marginBottom = '4px';
+    entry.style.color = isWarning ? '#ff3333' : '#00ff00';
+    if (isWarning) {
+        entry.style.fontWeight = 'bold';
     }
-    
-    updateCCTVHUDEP6();
-    const timeStr = formatGameTime(cctvHourEP6, cctvMinuteEP6);
-    
-    if (timeStr === '08:35') {
-        triggerEventA_EP6();
-    } else if (timeStr === '10:15') {
-        triggerEventB_EP6();
-    } else if (timeStr === '13:40') {
-        triggerEventC_EP6();
-    } else if (timeStr === '16:30') {
-        triggerEventD_EP6();
-    }
-}
-
-function updateCCTVHUDEP6() {
-    const timeDisplay = document.getElementById('cctv-time-display-ep6');
-    const stateDisplay = document.getElementById('cctv-state-display-ep6');
-    if (timeDisplay) {
-        timeDisplay.textContent = `SCHOOL TIME: ${formatGameTime(cctvHourEP6, cctvMinuteEP6)}`;
-    }
-    if (stateDisplay) {
-        if (cctvGameStateEP6 === 'idle') {
-            stateDisplay.textContent = 'STATUS: NORMAL';
-            stateDisplay.style.color = '#00ff00';
-        } else if (cctvGameStateEP6 === 'death') {
-            stateDisplay.textContent = 'STATUS: ERROR - FATAL';
-            stateDisplay.style.color = '#ff0000';
-        } else {
-            stateDisplay.textContent = 'STATUS: WARNING - ANOMALY';
-            stateDisplay.style.color = '#ffff00';
-        }
-    }
-}
-
-function addCCTVLogEP6(message, isWarning = false) {
-    const logsContainer = document.getElementById('cctv-logs-ep6');
-    if (!logsContainer) return;
-    const timeStr = formatGameTime(cctvHourEP6, cctvMinuteEP6);
-    const color = isWarning ? '#ff0000' : '#00ff00';
-    const logDiv = document.createElement('div');
-    logDiv.style.color = color;
-    logDiv.textContent = `[${timeStr}] ${message}`;
-    logsContainer.appendChild(logDiv);
-    logsContainer.scrollTop = logsContainer.scrollHeight;
+    entry.textContent = text;
+    container.appendChild(entry);
+    container.scrollTop = container.scrollHeight;
 }
 
 function clearCCTVChoicesEP6() {
@@ -3511,93 +3528,123 @@ function setCCTVChoicesEP6(choices) {
 }
 
 function triggerEventA_EP6() {
-    clearInterval(cctvTimerEP6);
+    if (cctvTimerEP6) clearTimeout(cctvTimerEP6);
+    ep6Stage = 1;
     cctvGameStateEP6 = 'event_A';
+    cctvTimeStrEP6 = "TIME: 08:32:10 (출석 점호)";
     updateCCTVHUDEP6();
+    setCAMTitleEP6("CH 02: CAM-DESK17 [17번 좌석 집중 뷰] - 상황 A (17번 출석 호명)");
     
-    playCCTVVideoEP6('school_event_A.mp4', '[FEED: CALL_ATTENDANCE_17]');
-    addCCTVLogEP6("[이벤트 A: 17번 호명] 17번 '박예림'을 부르는 순간 빈 뒷자리에서 \"네...\"라는 대답이 들립니다.", true);
+    playCCTVVideoEP6('movies/ep6_event_call.mp4', '[FEED: CAM-DESK17 CALL_ATTENDANCE_17]');
+    addCCTVLogEP6("[08:32:10] 16번 호명 후 17번 '박예림'을 부르자, 텅 빈 17번 책상에서 축축하게 젖은 목소리로 \"네...\" 하고 대답이 들려옵니다.", true);
     
     setCCTVChoicesEP6([
         {
-            text: "[1] 소리가 난 17번 자리를 쳐다보며 출석 체크",
+            text: "[선택지 1] 소리가 난 17번 자리를 쳐다보며 출석부에 출석 동그라미를 친다.",
             action: () => {
-                addCCTVLogEP6("[사망] 젖은 머리의 개체와 눈이 마주쳤고, 교무실 PC 모니터 앞에서 실종되었습니다.", true);
-                triggerDeathEP6("17번 개체와 시선 접촉", "교무실 PC 모니터 앞 실종");
+                addCCTVLogEP6("[사망] 젖은 머리의 개체와 눈이 마주쳤고, 며칠 뒤 교무실 모니터 앞에서 실종되었습니다.", true);
+                triggerDeathEP6("17번 개체와 시선 접촉", "젖은 머리의 개체와 눈이 마주쳤고, 며칠 뒤 교무실 모니터 앞에서 실종되었습니다.");
             }
         },
         {
-            text: "[2] 고개를 들지 않고 출석부 보며 \"17번 박예림 결석\" 복창",
+            text: "[선택지 2] 고개를 들지 않고 출석부에 시선을 고정한 채 \"17번 박예림 결석\"이라고 복창한다.",
             action: () => {
                 clearCCTVChoicesEP6();
-                addCCTVLogEP6("[생존] 차가운 공기가 가라앉으며 18번 학생으로 정상 진행됩니다.", false);
+                addCCTVLogEP6("[생존] 차가운 공기가 가라앉으며 18번 학생으로 정상 점호가 이어집니다.", false);
                 cctvGameStateEP6 = 'idle';
-                playCCTVVideoEP6('school_idle.mp4', '[FEED: CLASS_2_3_IDLE]');
-                cctvTimerEP6 = setInterval(tickCCTVGameEP6, 500);
+                setCAMTitleEP6("CH 01: CAM-CLASS [교실 정면 뷰] - 1교시 수업 진행 중");
+                cctvTimeStrEP6 = "TIME: 09:40:00 (1교시 수업)";
+                updateCCTVHUDEP6();
+                playCCTVVideoEP6('movies/ep6_idle.mp4', '[FEED: CAM-CLASS CLASS_FRONT_VIEW]');
+                cctvTimerEP6 = setTimeout(() => {
+                    if (cctvGameStateEP6 === 'idle') {
+                        triggerEventB_EP6();
+                    }
+                }, 2500);
             }
         }
     ]);
 }
 
 function triggerEventB_EP6() {
-    clearInterval(cctvTimerEP6);
+    if (cctvTimerEP6) clearTimeout(cctvTimerEP6);
+    ep6Stage = 2;
     cctvGameStateEP6 = 'event_B';
+    cctvTimeStrEP6 = "TIME: 10:20:45 (2교시 수업)";
     updateCCTVHUDEP6();
+    setCAMTitleEP6("CH 03: CAM-BACKDOOR [교실 뒷문 뷰] - 상황 B (수업 중 문 두드림)");
     
-    playCCTVVideoEP6('school_event_B.mp4', '[FEED: DOOR_KNOCK_ANOMALY]');
-    addCCTVLogEP6("[이벤트 B: 문 두드림] 복도 쪽 문을 두드리며 \"선생님, 저 예림인데요... 문 좀 열어주세요...\" 목소리가 들립니다.", true);
+    playCCTVVideoEP6('movies/ep6_event_door.mp4', '[FEED: CAM-BACKDOOR DOOR_KNOCK_ANOMALY]');
+    addCCTVLogEP6("[10:20:45] 2교시 수업 도중 복도 쪽 문을 쿵쿵 두드리며 \"선생님, 저 예림인데요... 문 좀 열어주세요...\"라는 애원하는 목소리가 울립니다.", true);
     
     setCCTVChoicesEP6([
         {
-            text: "[1] 불쌍한 마음에 다가가서 문을 열어준다",
+            text: "[선택지 1] 문 쪽으로 걸어가 문고리를 돌려 열어준다.",
             action: () => {
-                addCCTVLogEP6("[사망] 교실 전체가 짠 바닷물에 잠기며 학급 인원 전체가 실종되었습니다.", true);
-                triggerDeathEP6("교실 문 개방", "교실 전체 바닷물 침수 및 전원 실종");
+                addCCTVLogEP6("[사망] 교실 전체로 짠 바닷물이 쏟아져 들어오며 학급 전원이 수몰 실종되었습니다.", true);
+                triggerDeathEP6("교실 문 개방 및 짠 바닷물 유입", "교실 전체로 짠 바닷물이 쏟아져 들어오며 학급 전원이 수몰 실종되었습니다.");
             }
         },
         {
-            text: "[2] 목소리를 무시하고 판서를 이어가며 수업 집중 지시",
+            text: "[선택지 2] 목소리를 무시하고 칠판 판서를 이어가며 학생들에게 수업에 집중하도록 지시한다.",
             action: () => {
                 clearCCTVChoicesEP6();
-                addCCTVLogEP6("[생존] 문 밖의 흐느끼는 소리가 서서히 사라졌습니다.", false);
+                addCCTVLogEP6("[생존] 문을 긁던 소리가 멎고 비린내가 서서히 물러갑니다.", false);
                 cctvGameStateEP6 = 'idle';
-                playCCTVVideoEP6('school_idle.mp4', '[FEED: CLASS_2_3_IDLE]');
-                cctvTimerEP6 = setInterval(tickCCTVGameEP6, 500);
+                setCAMTitleEP6("CH 01: CAM-CLASS [교실 정면 뷰] - 3~4교시 및 점심시간");
+                cctvTimeStrEP6 = "TIME: 12:50:00 (점심시간 종료)";
+                updateCCTVHUDEP6();
+                playCCTVVideoEP6('movies/ep6_idle.mp4', '[FEED: CAM-CLASS CLASS_FRONT_VIEW]');
+                cctvTimerEP6 = setTimeout(() => {
+                    if (cctvGameStateEP6 === 'idle') {
+                        triggerEventC_EP6();
+                    }
+                }, 2500);
             }
         }
     ]);
 }
 
 function triggerEventC_EP6() {
-    clearInterval(cctvTimerEP6);
+    if (cctvTimerEP6) clearTimeout(cctvTimerEP6);
+    ep6Stage = 3;
     cctvGameStateEP6 = 'event_C';
+    cctvTimeStrEP6 = "TIME: 13:40:00 (오후 수업 시작)";
     updateCCTVHUDEP6();
+    setCAMTitleEP6("CH 04: CAM-PANORAMA [교실 파노라마 뷰] - 상황 C (학급 전체 비정상 동기화)");
     
-    playCCTVVideoEP6('school_event_C.mp4', '[FEED: GROUP_SYNCHRONIZATION]');
-    addCCTVLogEP6("[이벤트 C: 학급 전체 비정상 동기화] 반 학생 전원이 고개를 90도 꺾어 교탁을 기괴하게 응시하기 시작합니다.", true);
+    playCCTVVideoEP6('movies/ep6_event_freeze.mp4', '[FEED: CAM-PANORAMA GROUP_SYNCHRONIZATION]');
+    addCCTVLogEP6("[13:40:00] 오후 수업 시작종 직후, 반 학생 25명 전원이 동작을 멈추고 고개를 90도 꺾어 교탁의 담임을 기괴하게 올려다봅니다.", true);
     
     setCCTVChoicesEP6([
         {
-            text: "[1] 겁에 질려 교실 앞문을 열고 복도로 뛰쳐나간다",
+            text: "[선택지 1] 공포를 이기지 못하고 앞문을 열어 복도로 도주한다.",
             action: () => {
-                addCCTVLogEP6("[사망] 복도 끝에서 대기 중이던 개체에게 붙잡혀 사망했습니다.", true);
-                triggerDeathEP6("복도 도주", "복도 끝 대기 개체에게 포획 사망");
+                addCCTVLogEP6("[사망] 복도 끝에서 대기 중이던 개체에게 붙잡혀 전신이 꺾여 사망했습니다.", true);
+                triggerDeathEP6("복도 도주 및 대기 개체 접촉", "복도 끝에서 대기 중이던 개체에게 붙잡혀 전신이 꺾여 사망했습니다.");
             }
         },
         {
-            text: "[2] 움직이지 않고 17번 빈 책상을 보며 한쪽 눈씩 깜빡임",
+            text: "[선택지 2] 자리를 지키며 17번 빈 책상을 노려보고 한쪽 눈씩 번갈아 깜빡이며 버틴다.",
             action: () => {
                 clearCCTVChoicesEP6();
                 const blackout = document.getElementById('cctv-blackout-ep6');
                 if (blackout) blackout.style.display = 'flex';
-                addCCTVLogEP6("시선 고정 및 한쪽 눈 깜빡임 유지 중...", false);
+                addCCTVLogEP6("[대응] 17번 빈 책상에 시선을 고정한 채 한쪽 눈씩 교대로 깜빡이며 버티는 중...", false);
                 
                 setTimeout(() => {
                     if (blackout) blackout.style.display = 'none';
-                    addCCTVLogEP6("[생존] 3분 뒤 특별재난 관리본부 현장 대응팀이 진입하여 구출되었습니다.", false);
+                    addCCTVLogEP6("[생존] 3분 뒤 현장 대응팀이 교실로 진입하여 비정상 동기화를 해제했습니다.", false);
                     cctvGameStateEP6 = 'idle';
-                    playCCTVVideoEP6('school_idle.mp4', '[FEED: CLASS_2_3_IDLE]');
-                    cctvTimerEP6 = setInterval(tickCCTVGameEP6, 500);
+                    setCAMTitleEP6("CH 01: CAM-CLASS [교실 정면 뷰] - 5~6교시 종료 및 종례 준비");
+                    cctvTimeStrEP6 = "TIME: 15:50:00 (종례 준비)";
+                    updateCCTVHUDEP6();
+                    playCCTVVideoEP6('movies/ep6_idle.mp4', '[FEED: CAM-CLASS CLASS_FRONT_VIEW]');
+                    cctvTimerEP6 = setTimeout(() => {
+                        if (cctvGameStateEP6 === 'idle') {
+                            triggerEventD_EP6();
+                        }
+                    }, 2500);
                 }, 2500);
             }
         }
@@ -3605,23 +3652,26 @@ function triggerEventC_EP6() {
 }
 
 function triggerEventD_EP6() {
-    clearInterval(cctvTimerEP6);
+    if (cctvTimerEP6) clearTimeout(cctvTimerEP6);
+    ep6Stage = 4;
     cctvGameStateEP6 = 'event_D';
+    cctvTimeStrEP6 = "TIME: 16:30:00 (종례 및 방과 후)";
     updateCCTVHUDEP6();
+    setCAMTitleEP6("CH 05: CAM-DISMISS [방과 후 교실] - 상황 D (종례 및 최종 퇴근)");
     
-    playCCTVVideoEP6('school_event_D.mp4', '[FEED: CLASS_DISMISSAL]');
-    addCCTVLogEP6("[종례 및 종소리] 종례가 끝났습니다. 교실에 홀로 남아 교탁을 정리합니다.", true);
+    playCCTVVideoEP6('movies/ep6_event_dismiss.mp4', '[FEED: CAM-DISMISS DISMISSAL_SALT]');
+    addCCTVLogEP6("[16:30:00] 종례 종료. 학생들이 모두 하교하고 교실에 홀로 남았습니다. 17번 책상 위에 하얀 소금기가 말라붙어 있습니다.", true);
     
     setCCTVChoicesEP6([
         {
-            text: "[1] 빈 책상에 묻은 소금기를 맨손으로 닦아낸다",
+            text: "[선택지 1] 책상 위의 소금기를 손가락으로 문질러 털어낸다.",
             action: () => {
-                addCCTVLogEP6("[사망] 손에 바다 해조류가 자라나며 신체 변이가 일어났습니다.", true);
-                triggerDeathEP6("미확인 염분 직접 접촉", "손에 바다 해조류 번식 및 신체 변이");
+                addCCTVLogEP6("[사망] 피부에서 바다 해조류가 자라나며 신체 변이로 사망했습니다.", true);
+                triggerDeathEP6("미확인 염분 직접 접촉", "피부에서 바다 해조류가 자라나며 신체 변이로 사망했습니다.");
             }
         },
         {
-            text: "[2] 교탁 서랍 속 전용 방향제 [SNS-0017]을 분사하고 퇴근",
+            text: "[선택지 2] 교탁 서랍 속 전용 방향제 [SNS-0017]을 교실 전체에 분사하고 소등 후 퇴근한다.",
             action: () => {
                 clearCCTVChoicesEP6();
                 triggerGameClearEP6();
@@ -3631,13 +3681,18 @@ function triggerEventD_EP6() {
 }
 
 function triggerDeathEP6(reason, actionDesc) {
+    if (cctvTimerEP6) clearTimeout(cctvTimerEP6);
     cctvGameStateEP6 = 'death';
     updateCCTVHUDEP6();
     
     const video = document.getElementById('cctv-video-ep6');
     const centerStatus = document.getElementById('cctv-center-status-ep6');
     
-    if (video) video.style.display = 'none';
+    if (video) {
+        video.pause();
+        video.style.display = 'none';
+    }
+    
     if (centerStatus) {
         centerStatus.style.display = 'block';
         centerStatus.style.borderColor = '#ff0000';
@@ -3646,8 +3701,8 @@ function triggerDeathEP6(reason, actionDesc) {
             <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #ff0000; animation: blink 0.5s infinite;">☠️ SYSTEM FAILURE ☠️</div>
             <div style="font-size: 11px; line-height: 1.5; color: #ff3333; font-family: monospace; text-align: left; word-break: keep-all;">
                 [ERROR] 2학년 3반 담임교사 생체 신호 소멸.<br>
-                [원인] ${reason || '청림고 수칙 위반으로 인한 실종'}.<br>
-                [조치] ${actionDesc || '교무실 잔존 소지품 수거'}.
+                [원인] ${reason || '청림고 수칙 위반으로 인한 변칙 접촉'}.<br>
+                [결과] ${actionDesc || '현장 수색 및 유해 인양 불가'}.
             </div>
         `;
     }
@@ -3667,24 +3722,71 @@ function triggerDeathEP6(reason, actionDesc) {
 }
 
 function triggerGameClearEP6() {
+    if (cctvTimerEP6) clearTimeout(cctvTimerEP6);
+    ep6Stage = 5;
     cctvGameStateEP6 = 'win';
+    cctvTimeStrEP6 = "TIME: 16:40:00 (퇴근 완료)";
     updateCCTVHUDEP6();
     
-    addCCTVLogEP6("[GOOD ENDING] 비린 냄새가 사라지고 무사히 하루를 마쳤습니다. 학기 생존 성공!", false);
-    playCCTVVideoEP6('school_idle.mp4', '[SYSTEM: DAILY SHIFT END]');
+    setCAMTitleEP6("CH 05: CAM-DISMISS [방과 후 교실] - 퇴근 성공 (소등 완료)");
+    addCCTVLogEP6("[GOOD ENDING] 바다 냄새가 정화되고 무사히 학교를 벗어났습니다. 금일 생환 완료!", false);
+    playCCTVVideoEP6('movies/ep6_idle.mp4', '[SYSTEM: DAILY SHIFT END]');
     clearCCTVChoicesEP6();
     
-    openDarkWebAlert("🏆 [무사 퇴근 성공]<br>축하합니다! 청림고등학교 2학년 3반 담임교사 수칙을 준수하여 무사히 하루를 마쳤습니다.");
+    const centerStatus = document.getElementById('cctv-center-status-ep6');
+    if (centerStatus) {
+        centerStatus.style.display = 'block';
+        centerStatus.style.borderColor = '#00ff00';
+        centerStatus.style.color = '#00ff00';
+        centerStatus.innerHTML = `
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #00ff00;">🏆 DAILY SURVIVAL COMPLETE 🏆</div>
+            <div style="font-size: 11px; line-height: 1.5; color: #00ff88; font-family: monospace; text-align: left; word-break: keep-all;">
+                [SUCCESS] 청림고 2학년 3반 담임교사 수칙 준수 완료.<br>
+                [상태] 바다 냄새 정화 및 안전한 교문 통과 확인.<br>
+                [조치] 당일 근무 종료 승인. 내일 아침 08:30 정상 출근하십시오.
+            </div>
+        `;
+    }
+    
+    openDarkWebAlert("🏆 [청림고등학교 무사 퇴근]<br>축하합니다! 2학년 3반 담임교사 생존 수칙을 준수하여 17번 변칙 개체의 위협을 물리치고 무사히 퇴근하셨습니다!");
 }
 
 // ==========================================
 // CCTV Gaming Engine (EP.07 나눔 12 편의점 야간 근무)
 // ==========================================
-let cctvHourEP7 = 22;
-let cctvMinuteEP7 = 0;
+let ep7Stage = 0;
 let cctvTimerEP7 = null;
 let cctvGameStateEP7 = 'idle';
 let cctvNoiseAnimIdEP7 = null;
+let cctvTimeStrEP7 = "TIME: 23:00:00 (근무 시작)";
+
+function setCAMTitleEP7(title) {
+    const el = document.getElementById('cctv-cam-title-ep7');
+    if (el) el.textContent = title;
+}
+
+function updateCCTVHUDEP7() {
+    const timeDisplay = document.getElementById('cctv-time-display-ep7');
+    const stateDisplay = document.getElementById('cctv-state-display-ep7');
+    if (timeDisplay) {
+        timeDisplay.textContent = cctvTimeStrEP7;
+    }
+    if (stateDisplay) {
+        if (cctvGameStateEP7 === 'idle') {
+            stateDisplay.textContent = 'STATUS: NORMAL';
+            stateDisplay.style.color = '#00ff00';
+        } else if (cctvGameStateEP7 === 'death') {
+            stateDisplay.textContent = 'STATUS: ERROR - FATAL';
+            stateDisplay.style.color = '#ff0000';
+        } else if (cctvGameStateEP7 === 'win') {
+            stateDisplay.textContent = 'STATUS: SURVIVED (DISCHARGED)';
+            stateDisplay.style.color = '#00ff00';
+        } else {
+            stateDisplay.textContent = 'STATUS: WARNING - ANOMALY';
+            stateDisplay.style.color = '#ffff00';
+        }
+    }
+}
 
 function initCCTVNoiseEP7() {
     const canvas = document.getElementById('cctv-noise-canvas-ep7');
@@ -3716,35 +3818,44 @@ function initCCTVNoiseEP7() {
 
 function startCCTVGameEP7() {
     stopCCTVGameEP7();
-    cctvHourEP7 = 22;
-    cctvMinuteEP7 = 0;
+    ep7Stage = 0;
     cctvGameStateEP7 = 'idle';
+    cctvTimeStrEP7 = "TIME: 23:00:00 (근무 시작)";
     
     const blackout = document.getElementById('cctv-blackout-ep7');
     if (blackout) blackout.style.display = 'none';
     
     const centerStatus = document.getElementById('cctv-center-status-ep7');
     if (centerStatus) {
+        centerStatus.style.display = 'none';
         centerStatus.style.borderColor = '#00ff00';
         centerStatus.style.color = '#00ff00';
     }
     
+    setCAMTitleEP7("CH 01: CAM-POS [계산대 포스기 뷰] - 야간 근무 시작 및 카운팅");
     updateCCTVHUDEP7();
+    
     const logsContainer = document.getElementById('cctv-logs-ep7');
     if (logsContainer) {
-        logsContainer.innerHTML = '<div style="color: #888;">[SYSTEM] 나눔 12 편의점 내부 보안 감시 시스템 v7.00 로드 완료...</div>';
+        logsContainer.innerHTML = '<div style="color: #888;">[SYSTEM] 나눔 12 편의점 실시간 카운터 및 매장 관제 콘솔 로드 완료...</div>';
     }
-    addCCTVLogEP7("[근무 시작] 나눔 12시 편의점 야간 근무에 투입되었습니다. 카운터 포스기를 사수하십시오.");
+    addCCTVLogEP7("[23:00:00] 야간 근무 로그인 완료. 문 알림음 카운터 작동 중. 계산대를 사수하십시오.");
     
-    playCCTVVideoEP7('mart_idle.mp4', '[FEED: MART_COUNTER_IDLE]');
+    playCCTVVideoEP7('movies/ep7_idle.mp4', '[FEED: CAM-POS POS_COUNTER_IDLE]');
     clearCCTVChoicesEP7();
-    
-    cctvTimerEP7 = setInterval(tickCCTVGameEP7, 500);
     initCCTVNoiseEP7();
+    
+    // Automatically transition to Stage 1 after initial briefing
+    cctvTimerEP7 = setTimeout(() => {
+        if (cctvGameStateEP7 === 'idle') {
+            triggerEventA_EP7();
+        }
+    }, 2800);
 }
 
 function stopCCTVGameEP7() {
     if (cctvTimerEP7) {
+        clearTimeout(cctvTimerEP7);
         clearInterval(cctvTimerEP7);
         cctvTimerEP7 = null;
     }
@@ -3819,57 +3930,18 @@ function playCCTVVideoEP7(src, fallbackText) {
     }
 }
 
-function tickCCTVGameEP7() {
-    cctvMinuteEP7 += 5;
-    if (cctvMinuteEP7 >= 60) {
-        cctvMinuteEP7 = 0;
-        cctvHourEP7 = (cctvHourEP7 + 1) % 24;
+function addCCTVLogEP7(text, isWarning = false) {
+    const container = document.getElementById('cctv-logs-ep7');
+    if (!container) return;
+    const entry = document.createElement('div');
+    entry.style.marginBottom = '4px';
+    entry.style.color = isWarning ? '#ff3333' : '#00ff00';
+    if (isWarning) {
+        entry.style.fontWeight = 'bold';
     }
-    
-    updateCCTVHUDEP7();
-    const timeStr = formatGameTime(cctvHourEP7, cctvMinuteEP7);
-    
-    if (timeStr === '00:30') {
-        triggerEventA_EP7();
-    } else if (timeStr === '02:15') {
-        triggerEventB_EP7();
-    } else if (timeStr === '04:00') {
-        triggerEventC_EP7();
-    } else if (timeStr === '06:00') {
-        triggerEventD_EP7();
-    }
-}
-
-function updateCCTVHUDEP7() {
-    const timeDisplay = document.getElementById('cctv-time-display-ep7');
-    const stateDisplay = document.getElementById('cctv-state-display-ep7');
-    if (timeDisplay) {
-        timeDisplay.textContent = `SHIFT TIME: ${formatGameTime(cctvHourEP7, cctvMinuteEP7)}`;
-    }
-    if (stateDisplay) {
-        if (cctvGameStateEP7 === 'idle') {
-            stateDisplay.textContent = 'STATUS: NORMAL';
-            stateDisplay.style.color = '#00ff00';
-        } else if (cctvGameStateEP7 === 'death') {
-            stateDisplay.textContent = 'STATUS: ERROR - FATAL';
-            stateDisplay.style.color = '#ff0000';
-        } else {
-            stateDisplay.textContent = 'STATUS: WARNING - ANOMALY';
-            stateDisplay.style.color = '#ffff00';
-        }
-    }
-}
-
-function addCCTVLogEP7(message, isWarning = false) {
-    const logsContainer = document.getElementById('cctv-logs-ep7');
-    if (!logsContainer) return;
-    const timeStr = formatGameTime(cctvHourEP7, cctvMinuteEP7);
-    const color = isWarning ? '#ff0000' : '#00ff00';
-    const logDiv = document.createElement('div');
-    logDiv.style.color = color;
-    logDiv.textContent = `[${timeStr}] ${message}`;
-    logsContainer.appendChild(logDiv);
-    logsContainer.scrollTop = logsContainer.scrollHeight;
+    entry.textContent = text;
+    container.appendChild(entry);
+    container.scrollTop = container.scrollHeight;
 }
 
 function clearCCTVChoicesEP7() {
@@ -3902,133 +3974,171 @@ function setCCTVChoicesEP7(choices) {
 }
 
 function triggerEventA_EP7() {
-    clearInterval(cctvTimerEP7);
+    if (cctvTimerEP7) clearTimeout(cctvTimerEP7);
+    ep7Stage = 1;
     cctvGameStateEP7 = 'event_A';
+    cctvTimeStrEP7 = "TIME: 01:20:10 (방범 거울 왜곡)";
     updateCCTVHUDEP7();
+    setCAMTitleEP7("CH 02: CAM-MIRROR [방범 볼록거울 뷰] - 상황 A (방범 거울 왜곡)");
     
-    playCCTVVideoEP7('mart_event_A.mp4', '[FEED: CONV_MIRROR_DISTORTION]');
-    addCCTVLogEP7("[이벤트 A: 방범 거울 왜곡] 방범 거울에 끝없이 반복되는 통로가 비치며 손님이 다가옵니다.", true);
+    playCCTVVideoEP7('movies/ep7_event_mirror.mp4', '[FEED: CAM-MIRROR MIRROR_DISTORTION]');
+    addCCTVLogEP7("[01:20:10] 경고: 매장 상단 방범 거울에 끝없이 반복되는 실종자들의 통로가 비치고 있습니다.", true);
     
     setCCTVChoicesEP7([
         {
-            text: "[1] 거울 속에 무엇이 있는지 눈을 크게 뜨고 자세히 관찰한다",
+            text: "[선택지 1] 거울 속으로 빨려 들어갈 듯 고개를 가까이 대고 유심히 관찰한다.",
             action: () => {
-                addCCTVLogEP7("[사망] 거울 속 통로로 빨려 들어가 상품 포장 안에서 신체 조각으로 발견되었습니다.", true);
-                triggerDeathEP7("방범 거울 지속 응시", "거울 속 이계 흡수 및 분해");
+                addCCTVLogEP7("[사망] 변칙 거울 공간에 시선이 고정되어 영구 실종되었습니다.", true);
+                triggerDeathEP7("변칙 거울 시선 고정", "변칙 거울 공간에 시선이 고정되어 영구 실종되었습니다.");
             }
         },
         {
-            text: "[2] 카드 결제기를 보는 척하며 슬쩍 시선만 옮겨 확인한다",
+            text: "[선택지 2] 카드 결제기를 확인하는 척하며 슬쩍 시선만 옮겨 가볍게 넘긴다.",
             action: () => {
                 clearCCTVChoicesEP7();
-                addCCTVLogEP7("[생존] 손님에게 들키지 않고 계산을 마친 뒤 조용히 퇴점했습니다.", false);
+                addCCTVLogEP7("[생존] 시선 동기화를 차단하여 거울 이상 현상을 무사히 넘겼습니다.", false);
                 cctvGameStateEP7 = 'idle';
-                playCCTVVideoEP7('mart_idle.mp4', '[FEED: MART_COUNTER_IDLE]');
-                cctvTimerEP7 = setInterval(tickCCTVGameEP7, 500);
+                setCAMTitleEP7("CH 01: CAM-POS [계산대 포스기 뷰] - 심야 근무 진행 중");
+                cctvTimeStrEP7 = "TIME: 01:45:00 (심야 근무)";
+                updateCCTVHUDEP7();
+                playCCTVVideoEP7('movies/ep7_idle.mp4', '[FEED: CAM-POS POS_COUNTER_IDLE]');
+                cctvTimerEP7 = setTimeout(() => {
+                    if (cctvGameStateEP7 === 'idle') {
+                        triggerEventB_EP7();
+                    }
+                }, 2500);
             }
         }
     ]);
 }
 
 function triggerEventB_EP7() {
-    clearInterval(cctvTimerEP7);
+    if (cctvTimerEP7) clearTimeout(cctvTimerEP7);
+    ep7Stage = 2;
     cctvGameStateEP7 = 'event_B';
+    cctvTimeStrEP7 = "TIME: 02:15:30 (신분증 검사)";
     updateCCTVHUDEP7();
+    setCAMTitleEP7("CH 03: CAM-COUNTER [카운터 정면 뷰] - 상황 B (움직이는 신분증)");
     
-    playCCTVVideoEP7('mart_event_B.mp4', '[FEED: ID_CARD_BLINK]');
-    addCCTVLogEP7("[이벤트 B: 움직이는 신분증] 제시받은 신분증 사진 속 인물이 눈을 깜빡입니다.", true);
+    playCCTVVideoEP7('movies/ep7_event_id.mp4', '[FEED: CAM-COUNTER ID_CARD_BLINK]');
+    addCCTVLogEP7("[02:15:30] 경고: 손님이 담배를 요구하며 내민 신분증의 증명사진 속 인물이 눈을 깜빡이고 있습니다.", true);
     
     setCCTVChoicesEP7([
         {
-            text: "[1] 경악하며 신분증을 카운터 바닥으로 집어던진다",
+            text: "[선택지 1] \"이거 위조 신분증이죠?\"라며 판매를 거부하고 소리친다.",
             action: () => {
-                addCCTVLogEP7("[사망] 개체의 적대 반응을 유발하여 즉사했습니다.", true);
-                triggerDeathEP7("개체에 대한 돌발 행동", "적대 반응 유발 즉사");
+                addCCTVLogEP7("[사망] 신분증 속에서 튀어나온 손에 전신을 붙잡혀 살해당했습니다.", true);
+                triggerDeathEP7("신분증 개체에 대한 적대 발언", "신분증 속에서 튀어나온 손에 전신을 붙잡혀 살해당했습니다.");
             }
         },
         {
-            text: "[2] 놀라지 않고 신분증을 받았을 때와 동일한 손짓과 속도로 공손히 반납",
+            text: "[선택지 2] 아무 일도 없다는 듯 태연한 속도와 손짓으로 신분증을 돌려준다.",
             action: () => {
                 clearCCTVChoicesEP7();
-                addCCTVLogEP7("[생존] 개체가 만족하며 조용히 상품을 들고 문 밖으로 나갔습니다.", false);
+                addCCTVLogEP7("[생존] 손님이 침묵 속에 담배를 결제하고 무사히 퇴점했습니다.", false);
                 cctvGameStateEP7 = 'idle';
-                playCCTVVideoEP7('mart_idle.mp4', '[FEED: MART_COUNTER_IDLE]');
-                cctvTimerEP7 = setInterval(tickCCTVGameEP7, 500);
+                setCAMTitleEP7("CH 01: CAM-POS [계산대 포스기 뷰] - 심야 물품 정리");
+                cctvTimeStrEP7 = "TIME: 03:30:00 (물품 진열 정리)";
+                updateCCTVHUDEP7();
+                playCCTVVideoEP7('movies/ep7_idle.mp4', '[FEED: CAM-POS POS_COUNTER_IDLE]');
+                cctvTimerEP7 = setTimeout(() => {
+                    if (cctvGameStateEP7 === 'idle') {
+                        triggerEventC_EP7();
+                    }
+                }, 2500);
             }
         }
     ]);
 }
 
 function triggerEventC_EP7() {
-    clearInterval(cctvTimerEP7);
+    if (cctvTimerEP7) clearTimeout(cctvTimerEP7);
+    ep7Stage = 3;
     cctvGameStateEP7 = 'event_C';
+    cctvTimeStrEP7 = "TIME: 04:45:00 (미등록 상품 스캔)";
     updateCCTVHUDEP7();
+    setCAMTitleEP7("CH 04: CAM-BARCODE [포스기 결제 뷰] - 상황 C (미등록 상품 결제)");
     
-    playCCTVVideoEP7('mart_event_C.mp4', '[FEED: VOICE_OVERLAP]');
-    addCCTVLogEP7("[이벤트 C: 음성 중첩] 손님의 목소리가 내 목소리와 완벽히 겹쳐 기괴하게 울립니다.", true);
+    playCCTVVideoEP7('movies/ep7_event_barcode.mp4', '[FEED: CAM-BARCODE UNREGISTERED_BARCODE]');
+    addCCTVLogEP7("[04:45:00] 경고: 손님이 가져온 캔을 바코드로 찍자 상품명 란이 새까만 빈칸으로 뜨고 50,000원이 청구됩니다.", true);
     
     setCCTVChoicesEP7([
         {
-            text: "[1] \"손님, 어떤 상품 찾으시나요?\"라며 입으로 대답한다",
+            text: "[선택지 1] 전산 오류로 판단하고 평소처럼 카드 결제 승인 버튼을 누른다.",
             action: () => {
-                addCCTVLogEP7("[사망] 목소리를 개체에게 영구 수탈당하고 진열대 틈새로 압사당했습니다.", true);
-                triggerDeathEP7("음성 중첩 상태 발성", "목소리 수탈 및 진열대 압사");
+                addCCTVLogEP7("[사망] 본부 신고 누락으로 인해 전두엽을 수탈당해 뇌사 상태로 발견되었습니다.", true);
+                triggerDeathEP7("미등록 상품 무단 승인", "본부 신고 누락으로 인해 전두엽을 수탈당해 뇌사 상태로 발견되었습니다.");
             }
         },
         {
-            text: "[2] 입을 열지 않고 손으로 포스 화면과 가격표를 가리켜 무언 응대",
+            text: "[선택지 2] 결제를 중단하고 즉시 유선 수화기를 들어 본부 긴급 신고 번호(0050-0)를 누른다.",
             action: () => {
                 clearCCTVChoicesEP7();
-                addCCTVLogEP7("[생존] 손님이 결제 후 나갔습니다. 문 알림음과 손님 수가 일치합니다.", false);
-                cctvGameStateEP7 = 'idle';
-                playCCTVVideoEP7('mart_idle.mp4', '[FEED: MART_COUNTER_IDLE]');
-                cctvTimerEP7 = setInterval(tickCCTVGameEP7, 500);
+                const blackout = document.getElementById('cctv-blackout-ep7');
+                if (blackout) blackout.style.display = 'flex';
+                addCCTVLogEP7("[대응] 결제를 중단하고 유선 전화로 본부(0050-0)에 긴급 신고 접수 중...", false);
+                
+                setTimeout(() => {
+                    if (blackout) blackout.style.display = 'none';
+                    addCCTVLogEP7("[생존] 본부 차단 프로토콜이 발동되며 손님이 물건을 버리고 도주했습니다.", false);
+                    cctvGameStateEP7 = 'idle';
+                    setCAMTitleEP7("CH 01: CAM-POS [계산대 포스기 뷰] - 새벽 시간대 경과 중");
+                    cctvTimeStrEP7 = "TIME: 05:40:00 (새벽 시프트)";
+                    updateCCTVHUDEP7();
+                    playCCTVVideoEP7('movies/ep7_idle.mp4', '[FEED: CAM-POS POS_COUNTER_IDLE]');
+                    cctvTimerEP7 = setTimeout(() => {
+                        if (cctvGameStateEP7 === 'idle') {
+                            triggerEventD_EP7();
+                        }
+                    }, 2500);
+                }, 2500);
             }
         }
     ]);
 }
 
 function triggerEventD_EP7() {
-    clearInterval(cctvTimerEP7);
+    if (cctvTimerEP7) clearTimeout(cctvTimerEP7);
+    ep7Stage = 4;
     cctvGameStateEP7 = 'event_D';
+    cctvTimeStrEP7 = "TIME: 06:05:00 (새벽 6시 경과)";
     updateCCTVHUDEP7();
+    setCAMTitleEP7("CH 05: CAM-WINDOW [유리창 전경 뷰] - 상황 D (새벽 6시 지연 및 최종 퇴근)");
     
-    playCCTVVideoEP7('mart_event_D.mp4', '[FEED: SUNRISE_DELAYED]');
-    addCCTVLogEP7("[새벽 6시 지연] 오전 6시가 지났음에도 밖이 칠흑같이 어둡고 교대자가 오지 않습니다.", true);
+    playCCTVVideoEP7('movies/ep7_event_dawn.mp4', '[FEED: CAM-WINDOW DAWN_WINDOW_DELAY]');
+    addCCTVLogEP7("[06:05:00] 오전 6시가 경과했으나 창밖은 여전히 칠흑 같은 암흑이며, 유리창 바깥에 정체불명의 손님들이 몰려들어 서성입니다.", true);
     
     setCCTVChoicesEP7([
         {
-            text: "[1] 퇴근 시간이 지났으므로 매장 자동문을 열고 밖으로 걸어 나간다",
+            text: "[선택지 1] 퇴근 시간이 지났으니 자동문을 열고 밖으로 나가 교대자를 찾는다.",
             action: () => {
-                addCCTVLogEP7("[사망] 어둠 속 다른 지역 개체에게 끌려가 영구 실종되었습니다.", true);
-                triggerDeathEP7("비정상 일출 시간 무단 이탈", "어둠 속 이계 실종");
+                addCCTVLogEP7("[사망] 문 밖에서 대기하던 개체들에게 집단으로 뜯겨 사망했습니다.", true);
+                triggerDeathEP7("비정상 일출 시간 매장 무단 이탈", "문 밖에서 대기하던 개체들에게 집단으로 뜯겨 사망했습니다.");
             }
         },
         {
-            text: "[2] 밖으로 나가지 않고 카운터 안쪽에서 앱 '근무 종료' 버튼을 연타한다",
+            text: "[선택지 2] 계산대 안쪽에 대기하며 스마트폰 구인 앱의 '근무 종료' 버튼을 연타한다.",
             action: () => {
                 clearCCTVChoicesEP7();
-                const blackout = document.getElementById('cctv-blackout-ep7');
-                if (blackout) blackout.style.display = 'flex';
-                addCCTVLogEP7("구인 앱 서버 통신 및 근무 종료 신호 전송 중...", false);
-                
-                setTimeout(() => {
-                    if (blackout) blackout.style.display = 'none';
-                    triggerGameClearEP7();
-                }, 2000);
+                triggerGameClearEP7();
             }
         }
     ]);
 }
 
 function triggerDeathEP7(reason, actionDesc) {
+    if (cctvTimerEP7) clearTimeout(cctvTimerEP7);
     cctvGameStateEP7 = 'death';
     updateCCTVHUDEP7();
     
     const video = document.getElementById('cctv-video-ep7');
     const centerStatus = document.getElementById('cctv-center-status-ep7');
     
-    if (video) video.style.display = 'none';
+    if (video) {
+        video.pause();
+        video.style.display = 'none';
+    }
+    
     if (centerStatus) {
         centerStatus.style.display = 'block';
         centerStatus.style.borderColor = '#ff0000';
@@ -4036,9 +4146,9 @@ function triggerDeathEP7(reason, actionDesc) {
         centerStatus.innerHTML = `
             <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #ff0000; animation: blink 0.5s infinite;">☠️ SYSTEM FAILURE ☠️</div>
             <div style="font-size: 11px; line-height: 1.5; color: #ff3333; font-family: monospace; text-align: left; word-break: keep-all;">
-                [ERROR] 편의점 근무자 생체 신호 소멸.<br>
+                [ERROR] 편의점 야간 근무자 생체 신호 소멸.<br>
                 [원인] ${reason || '편의점 야간 근무 수칙 위반'}.<br>
-                [조치] ${actionDesc || '매장 내부 잔류물 수거 및 결손 처리'}.
+                [결과] ${actionDesc || '현장 수색 및 결손 처리'}.
             </div>
         `;
     }
@@ -4058,24 +4168,71 @@ function triggerDeathEP7(reason, actionDesc) {
 }
 
 function triggerGameClearEP7() {
+    if (cctvTimerEP7) clearTimeout(cctvTimerEP7);
+    ep7Stage = 5;
     cctvGameStateEP7 = 'win';
+    cctvTimeStrEP7 = "TIME: 06:10:00 (퇴근 완료)";
     updateCCTVHUDEP7();
     
-    addCCTVLogEP7("[GOOD ENDING] 알림음과 함께 밖이 환해지며 정상 퇴근 처리되었습니다. 야간 근무 생환 성공!", false);
-    playCCTVVideoEP7('mart_idle.mp4', '[SYSTEM: SHIFT COMPLETE]');
+    setCAMTitleEP7("CH 05: CAM-WINDOW [유리창 전경 뷰] - 퇴근 성공 (현실 전이)");
+    addCCTVLogEP7("[GOOD ENDING] 알림음과 함께 현실 편의점으로 순간 전이되며 무사히 퇴근에 성공했습니다!", false);
+    playCCTVVideoEP7('movies/ep7_idle.mp4', '[SYSTEM: SHIFT COMPLETE]');
     clearCCTVChoicesEP7();
     
-    openDarkWebAlert("🏆 [무사 퇴근 성공]<br>축하합니다! 나눔 12 편의점 야간 근무 수칙을 준수하여 무사히 아침 퇴근에 성공하셨습니다.");
+    const centerStatus = document.getElementById('cctv-center-status-ep7');
+    if (centerStatus) {
+        centerStatus.style.display = 'block';
+        centerStatus.style.borderColor = '#00ff00';
+        centerStatus.style.color = '#00ff00';
+        centerStatus.innerHTML = `
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #00ff00;">🏆 SHIFT SURVIVAL COMPLETE 🏆</div>
+            <div style="font-size: 11px; line-height: 1.5; color: #00ff88; font-family: monospace; text-align: left; word-break: keep-all;">
+                [SUCCESS] 나눔 12 편의점 야간 근무 수칙 준수 완료.<br>
+                [상태] 앱 '근무 종료' 승인 및 현실 공간 무사 전이 확인.<br>
+                [조치] 당일 야간 수당 지급 완료. 다음 야간 시프트까지 휴식하십시오.
+            </div>
+        `;
+    }
+    
+    openDarkWebAlert("🏆 [나눔 12 편의점 무사 퇴근]<br>축하합니다! 야간 근무 수칙을 철저히 준수하여 변칙 개체들의 위협을 넘기고 현실로 무사히 퇴근하셨습니다!");
 }
 
 // ==========================================
 // CCTV Gaming Engine (EP.08 유성 워터파크)
 // ==========================================
-let cctvHourEP8 = 10;
-let cctvMinuteEP8 = 0;
+let ep8Stage = 0;
 let cctvTimerEP8 = null;
 let cctvGameStateEP8 = 'idle';
 let cctvNoiseAnimIdEP8 = null;
+let cctvTimeStrEP8 = "TIME: 10:00:00 (입장 완료)";
+
+function setCAMTitleEP8(title) {
+    const el = document.getElementById('cctv-cam-title-ep8');
+    if (el) el.textContent = title;
+}
+
+function updateCCTVHUDEP8() {
+    const timeDisplay = document.getElementById('cctv-time-display-ep8');
+    const stateDisplay = document.getElementById('cctv-state-display-ep8');
+    if (timeDisplay) {
+        timeDisplay.textContent = cctvTimeStrEP8;
+    }
+    if (stateDisplay) {
+        if (cctvGameStateEP8 === 'idle') {
+            stateDisplay.textContent = 'STATUS: NORMAL';
+            stateDisplay.style.color = '#00ff00';
+        } else if (cctvGameStateEP8 === 'death') {
+            stateDisplay.textContent = 'STATUS: ERROR - FATAL';
+            stateDisplay.style.color = '#ff0000';
+        } else if (cctvGameStateEP8 === 'win') {
+            stateDisplay.textContent = 'STATUS: SURVIVED (ESCAPED)';
+            stateDisplay.style.color = '#00ff00';
+        } else {
+            stateDisplay.textContent = 'STATUS: WARNING - ANOMALY';
+            stateDisplay.style.color = '#ffff00';
+        }
+    }
+}
 
 function initCCTVNoiseEP8() {
     const canvas = document.getElementById('cctv-noise-canvas-ep8');
@@ -4107,35 +4264,44 @@ function initCCTVNoiseEP8() {
 
 function startCCTVGameEP8() {
     stopCCTVGameEP8();
-    cctvHourEP8 = 10;
-    cctvMinuteEP8 = 0;
+    ep8Stage = 0;
     cctvGameStateEP8 = 'idle';
+    cctvTimeStrEP8 = "TIME: 10:00:00 (입장 완료)";
     
     const blackout = document.getElementById('cctv-blackout-ep8');
     if (blackout) blackout.style.display = 'none';
     
     const centerStatus = document.getElementById('cctv-center-status-ep8');
     if (centerStatus) {
+        centerStatus.style.display = 'none';
         centerStatus.style.borderColor = '#00ff00';
         centerStatus.style.color = '#00ff00';
     }
     
+    setCAMTitleEP8("CH 01: CAM-LOBBY [워터파크 로비 뷰] - 입장 및 전자 손목 밴드 착용");
     updateCCTVHUDEP8();
+    
     const logsContainer = document.getElementById('cctv-logs-ep8');
     if (logsContainer) {
-        logsContainer.innerHTML = '<div style="color: #888;">[SYSTEM] 유성 워터파크 중앙 관제 시스템 v8.00 로드 완료...</div>';
+        logsContainer.innerHTML = '<div style="color: #888;">[SYSTEM] 유성 워터파크 중앙 통제실 및 시설 관제 콘솔 로드 완료...</div>';
     }
-    addCCTVLogEP8("[입장] 전자 손목 밴드를 착용하고 워터파크에 입장했습니다.");
+    addCCTVLogEP8("[10:00:00] 전자 손목 밴드 발급 완료. 유성 워터파크 내부에 입장했습니다. 폐장 전까지 생존하십시오.");
     
-    playCCTVVideoEP8('waterpark_idle.mp4', '[FEED: WATERPARK_POOL_IDLE]');
+    playCCTVVideoEP8('movies/ep8_idle.mp4', '[FEED: CAM-LOBBY LOBBY_ENTRANCE_IDLE]');
     clearCCTVChoicesEP8();
-    
-    cctvTimerEP8 = setInterval(tickCCTVGameEP8, 500);
     initCCTVNoiseEP8();
+    
+    // Automatically transition to Stage 1 after initial briefing
+    cctvTimerEP8 = setTimeout(() => {
+        if (cctvGameStateEP8 === 'idle') {
+            triggerEventA_EP8();
+        }
+    }, 2800);
 }
 
 function stopCCTVGameEP8() {
     if (cctvTimerEP8) {
+        clearTimeout(cctvTimerEP8);
         clearInterval(cctvTimerEP8);
         cctvTimerEP8 = null;
     }
@@ -4210,57 +4376,18 @@ function playCCTVVideoEP8(src, fallbackText) {
     }
 }
 
-function tickCCTVGameEP8() {
-    cctvMinuteEP8 += 5;
-    if (cctvMinuteEP8 >= 60) {
-        cctvMinuteEP8 = 0;
-        cctvHourEP8++;
+function addCCTVLogEP8(text, isWarning = false) {
+    const container = document.getElementById('cctv-logs-ep8');
+    if (!container) return;
+    const entry = document.createElement('div');
+    entry.style.marginBottom = '4px';
+    entry.style.color = isWarning ? '#ff3333' : '#00ff00';
+    if (isWarning) {
+        entry.style.fontWeight = 'bold';
     }
-    
-    updateCCTVHUDEP8();
-    const timeStr = formatGameTime(cctvHourEP8, cctvMinuteEP8);
-    
-    if (timeStr === '11:30') {
-        triggerEventA_EP8();
-    } else if (timeStr === '13:40') {
-        triggerEventB_EP8();
-    } else if (timeStr === '15:20') {
-        triggerEventC_EP8();
-    } else if (timeStr === '18:00') {
-        triggerEventD_EP8();
-    }
-}
-
-function updateCCTVHUDEP8() {
-    const timeDisplay = document.getElementById('cctv-time-display-ep8');
-    const stateDisplay = document.getElementById('cctv-state-display-ep8');
-    if (timeDisplay) {
-        timeDisplay.textContent = `PARK TIME: ${formatGameTime(cctvHourEP8, cctvMinuteEP8)}`;
-    }
-    if (stateDisplay) {
-        if (cctvGameStateEP8 === 'idle') {
-            stateDisplay.textContent = 'STATUS: NORMAL';
-            stateDisplay.style.color = '#00ff00';
-        } else if (cctvGameStateEP8 === 'death') {
-            stateDisplay.textContent = 'STATUS: ERROR - FATAL';
-            stateDisplay.style.color = '#ff0000';
-        } else {
-            stateDisplay.textContent = 'STATUS: WARNING - ANOMALY';
-            stateDisplay.style.color = '#ffff00';
-        }
-    }
-}
-
-function addCCTVLogEP8(message, isWarning = false) {
-    const logsContainer = document.getElementById('cctv-logs-ep8');
-    if (!logsContainer) return;
-    const timeStr = formatGameTime(cctvHourEP8, cctvMinuteEP8);
-    const color = isWarning ? '#ff0000' : '#00ff00';
-    const logDiv = document.createElement('div');
-    logDiv.style.color = color;
-    logDiv.textContent = `[${timeStr}] ${message}`;
-    logsContainer.appendChild(logDiv);
-    logsContainer.scrollTop = logsContainer.scrollHeight;
+    entry.textContent = text;
+    container.appendChild(entry);
+    container.scrollTop = container.scrollHeight;
 }
 
 function clearCCTVChoicesEP8() {
@@ -4293,35 +4420,45 @@ function setCCTVChoicesEP8(choices) {
 }
 
 function triggerEventA_EP8() {
-    clearInterval(cctvTimerEP8);
+    if (cctvTimerEP8) clearTimeout(cctvTimerEP8);
+    ep8Stage = 1;
     cctvGameStateEP8 = 'event_A';
+    cctvTimeStrEP8 = "TIME: 11:30:15 (메가 슬라이드)";
     updateCCTVHUDEP8();
+    setCAMTitleEP8("CH 02: CAM-SLIDE [메가 슬라이드 뷰] - 상황 A (워터 슬라이드 곡선 초과)");
     
-    playCCTVVideoEP8('waterpark_event_A.mp4', '[FEED: MEGA_SLIDE_4TH_CURVE]');
-    addCCTVLogEP8("[이벤트 A: 메가 슬라이드] 3번째 곡선을 지났으나 끝나지 않고 '네 번째 곡선'이 나타납니다.", true);
+    playCCTVVideoEP8('movies/ep8_event_slide.mp4', '[FEED: CAM-SLIDE MEGA_SLIDE_4TH_CURVE]');
+    addCCTVLogEP8("[11:30:15] 경고: 슬라이드를 하강하는 도중 정규 3개 곡선을 넘어 의문의 '네 번째 곡선' 구간에 진입했습니다.", true);
     
     setCCTVChoicesEP8([
         {
-            text: "[1] 스피드를 즐기며 끝까지 미끄러져 내려간다",
+            text: "[선택지 1] 스피드를 즐기며 아무 생각 없이 끝까지 미끄러져 내려간다.",
             action: () => {
-                addCCTVLogEP8("[사망] 도착 지점이 아닌 지하 수술실로 직행하여 마취 없이 개복되었습니다.", true);
-                triggerDeathEP8("슬라이드 이탈 실패", "지하 수술실 직행 및 무마취 개복");
+                addCCTVLogEP8("[사망] 슬라이드 끝 지하 수술실로 직행하여 마취 없이 개복 사망했습니다.", true);
+                triggerDeathEP8("지하 수술실 직행", "슬라이드 끝 지하 수술실로 직행하여 마취 없이 개복 사망했습니다.");
             }
         },
         {
-            text: "[2] 팔다리를 벌려 벽에 몸을 마찰시켜 멈춘 뒤 비상 버튼 누름",
+            text: "[선택지 2] 즉시 양팔을 벌려 벽면에 밀착해 멈추고 밴드의 비상 호출 버튼을 누른다.",
             action: () => {
                 clearCCTVChoicesEP8();
                 const blackout = document.getElementById('cctv-blackout-ep8');
                 if (blackout) blackout.style.display = 'flex';
-                addCCTVLogEP8("비상 정지 후 특수 구조 요원 견인 중...", false);
+                addCCTVLogEP8("[대응] 비상 정지 후 밴드 비상 버튼 작동, 특수 구조 요원 견인 중...", false);
                 
                 setTimeout(() => {
                     if (blackout) blackout.style.display = 'none';
-                    addCCTVLogEP8("[생존] 슬라이드 점검구를 통해 안전 구역으로 견인되었습니다.", false);
+                    addCCTVLogEP8("[생존] 비상 정지 후 특수 구조 요원에 의해 안전 구역으로 견인되었습니다.", false);
                     cctvGameStateEP8 = 'idle';
-                    playCCTVVideoEP8('waterpark_idle.mp4', '[FEED: WATERPARK_POOL_IDLE]');
-                    cctvTimerEP8 = setInterval(tickCCTVGameEP8, 500);
+                    setCAMTitleEP8("CH 01: CAM-LOBBY [워터파크 로비 뷰] - 안전 구역 복귀 및 휴식");
+                    cctvTimeStrEP8 = "TIME: 12:30:00 (안전 구역)";
+                    updateCCTVHUDEP8();
+                    playCCTVVideoEP8('movies/ep8_idle.mp4', '[FEED: CAM-LOBBY LOBBY_ENTRANCE_IDLE]');
+                    cctvTimerEP8 = setTimeout(() => {
+                        if (cctvGameStateEP8 === 'idle') {
+                            triggerEventB_EP8();
+                        }
+                    }, 2500);
                 }, 2000);
             }
         }
@@ -4329,81 +4466,104 @@ function triggerEventA_EP8() {
 }
 
 function triggerEventB_EP8() {
-    clearInterval(cctvTimerEP8);
+    if (cctvTimerEP8) clearTimeout(cctvTimerEP8);
+    ep8Stage = 2;
     cctvGameStateEP8 = 'event_B';
+    cctvTimeStrEP8 = "TIME: 13:40:50 (푸드코트)";
     updateCCTVHUDEP8();
+    setCAMTitleEP8("CH 03: CAM-FOOD [푸드코트 뷰] - 상황 B (푸드코트 직원 조우)");
     
-    playCCTVVideoEP8('waterpark_event_B.mp4', '[FEED: FOOD_COURT_QUESTION]');
-    addCCTVLogEP8("[이벤트 B: 푸드코트 점심] 보라색 음식이 나오고 직원이 묻습니다. \"손님, 언제 수술이십니까?\"", true);
+    playCCTVVideoEP8('movies/ep8_event_food.mp4', '[FEED: CAM-FOOD FOOD_COURT_QUESTION]');
+    addCCTVLogEP8("[13:40:50] 경고: 테이블에 앉자 직원이 다가와 불명확한 음식을 내려놓으며 \"손님, 언제 수술이십니까?\"라고 묻습니다.", true);
     
     setCCTVChoicesEP8([
         {
-            text: "[1] \"저 수술 환자 아닌데요? 취소해 주세요.\" 따진다",
+            text: "[선택지 1] \"나 환자 아닌데 무슨 소리냐\"며 거칠게 항의한다.",
             action: () => {
-                addCCTVLogEP8("[사망] 불응 환자로 분류되어 특별 관리실로 끌려갔습니다.", true);
-                triggerDeathEP8("지시 불응 및 항의", "특별 관리실 강제 이송");
+                addCCTVLogEP8("[사망] 불응 환자로 분류되어 특별 관리실로 강제 연행되었습니다.", true);
+                triggerDeathEP8("불응 환자 분류", "불응 환자로 분류되어 특별 관리실로 강제 연행되었습니다.");
             }
         },
         {
-            text: "[2] \"오늘은 아닙니다.\" 단호하고 침착하게 답한다",
+            text: "[선택지 2] 침착한 표정을 유지하며 \"오늘은 아닙니다\"라고 단호하게 답한다.",
             action: () => {
                 clearCCTVChoicesEP8();
-                addCCTVLogEP8("[생존] 직원이 고개를 끄덕이고 조용히 물러났습니다.", false);
+                addCCTVLogEP8("[생존] 직원이 고개를 끄덕이고 조용히 자리를 떠났습니다.", false);
                 cctvGameStateEP8 = 'idle';
-                playCCTVVideoEP8('waterpark_idle.mp4', '[FEED: WATERPARK_POOL_IDLE]');
-                cctvTimerEP8 = setInterval(tickCCTVGameEP8, 500);
+                setCAMTitleEP8("CH 01: CAM-LOBBY [워터파크 로비 뷰] - 오후 물놀이 구역");
+                cctvTimeStrEP8 = "TIME: 14:30:00 (오후 구역 이동)";
+                updateCCTVHUDEP8();
+                playCCTVVideoEP8('movies/ep8_idle.mp4', '[FEED: CAM-LOBBY LOBBY_ENTRANCE_IDLE]');
+                cctvTimerEP8 = setTimeout(() => {
+                    if (cctvGameStateEP8 === 'idle') {
+                        triggerEventC_EP8();
+                    }
+                }, 2500);
             }
         }
     ]);
 }
 
 function triggerEventC_EP8() {
-    clearInterval(cctvTimerEP8);
+    if (cctvTimerEP8) clearTimeout(cctvTimerEP8);
+    ep8Stage = 3;
     cctvGameStateEP8 = 'event_C';
+    cctvTimeStrEP8 = "TIME: 15:20:00 (키즈존 복도)";
     updateCCTVHUDEP8();
+    setCAMTitleEP8("CH 04: CAM-KIDS [키즈존 복도 뷰] - 상황 C (단독 배회 캐릭터)");
     
-    playCCTVVideoEP8('waterpark_event_C.mp4', '[FEED: KIDS_ZONE_MASCOT]');
-    addCCTVLogEP8("[이벤트 C: 키즈존 단독 캐릭터] 인솔 요원 없이 혼자 휘청거리며 걸어오는 거대한 캐릭터 인형을 발견했습니다.", true);
+    playCCTVVideoEP8('movies/ep8_event_mascot.mp4', '[FEED: CAM-KIDS KIDS_ZONE_MASCOT]');
+    addCCTVLogEP8("[15:20:00] 경고: 인솔 요원 없이 기괴한 비율의 인형 탈 캐릭터가 복도를 홀로 휘청거리며 다가옵니다.", true);
     
     setCCTVChoicesEP8([
         {
-            text: "[1] 사진을 찍기 위해 다가가서 손을 흔든다",
+            text: "[선택지 1] 아이와 놀아주기 위해 반갑게 손을 흔들며 다가간다.",
             action: () => {
-                addCCTVLogEP8("[사망] 캐릭터 내부로 끌려들어가 폐장 후 으깨진 채 발견되었습니다.", true);
-                triggerDeathEP8("인형 개체 접근", "캐릭터 내부 압사");
+                addCCTVLogEP8("[사망] 캐릭터 내부의 틈새로 끌려 들어가 형태를 알아볼 수 없게 훼손되었습니다.", true);
+                triggerDeathEP8("캐릭터 개체 접근", "캐릭터 내부의 틈새로 끌려 들어가 형태를 알아볼 수 없게 훼손되었습니다.");
             }
         },
         {
-            text: "[2] 등을 보이지 않고 시선 유지하며 인파 쪽으로 뒷걸음질",
+            text: "[선택지 2] 절대 등을 보이지 않은 채 시선을 유지하며 인파 속으로 뒷걸음질 친다.",
             action: () => {
                 clearCCTVChoicesEP8();
-                addCCTVLogEP8("[생존] 인파 속으로 섞여 들어가며 캐릭터의 추적을 따돌렸습니다.", false);
+                addCCTVLogEP8("[생존] 인파 속에 섞여 들어가 캐릭터의 시야 추적을 따돌렸습니다.", false);
                 cctvGameStateEP8 = 'idle';
-                playCCTVVideoEP8('waterpark_idle.mp4', '[FEED: WATERPARK_POOL_IDLE]');
-                cctvTimerEP8 = setInterval(tickCCTVGameEP8, 500);
+                setCAMTitleEP8("CH 01: CAM-LOBBY [워터파크 로비 뷰] - 폐장 시간 대기");
+                cctvTimeStrEP8 = "TIME: 17:30:00 (폐장 임박)";
+                updateCCTVHUDEP8();
+                playCCTVVideoEP8('movies/ep8_idle.mp4', '[FEED: CAM-LOBBY LOBBY_ENTRANCE_IDLE]');
+                cctvTimerEP8 = setTimeout(() => {
+                    if (cctvGameStateEP8 === 'idle') {
+                        triggerEventD_EP8();
+                    }
+                }, 2500);
             }
         }
     ]);
 }
 
 function triggerEventD_EP8() {
-    clearInterval(cctvTimerEP8);
+    if (cctvTimerEP8) clearTimeout(cctvTimerEP8);
+    ep8Stage = 4;
     cctvGameStateEP8 = 'event_D';
+    cctvTimeStrEP8 = "TIME: 18:00:00 (폐장 정산)";
     updateCCTVHUDEP8();
+    setCAMTitleEP8("CH 05: CAM-GATE [정산 게이트 뷰] - 상황 D (폐장 정산 및 최종 퇴장)");
     
-    playCCTVVideoEP8('waterpark_event_D.mp4', '[FEED: SETTLEMENT_COUNTER]');
-    addCCTVLogEP8("[폐장 및 정산] 오후 6시 폐장. 밴드 정산소에 쓰지도 않은 80만 원이 청구되어 있습니다.", true);
+    playCCTVVideoEP8('movies/ep8_event_exit.mp4', '[FEED: CAM-GATE SETTLEMENT_COUNTER]');
+    addCCTVLogEP8("[18:00:00] 폐장 안내 방송 송출. 밴드 정산소 화면에 쓰지도 않은 80만 원의 과다 요금이 청구되어 있습니다.", true);
     
     setCCTVChoicesEP8([
         {
-            text: "[1] \"이거 잘못 찍힌 거다!\" 환불 및 재정산 요구",
+            text: "[선택지 1] \"이거 명백한 전산 오류다!\"라며 직원에게 강력하게 환불을 요구한다.",
             action: () => {
-                addCCTVLogEP8("[사망] 게이트가 닫히고 분실물 센터로 강제 이송되었습니다.", true);
-                triggerDeathEP8("정산 이의 제기", "분실물 센터 강제 이송");
+                addCCTVLogEP8("[사망] 게이트가 차단되며 지하 분실물 수습 센터로 강제 이송되었습니다.", true);
+                triggerDeathEP8("정산 이의 제기", "게이트가 차단되며 지하 분실물 수습 센터로 강제 이송되었습니다.");
             }
         },
         {
-            text: "[2] 이의 없이 카드로 전액 결제 후 밴드 반납",
+            text: "[선택지 2] 청구 금액에 이의를 제기하지 않고 카드로 전액 결제 후 밴드를 반납한다.",
             action: () => {
                 clearCCTVChoicesEP8();
                 triggerGameClearEP8();
@@ -4413,13 +4573,18 @@ function triggerEventD_EP8() {
 }
 
 function triggerDeathEP8(reason, actionDesc) {
+    if (cctvTimerEP8) clearTimeout(cctvTimerEP8);
     cctvGameStateEP8 = 'death';
     updateCCTVHUDEP8();
     
     const video = document.getElementById('cctv-video-ep8');
     const centerStatus = document.getElementById('cctv-center-status-ep8');
     
-    if (video) video.style.display = 'none';
+    if (video) {
+        video.pause();
+        video.style.display = 'none';
+    }
+    
     if (centerStatus) {
         centerStatus.style.display = 'block';
         centerStatus.style.borderColor = '#ff0000';
@@ -4429,7 +4594,7 @@ function triggerDeathEP8(reason, actionDesc) {
             <div style="font-size: 11px; line-height: 1.5; color: #ff3333; font-family: monospace; text-align: left; word-break: keep-all;">
                 [ERROR] 워터파크 입장객 생체 신호 소멸.<br>
                 [원인] ${reason || '워터파크 안전 수칙 위반'}.<br>
-                [조치] ${actionDesc || '지하 폐기물실 유해 수거'}.
+                [결과] ${actionDesc || '지하 폐기물실 유해 수거'}.
             </div>
         `;
     }
@@ -4449,24 +4614,47 @@ function triggerDeathEP8(reason, actionDesc) {
 }
 
 function triggerGameClearEP8() {
+    if (cctvTimerEP8) clearTimeout(cctvTimerEP8);
+    ep8Stage = 5;
     cctvGameStateEP8 = 'win';
+    cctvTimeStrEP8 = "TIME: 18:10:00 (탈출 완료)";
     updateCCTVHUDEP8();
     
-    addCCTVLogEP8("[GOOD ENDING] 회전문이 열리며 워터파크 정문 밖으로 무사히 빠져나왔습니다. 생환 성공!", false);
-    playCCTVVideoEP8('waterpark_idle.mp4', '[SYSTEM: ESCAPE COMPLETE]');
+    setCAMTitleEP8("CH 05: CAM-GATE [정산 게이트 뷰] - 탈출 성공 (정문 퇴장)");
+    addCCTVLogEP8("[GOOD ENDING] 회전문이 열리며 워터파크 정문 밖으로 무사히 탈출했습니다! 금일 생환 완료!", false);
+    playCCTVVideoEP8('movies/ep8_idle.mp4', '[SYSTEM: ESCAPE COMPLETE]');
     clearCCTVChoicesEP8();
     
-    openDarkWebAlert("🏆 [무사 퇴장 성공]<br>축하합니다! 유성 워터파크에서 무사히 정문을 빠져나와 생환에 성공하셨습니다.");
+    const centerStatus = document.getElementById('cctv-center-status-ep8');
+    if (centerStatus) {
+        centerStatus.style.display = 'block';
+        centerStatus.style.borderColor = '#00ff00';
+        centerStatus.style.color = '#00ff00';
+        centerStatus.innerHTML = `
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #00ff00;">🏆 ESCAPE COMPLETE 🏆</div>
+            <div style="font-size: 11px; line-height: 1.5; color: #00ff88; font-family: monospace; text-align: left; word-break: keep-all;">
+                [SUCCESS] 유성 워터파크 시설 관제 수칙 준수 완료.<br>
+                [상태] 전자 손목 밴드 반납 및 정문 회전문 통과 확인.<br>
+                [조치] 일반 현실 구역으로 안전 복귀. 워터파크 재방문을 삼가십시오.
+            </div>
+        `;
+    }
+    
+    openDarkWebAlert("🏆 [유성 워터파크 무사 탈출]<br>축하합니다! 시설 관제 수칙을 철저히 준수하여 지하 수술실과 인형 탈의 위협을 뚫고 무사히 탈출하셨습니다!");
 }
 
 // ==========================================
-// CCTV Gaming Engine (EP.09 안전 안내 문자 - FINAL)
+// CCTV & Mobile Interactive Engine (EP.09 안전 안내 문자)
 // ==========================================
-let cctvHourEP9 = 0;
-let cctvMinuteEP9 = 0;
 let cctvTimerEP9 = null;
-let cctvGameStateEP9 = 'idle';
 let cctvNoiseAnimIdEP9 = null;
+
+// Mobile Phone State
+let phoneCurrentPhase = 1;
+let phoneTimer = null;
+let phoneCallCountdown = 5;
+let phoneCountdownInterval = null;
+let creepyFaceAnimId = null;
 
 function initCCTVNoiseEP9() {
     const canvas = document.getElementById('cctv-noise-canvas-ep9');
@@ -4498,392 +4686,483 @@ function initCCTVNoiseEP9() {
 
 function startCCTVGameEP9() {
     stopCCTVGameEP9();
-    cctvHourEP9 = 0;
-    cctvMinuteEP9 = 0;
-    cctvGameStateEP9 = 'idle';
-    
-    const blackout = document.getElementById('cctv-blackout-ep9');
-    if (blackout) blackout.style.display = 'none';
-    
-    const centerStatus = document.getElementById('cctv-center-status-ep9');
-    if (centerStatus) {
-        centerStatus.style.borderColor = '#00ff00';
-        centerStatus.style.color = '#00ff00';
-    }
-    
-    updateCCTVHUDEP9();
-    const logsContainer = document.getElementById('cctv-logs-ep9');
-    if (logsContainer) {
-        logsContainer.innerHTML = '<div style="color: #888;">[SYSTEM] 스마트폰 통신망 해킹 감시 콘솔 v9.99 로드 완료...</div>';
-    }
-    addCCTVLogEP9("[오염 감지] 단말기가 특별재난 관리본부 관리 대상 번호로 자동 지정되었습니다.");
-    
-    playCCTVVideoEP9('sms_idle.mp4', '[FEED: CELLULAR_LINK_IDLE]');
-    clearCCTVChoicesEP9();
-    
-    cctvTimerEP9 = setInterval(tickCCTVGameEP9, 400);
-    initCCTVNoiseEP9();
-}
-
-function stopCCTVGameEP9() {
-    if (cctvTimerEP9) {
-        clearInterval(cctvTimerEP9);
-        cctvTimerEP9 = null;
-    }
-    const video = document.getElementById('cctv-video-ep9');
-    if (video) video.pause();
-    if (cctvNoiseAnimIdEP9) cancelAnimationFrame(cctvNoiseAnimIdEP9);
-}
-
-function playCCTVVideoEP9(src, fallbackText) {
-    const video = document.getElementById('cctv-video-ep9');
-    const centerStatus = document.getElementById('cctv-center-status-ep9');
-    const offlineBg = document.getElementById('cctv-offline-bg-ep9');
-    
-    if (video) {
-        video.muted = true;
-        video.defaultMuted = true;
-        video.playsInline = true;
-        video.loop = true;
-        video.style.zIndex = '2';
-        video.style.display = 'block';
-        if (video.setAttribute) {
-            video.setAttribute('muted', '');
-            video.setAttribute('playsinline', '');
-            video.setAttribute('autoplay', '');
-        }
-        
-        if (offlineBg) offlineBg.style.display = 'none';
-        if (centerStatus) centerStatus.style.display = 'none';
-        
-        video.onloadeddata = () => {
-            video.style.display = 'block';
-            if (offlineBg) offlineBg.style.display = 'none';
-            if (centerStatus) centerStatus.style.display = 'none';
-        };
-        video.onerror = () => {
-            console.warn('playCCTVVideoEP9 video load error:', src);
-            video.style.display = 'none';
-            if (offlineBg) offlineBg.style.display = 'block';
-            if (centerStatus) {
-                centerStatus.style.display = 'block';
-                centerStatus.textContent = fallbackText || 'FEED SIGNAL LOST';
-            }
-        };
-
-        const currentSrc = video.getAttribute('src') || video.src || '';
-        if (!currentSrc.endsWith(src)) {
-            video.src = src;
-        }
-        
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                video.style.display = 'block';
-                if (offlineBg) offlineBg.style.display = 'none';
-                if (centerStatus) centerStatus.style.display = 'none';
-            }).catch(err => {
-                console.warn('playCCTVVideoEP9 autoplay note:', err);
-                video.muted = true;
-                video.play().catch(retryErr => {
-                    console.warn('playCCTVVideoEP9 retry note:', retryErr);
-                    if (fallbackText) {
-                        video.style.display = 'none';
-                        if (offlineBg) offlineBg.style.display = 'block';
-                        if (centerStatus) {
-                            centerStatus.style.display = 'block';
-                            centerStatus.textContent = fallbackText;
-                        }
-                    }
-                });
-            });
-        }
-    }
-}
-
-function tickCCTVGameEP9() {
-    cctvMinuteEP9 += 2;
-    if (cctvMinuteEP9 >= 60) {
-        cctvMinuteEP9 = 0;
-        cctvHourEP9++;
-    }
-    
-    updateCCTVHUDEP9();
-    const timeStr = formatGameTime(cctvHourEP9, cctvMinuteEP9);
-    
-    if (timeStr === '00:14') {
-        triggerEventA_EP9();
-    } else if (timeStr === '01:40') {
-        triggerEventB_EP9();
-    } else if (timeStr === '02:50') {
-        triggerEventC_EP9();
-    } else if (timeStr === '04:10') {
-        triggerEventD_EP9();
-    } else if (timeStr === '05:30') {
-        triggerEventE_EP9();
-    }
-}
-
-function updateCCTVHUDEP9() {
-    const timeDisplay = document.getElementById('cctv-time-display-ep9');
-    const stateDisplay = document.getElementById('cctv-state-display-ep9');
-    if (timeDisplay) {
-        timeDisplay.textContent = `TIME: ${formatGameTime(cctvHourEP9, cctvMinuteEP9)}`;
-    }
-    if (stateDisplay) {
-        if (cctvGameStateEP9 === 'idle') {
-            stateDisplay.textContent = 'STATUS: NORMAL';
-            stateDisplay.style.color = '#00ff00';
-        } else if (cctvGameStateEP9 === 'death') {
-            stateDisplay.textContent = 'STATUS: ERROR - FATAL';
-            stateDisplay.style.color = '#ff0000';
-        } else {
-            stateDisplay.textContent = 'STATUS: WARNING - ANOMALY';
-            stateDisplay.style.color = '#ffff00';
-        }
-    }
-}
-
-function addCCTVLogEP9(message, isWarning = false) {
-    const logsContainer = document.getElementById('cctv-logs-ep9');
-    if (!logsContainer) return;
-    const timeStr = formatGameTime(cctvHourEP9, cctvMinuteEP9);
-    const color = isWarning ? '#ff0000' : '#00ff00';
-    const logDiv = document.createElement('div');
-    logDiv.style.color = color;
-    logDiv.textContent = `[${timeStr}] ${message}`;
-    logsContainer.appendChild(logDiv);
-    logsContainer.scrollTop = logsContainer.scrollHeight;
-}
-
-function clearCCTVChoicesEP9() {
-    const container = document.getElementById('cctv-choices-container-ep9');
-    if (container) {
-        container.innerHTML = '<div style="color: #888; font-size: 11px;">[비정상 상황 발생 시 대응 선택지가 활성화됩니다]</div>';
-    }
-}
-
-function setCCTVChoicesEP9(choices) {
-    const container = document.getElementById('cctv-choices-container-ep9');
-    if (!container) return;
-    container.innerHTML = '';
-    
-    choices.forEach(ch => {
-        const btn = document.createElement('button');
-        btn.textContent = ch.text;
-        
-        btn.style.backgroundColor = '#111';
-        btn.style.color = '#ff0000';
-        btn.style.border = '1px solid #ff0000';
-        btn.style.fontFamily = 'monospace';
-        btn.style.fontSize = '11px';
-        btn.style.padding = '4px 12px';
-        btn.style.cursor = 'pointer';
-        
-        btn.addEventListener('click', ch.action);
-        container.appendChild(btn);
-    });
-}
-
-function triggerEventA_EP9() {
-    clearInterval(cctvTimerEP9);
-    cctvGameStateEP9 = 'event_A';
-    updateCCTVHUDEP9();
-    
-    playCCTVVideoEP9('sms_event_A.mp4', '[FEED: MISSED_CALL_SMS]');
-    addCCTVLogEP9("[이벤트 A: 부재중 전화] [010-XXXX-XXXX 부재중 1건] 문자가 수신되었습니다.", true);
-    
-    setCCTVChoicesEP9([
-        {
-            text: "[1] 모르는 번호이므로 문자를 삭제하고 무시",
-            action: () => {
-                addCCTVLogEP9("[사망] 발신 기록 미생성으로 익일 원인 불명의 심장마비로 사망했습니다.", true);
-                triggerDeathEP9("발신 로그 미생성", "익일 원인 불명의 심장마비 사망");
-            }
-        },
-        {
-            text: "[2] 즉시 전화를 걸고 연결음 넘어가자마자 바로 통화 종료",
-            action: () => {
-                clearCCTVChoicesEP9();
-                addCCTVLogEP9("[생존] 발신 로그가 정상 등록되어 사망 플래그를 회피했습니다.", false);
-                cctvGameStateEP9 = 'idle';
-                playCCTVVideoEP9('sms_idle.mp4', '[FEED: CELLULAR_LINK_IDLE]');
-                cctvTimerEP9 = setInterval(tickCCTVGameEP9, 400);
-            }
-        }
-    ]);
-}
-
-function triggerEventB_EP9() {
-    clearInterval(cctvTimerEP9);
-    cctvGameStateEP9 = 'event_B';
-    updateCCTVHUDEP9();
-    
-    playCCTVVideoEP9('sms_event_B.mp4', '[FEED: VIDEO_CALL_GIANT_EYES]');
-    addCCTVLogEP9("[이벤트 B: 영상 통화] 화면 속에 얼굴을 바짝 들이민 눈이 거대한 남성이 노려보고 있습니다.", true);
-    
-    setCCTVChoicesEP9([
-        {
-            text: "[1] 무서워서 통화 거절 버튼을 누르고 화면을 엎어둠",
-            action: () => {
-                addCCTVLogEP9("[사망] 시선을 돌린 대가로 온 사방에서 남자의 얼굴이 보이다 쇼크사했습니다.", true);
-                triggerDeathEP9("시선 회피 및 통화 거절", "온 사방 환시 및 쇼크사");
-            }
-        },
-        {
-            text: "[2] 받지도 끊지도 않은 채 남자의 눈을 끝까지 노려본다",
-            action: () => {
-                clearCCTVChoicesEP9();
-                addCCTVLogEP9("[생존] 남자가 기괴한 미소를 지으며 스스로 통화 신호를 끊었습니다.", false);
-                cctvGameStateEP9 = 'idle';
-                playCCTVVideoEP9('sms_idle.mp4', '[FEED: CELLULAR_LINK_IDLE]');
-                cctvTimerEP9 = setInterval(tickCCTVGameEP9, 400);
-            }
-        }
-    ]);
-}
-
-function triggerEventC_EP9() {
-    clearInterval(cctvTimerEP9);
-    cctvGameStateEP9 = 'event_C';
-    updateCCTVHUDEP9();
-    
-    playCCTVVideoEP9('sms_event_C.mp4', '[FEED: SCREAMING_RINGTONE]');
-    addCCTVLogEP9("[이벤트 C: 비명 벨소리] 스마트폰 스피커에서 처절한 비명 소리가 벨소리로 울려 퍼집니다.", true);
-    
-    setCCTVChoicesEP9([
-        {
-            text: "[1] 소리가 끔찍해 첫 번째 비명이 울리자마자 거절 누름",
-            action: () => {
-                addCCTVLogEP9("[사망] 고막이 완전히 파열되고 개체의 표적이 되어 사망했습니다.", true);
-                triggerDeathEP9("타이밍 불일치 거절", "고막 파열 및 개체 표적화 사망");
-            }
-        },
-        {
-            text: "[2] 비명 수를 세어, 다섯 번째 비명이 끊기는 순간 거절",
-            action: () => {
-                clearCCTVChoicesEP9();
-                const blackout = document.getElementById('cctv-blackout-ep9');
-                if (blackout) blackout.style.display = 'flex';
-                addCCTVLogEP9("비명 5회 카운트 및 수신 거절 성공...", false);
-                
-                setTimeout(() => {
-                    if (blackout) blackout.style.display = 'none';
-                    addCCTVLogEP9("[생존] 정확한 타이밍 제어로 통신 오염을 물리쳤습니다.", false);
-                    cctvGameStateEP9 = 'idle';
-                    playCCTVVideoEP9('sms_idle.mp4', '[FEED: CELLULAR_LINK_IDLE]');
-                    cctvTimerEP9 = setInterval(tickCCTVGameEP9, 400);
-                }, 2000);
-            }
-        }
-    ]);
-}
-
-function triggerEventD_EP9() {
-    clearInterval(cctvTimerEP9);
-    cctvGameStateEP9 = 'event_D';
-    updateCCTVHUDEP9();
-    
-    playCCTVVideoEP9('sms_event_D.mp4', '[FEED: HEADQUARTERS_IMPERSONATION]');
-    addCCTVLogEP9("[이벤트 D: 본부 사칭 전화] [0050-0] \"본부 요원입니다. 구출을 위해 현재 계신 위치를 말씀해 주십시오\"", true);
-    
-    setCCTVChoicesEP9([
-        {
-            text: "[1] 안도하며 현재 방 안 상세 주소를 불러준다",
-            action: () => {
-                addCCTVLogEP9("[사망] 본부를 사칭한 테러리스트 개체들이 진입하여 몰살당했습니다.", true);
-                triggerDeathEP9("사칭 세력에 위치 누설", "테러리스트 개체 난입 및 몰살");
-            }
-        },
-        {
-            text: "[2] 위치를 묻자마자 가짜임을 인지하고 즉시 끊어 차단",
-            action: () => {
-                clearCCTVChoicesEP9();
-                addCCTVLogEP9("[생존] 사칭 세력의 역추적을 차단했습니다.", false);
-                cctvGameStateEP9 = 'idle';
-                playCCTVVideoEP9('sms_idle.mp4', '[FEED: CELLULAR_LINK_IDLE]');
-                cctvTimerEP9 = setInterval(tickCCTVGameEP9, 400);
-            }
-        }
-    ]);
-}
-
-function triggerEventE_EP9() {
-    clearInterval(cctvTimerEP9);
-    cctvGameStateEP9 = 'event_E';
-    updateCCTVHUDEP9();
-    
-    playCCTVVideoEP9('sms_event_E.mp4', '[FEED: 4X_AUTH_CODE_FLOOD]');
-    addCCTVLogEP9("[FINAL: 인증 번호 전송] 6자리 본인 인증 문자가 1초 간격으로 연속 4번 쏟아집니다.", true);
-    
-    setCCTVChoicesEP9([
-        {
-            text: "[1] 가장 최근에 온 네 번째 인증 번호를 입력",
-            action: () => {
-                addCCTVLogEP9("[사망] 오인증으로 긴급 구조 프로토콜이 파기되었습니다.", true);
-                triggerDeathEP9("오인증 번호 입력", "긴급 구조 프로토콜 파기 및 오염");
-            }
-        },
-        {
-            text: "[2] '세 번째로 수신된 인증 번호'를 정확히 입력",
-            action: () => {
-                clearCCTVChoicesEP9();
-                triggerGameClearEP9();
-            }
-        }
-    ]);
-}
-
-function triggerDeathEP9(reason, actionDesc) {
-    cctvGameStateEP9 = 'death';
-    updateCCTVHUDEP9();
     
     const video = document.getElementById('cctv-video-ep9');
-    const centerStatus = document.getElementById('cctv-center-status-ep9');
-    
     if (video) video.style.display = 'none';
+    
+    const offlineBg = document.getElementById('cctv-offline-bg-ep9');
+    if (offlineBg) offlineBg.style.display = 'block';
+    
+    const centerStatus = document.getElementById('cctv-center-status-ep9');
     if (centerStatus) {
         centerStatus.style.display = 'block';
         centerStatus.style.borderColor = '#ff0000';
         centerStatus.style.color = '#ff0000';
         centerStatus.innerHTML = `
-            <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #ff0000; animation: blink 0.5s infinite;">☠️ SYSTEM FAILURE ☠️</div>
-            <div style="font-size: 11px; line-height: 1.5; color: #ff3333; font-family: monospace; text-align: left; word-break: keep-all;">
-                [ERROR] 단말기 사용자 통신 신호 소멸.<br>
-                [원인] ${reason || '재난문자 수칙 위반으로 인한 통신 오염'}.<br>
-                [조치] ${actionDesc || '전자기기 강제 포맷 및 기기 격리'}.
-            </div>
+            <div style="font-size: 15px; font-weight: bold; margin-bottom: 6px; animation: blink 0.8s infinite;">⚠️ [CCTV SIGNAL LOST] ⚠️</div>
+            <div style="font-size: 11px; color: #ff5555; line-height: 1.4;">고정 회선 연결 두절<br>개인 단말기(PDA) 우회 필요</div>
         `;
     }
     
-    setCCTVChoicesEP9([
-        {
-            text: "재시도 (Retry)",
-            action: () => {
-                if (centerStatus) {
-                    centerStatus.style.borderColor = '#00ff00';
-                    centerStatus.style.color = '#00ff00';
-                }
-                startCCTVGameEP9();
-            }
-        }
-    ]);
+    const timeDisplay = document.getElementById('cctv-time-display-ep9');
+    if (timeDisplay) timeDisplay.textContent = "SIGNAL: OFFLINE (NO CARRIER)";
+    
+    const stateDisplay = document.getElementById('cctv-state-display-ep9');
+    if (stateDisplay) {
+        stateDisplay.textContent = "STATUS: CRITICAL ERROR";
+        stateDisplay.style.color = "#ff0000";
+    }
+    
+    const logsContainer = document.getElementById('cctv-logs-ep9');
+    if (logsContainer) {
+        logsContainer.innerHTML = `
+            <div style="color: #ff3333; font-weight: bold;">[SYSTEM ERROR] 고정 CCTV 신호 유실. 현장 모니터링 불가능.</div>
+            <div style="color: #00ff88; margin-top: 4px;">[알림] 요원 개인 단말기(PDA/스마트폰)로 비상 우회 연결을 시도합니다...</div>
+        `;
+    }
+    
+    initCCTVNoiseEP9();
+    
+    // Render Emergency Handover Button
+    const container = document.getElementById('cctv-choices-container-ep9');
+    if (container) {
+        container.innerHTML = '';
+        const btn = document.createElement('button');
+        btn.textContent = "[개인 단말기(PDA) 긴급 연동 승인]";
+        btn.style.backgroundColor = "#2b0a0a";
+        btn.style.color = "#ff3333";
+        btn.style.border = "2px solid #ff0000";
+        btn.style.fontFamily = "monospace";
+        btn.style.fontSize = "12px";
+        btn.style.fontWeight = "bold";
+        btn.style.padding = "8px 18px";
+        btn.style.cursor = "pointer";
+        btn.style.boxShadow = "0 0 12px rgba(255, 0, 0, 0.6)";
+        btn.style.transition = "all 0.2s";
+        
+        btn.addEventListener('mouseenter', () => {
+            btn.style.backgroundColor = "#ff0000";
+            btn.style.color = "#000";
+        });
+        btn.addEventListener('mouseleave', () => {
+            btn.style.backgroundColor = "#2b0a0a";
+            btn.style.color = "#ff3333";
+        });
+        btn.addEventListener('click', triggerPhoneTransition);
+        container.appendChild(btn);
+    }
 }
 
-function triggerGameClearEP9() {
-    cctvGameStateEP9 = 'win';
-    updateCCTVHUDEP9();
+function stopCCTVGameEP9() {
+    if (cctvTimerEP9) {
+        clearTimeout(cctvTimerEP9);
+        cctvTimerEP9 = null;
+    }
+    if (cctvNoiseAnimIdEP9) cancelAnimationFrame(cctvNoiseAnimIdEP9);
+}
+
+function playCCTVVideoEP9(src, fallbackText) {
+    const video = document.getElementById('cctv-video-ep9');
+    if (video) video.style.display = 'none';
+}
+
+// Glitch Transition to Mobile Smartphone View
+function triggerPhoneTransition() {
+    const overlay = document.getElementById('phone-glitch-overlay');
+    document.body.classList.add('glitch-active');
+    if (overlay) overlay.classList.add('glitch-flash');
     
-    addCCTVLogEP9("[ALL CLEAR / TRUE ENDING] 인증 성공. 특별재난 관리본부 신속대응팀이 현장에 돌입하여 모든 통신 오염을 정화했습니다. 모든 에피소드 생환 완료!", false);
-    playCCTVVideoEP9('sms_idle.mp4', '[SYSTEM: ALL PROTOCOLS CLEARED]');
-    clearCCTVChoicesEP9();
+    setTimeout(() => {
+        document.body.classList.remove('glitch-active');
+        if (overlay) overlay.classList.remove('glitch-flash');
+        
+        // Hide PC CCTV window
+        closeDarkWebCCTVEP9();
+        
+        // Display Phone View
+        const phoneView = document.getElementById('mobile-phone-view');
+        if (phoneView) {
+            phoneView.style.display = 'flex';
+        }
+        
+        // Initialize Phone Phase 1
+        initPhonePhase1();
+    }, 650);
+}
+
+function exitPhoneView() {
+    stopCreepyFaceAnimation();
+    const vid = document.getElementById('phone-video-call-element');
+    if (vid) vid.pause();
+    if (phoneCountdownInterval) clearInterval(phoneCountdownInterval);
+    if (phoneTimer) clearTimeout(phoneTimer);
     
-    openDarkWebAlert("🏆 [ALL CLEAR / TRUE ENDING]<br>인증 성공! 특별재난 관리본부 신속대응팀이 현장에 돌입하여 모든 통신 오염을 정화했습니다.<br><br><b>축하합니다! 전 에피소드 생환 완료!</b>");
+    const phoneView = document.getElementById('mobile-phone-view');
+    if (phoneView) phoneView.style.display = 'none';
+    
+    const dwDesktop = document.getElementById('darkweb-desktop');
+    if (dwDesktop) dwDesktop.style.display = 'block';
+    
+    if (ep9GoodEndingCleared) {
+        unlockJayReport();
+    }
+}
+
+function appendPhoneMessage(text, type = 'system') {
+    const feed = document.getElementById('phone-message-feed');
+    if (!feed) return;
+    const bubble = document.createElement('div');
+    bubble.className = `msg-bubble msg-${type}`;
+    bubble.innerHTML = text.replace(/\n/g, '<br>');
+    feed.appendChild(bubble);
+    feed.scrollTop = feed.scrollHeight;
+}
+
+// ----------------------------------------------------
+// Phase 1: 부재중 전화 대응
+// ----------------------------------------------------
+function initPhonePhase1() {
+    phoneCurrentPhase = 1;
+    if (phoneCountdownInterval) clearInterval(phoneCountdownInterval);
+    if (phoneTimer) clearTimeout(phoneTimer);
+    stopCreepyFaceAnimation();
+    const vid = document.getElementById('phone-video-call-element');
+    if (vid) vid.pause();
+    
+    const modal = document.getElementById('phone-video-call-modal');
+    if (modal) modal.style.display = 'none';
+    
+    const feed = document.getElementById('phone-message-feed');
+    if (feed) feed.innerHTML = '';
+    
+    appendPhoneMessage("[긴급재난문자] 비상 통신망이 연결되었습니다. 지침에 따라 대응하십시오.", "warning");
+    appendPhoneMessage("[부재중 전화 알림]\n발신번호: 070-0813-0813 (발신자 표시제한)\n부재중 전화 1건이 도착했습니다.\n\n지침: 화면에 기재된 번호(070-0813-0813)로 회신 후 즉시 끊어 발신 로그를 생성하십시오.", "system");
+    
+    const input = document.getElementById('phone-input');
+    if (input) {
+        input.value = '';
+        input.disabled = false;
+        input.placeholder = "전화번호 입력 (예: 070-0813-0813)...";
+        input.focus();
+    }
+}
+
+// ----------------------------------------------------
+// Phase 2: 영상 통화 수신 (★영상 에셋 적용)
+// ----------------------------------------------------
+function initPhonePhase2() {
+    phoneCurrentPhase = 2;
+    if (phoneCountdownInterval) clearInterval(phoneCountdownInterval);
+    if (phoneTimer) clearTimeout(phoneTimer);
+    
+    appendPhoneMessage("[경고] 강제 영상 통화 수신 중...\n화면 속 개체가 당신을 응시하고 있습니다.\n지침: 수신/거절 버튼을 누르지 말고, 입력창에 'STARE'를 치거나 5초간 버티십시오.", "warning");
+    
+    const modal = document.getElementById('phone-video-call-modal');
+    if (modal) modal.style.display = 'flex';
+    
+    const vid = document.getElementById('phone-video-call-element');
+    if (vid) {
+        vid.currentTime = 0;
+        vid.play().catch(e => console.log('Video call play:', e));
+    }
+    
+    const input = document.getElementById('phone-input');
+    if (input) {
+        input.value = '';
+        input.disabled = false;
+        input.placeholder = "대응 명령어 입력 (예: STARE)...";
+        input.focus();
+    }
+    
+    phoneCallCountdown = 5;
+    const statusEl = document.getElementById('call-timer-status');
+    if (statusEl) statusEl.textContent = `시선 동기화 유지 중... (${phoneCallCountdown}초)`;
+    
+    phoneCountdownInterval = setInterval(() => {
+        phoneCallCountdown--;
+        if (statusEl) {
+            statusEl.textContent = `시선 동기화 유지 중... (${phoneCallCountdown}초)`;
+        }
+        if (phoneCallCountdown <= 0) {
+            clearInterval(phoneCountdownInterval);
+            phoneCountdownInterval = null;
+            resolvePhase2Success();
+        }
+    }, 1000);
+}
+
+function resolvePhase2Success() {
+    if (phoneCountdownInterval) {
+        clearInterval(phoneCountdownInterval);
+        phoneCountdownInterval = null;
+    }
+    stopCreepyFaceAnimation();
+    const vid = document.getElementById('phone-video-call-element');
+    if (vid) vid.pause();
+    
+    const modal = document.getElementById('phone-video-call-modal');
+    if (modal) modal.style.display = 'none';
+    
+    appendPhoneMessage("> 시선 동기화 유지 성공. 비정상 통화가 강제 차단되었습니다.", "system");
+    
+    const input = document.getElementById('phone-input');
+    if (input) input.disabled = true;
+    
+    phoneTimer = setTimeout(() => {
+        initPhonePhase3();
+    }, 1600);
+}
+
+function triggerCallTrap(source) {
+    if (phoneCountdownInterval) {
+        clearInterval(phoneCountdownInterval);
+        phoneCountdownInterval = null;
+    }
+    stopCreepyFaceAnimation();
+    const vid = document.getElementById('phone-video-call-element');
+    if (vid) vid.pause();
+    
+    const modal = document.getElementById('phone-video-call-modal');
+    if (modal) modal.style.display = 'none';
+    
+    appendPhoneMessage("시스템: [SYSTEM ERROR] 잘못된 대응 또는 인증 번호입니다.\n테러리스트 세력의 격리 구역으로 강제 전송되었습니다.\n[GAME OVER] 다시 시도하십시오.", "warning");
+    
+    const feed = document.getElementById('phone-message-feed');
+    if (feed) {
+        const retryBtn = document.createElement('button');
+        retryBtn.className = "phone-retry-btn";
+        retryBtn.textContent = "🔄 2단계 다시 시도";
+        retryBtn.onclick = initPhonePhase2;
+        feed.appendChild(retryBtn);
+        feed.scrollTop = feed.scrollHeight;
+    }
+    
+    const input = document.getElementById('phone-input');
+    if (input) input.disabled = true;
+}
+
+// ----------------------------------------------------
+// Phase 3: 최종 탈출 - 인증 번호 입력
+// ----------------------------------------------------
+function initPhonePhase3() {
+    phoneCurrentPhase = 3;
+    if (phoneCountdownInterval) clearInterval(phoneCountdownInterval);
+    if (phoneTimer) clearTimeout(phoneTimer);
+    stopCreepyFaceAnimation();
+    const vid = document.getElementById('phone-video-call-element');
+    if (vid) vid.pause();
+    
+    const modal = document.getElementById('phone-video-call-modal');
+    if (modal) modal.style.display = 'none';
+    
+    appendPhoneMessage("[긴급 문자] 본인 인증 번호 폭탄 수신 중...", "warning");
+    
+    setTimeout(() => appendPhoneMessage("[본부] 본인 인증 번호 [ 7412 ]", "auth"), 400);
+    setTimeout(() => appendPhoneMessage("[본부] 본인 인증 번호 [ 9381 ]", "auth"), 800);
+    setTimeout(() => appendPhoneMessage("[본부] 본인 인증 번호 [ 5264 ]", "auth"), 1200);
+    
+    setTimeout(() => {
+        appendPhoneMessage("지침: 지침서에 의거하여 [세 번째로 도착한 인증 번호]를 입력창에 전송하십시오.", "system");
+        const input = document.getElementById('phone-input');
+        if (input) {
+            input.value = '';
+            input.disabled = false;
+            input.placeholder = "인증 번호 4자리 입력...";
+            input.focus();
+        }
+    }, 1600);
+}
+
+// ----------------------------------------------------
+// Input Submit Handler
+// ----------------------------------------------------
+function handlePhoneInputSubmit() {
+    const input = document.getElementById('phone-input');
+    if (!input || !input.value.trim() || input.disabled) return;
+    
+    const val = input.value.trim();
+    input.value = '';
+    
+    appendPhoneMessage(`> 입력: ${val}`, "user");
+    
+    if (phoneCurrentPhase === 1) {
+        const clean = val.toLowerCase().replace(/[-\s]/g, '');
+        const raw = val.trim();
+        if (raw === '070-0813-0813' || clean === '07008130813') {
+            appendPhoneMessage("> [070-0813-0813] 발신 연결 및 즉시 차단 완료. 발신 로그가 생성되었습니다.", "system");
+            input.disabled = true;
+            phoneTimer = setTimeout(() => {
+                initPhonePhase2();
+            }, 1500);
+        } else {
+            appendPhoneMessage("시스템: [SYSTEM ERROR] 잘못된 대응 또는 인증 번호입니다.\n테러리스트 세력의 격리 구역으로 강제 전송되었습니다.\n[GAME OVER] 다시 시도하십시오.", "warning");
+            input.disabled = true;
+            const feed = document.getElementById('phone-message-feed');
+            if (feed) {
+                const btn = document.createElement('button');
+                btn.className = "phone-retry-btn";
+                btn.textContent = "🔄 1단계 다시 시도";
+                btn.onclick = initPhonePhase1;
+                feed.appendChild(btn);
+                feed.scrollTop = feed.scrollHeight;
+            }
+        }
+    } else if (phoneCurrentPhase === 2) {
+        const clean = val.toUpperCase().replace(/\s/g, '');
+        if (clean === 'STARE' || clean === 'WAIT' || clean === '응시' || clean === '대기') {
+            resolvePhase2Success();
+        } else {
+            triggerCallTrap('INPUT');
+        }
+    } else if (phoneCurrentPhase === 3) {
+        const clean = val.replace(/\s/g, '');
+        if (clean === '5264') {
+            ep9GoodEndingCleared = true;
+            unlockJayReport();
+            appendPhoneMessage("시스템: [본부 긴급 구출팀] 승인 완료.\n스마트폰 화면의 잠금이 해제되며 구출팀이 진입합니다.\n[GOOD ENDING] EP.09 변칙 통신 구역에서 무사히 생환했습니다!", "system");
+            input.disabled = true;
+            
+            const feed = document.getElementById('phone-message-feed');
+            if (feed) {
+                const card = document.createElement('div');
+                card.className = "phone-victory-card";
+                card.innerHTML = `
+                    <div style="font-size: 32px; margin-bottom: 6px;">🏆</div>
+                    <div style="font-weight: bold; color: #00ff88; font-size: 15px; margin-bottom: 6px;">[ALL SURVIVAL COMPLETE]</div>
+                    <div style="font-size: 11px; color: #aaffaa; line-height: 1.5; margin-bottom: 14px;">
+                        축하합니다! 1화부터 9화까지의 모든 특별재난 통제 구역에서 생존하여 무사히 현실로 생환하셨습니다!
+                    </div>
+                    <button class="phone-restart-btn" onclick="exitPhoneView()">🖥️ 시스템 정상 복귀 (바탕화면)</button>
+                `;
+                feed.appendChild(card);
+                feed.scrollTop = feed.scrollHeight;
+            }
+        } else {
+            appendPhoneMessage("시스템: [SYSTEM ERROR] 잘못된 대응 또는 인증 번호입니다.\n테러리스트 세력의 격리 구역으로 강제 전송되었습니다.\n[GAME OVER] 다시 시도하십시오.", "warning");
+            input.disabled = true;
+            const feed = document.getElementById('phone-message-feed');
+            if (feed) {
+                const btn = document.createElement('button');
+                btn.className = "phone-retry-btn";
+                btn.textContent = "🔄 3단계 다시 시도";
+                btn.onclick = initPhonePhase3;
+                feed.appendChild(btn);
+                feed.scrollTop = feed.scrollHeight;
+            }
+        }
+    }
+}
+
+// ----------------------------------------------------
+// Creepy Staring Face Canvas Animation (Phase 2)
+// ----------------------------------------------------
+function startCreepyFaceAnimation() {
+    const canvas = document.getElementById('creepy-face-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let frame = 0;
+    
+    function draw() {
+        frame++;
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.fillStyle = '#06080d';
+        ctx.fillRect(0, 0, w, h);
+        
+        // Static noise background
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const data = imgData.data;
+        for (let i = 0; i < data.length; i += 16) {
+            const v = Math.random() * 45;
+            data[i] = v; data[i+1] = v; data[i+2] = v; data[i+3] = 255;
+        }
+        ctx.putImageData(imgData, 0, 0);
+
+        // Creepy pale head silhouette
+        const shakeX = (Math.random() - 0.5) * 4;
+        const shakeY = (Math.random() - 0.5) * 2;
+        ctx.save();
+        ctx.translate(shakeX, shakeY);
+        
+        ctx.fillStyle = '#7d8794';
+        ctx.beginPath();
+        ctx.ellipse(w / 2, h / 2 + 5, 48, 64, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hollow cheekbones & eye sockets
+        ctx.fillStyle = '#393f4a';
+        ctx.beginPath();
+        ctx.ellipse(w / 2 - 20, h / 2 - 6, 20, 24, 0, 0, Math.PI * 2);
+        ctx.ellipse(w / 2 + 20, h / 2 - 6, 20, 24, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Giant, uncanny wide staring white eyes
+        const eyeOffset = Math.sin(frame * 0.15) * 1.5;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(w / 2 - 20, h / 2 - 6, 15, 19, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.ellipse(w / 2 + 20, h / 2 - 6, 15, 19, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Pinpoint twitching pupils
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(w / 2 - 20 + eyeOffset, h / 2 - 6, 3, 0, Math.PI * 2);
+        ctx.arc(w / 2 + 20 + eyeOffset, h / 2 - 6, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Red sclera veins
+        ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(w / 2 - 34, h / 2 - 6);
+        ctx.lineTo(w / 2 - 23, h / 2 - 6);
+        ctx.moveTo(w / 2 + 34, h / 2 - 6);
+        ctx.lineTo(w / 2 + 23, h / 2 - 6);
+        ctx.stroke();
+
+        // Uncanny wide slit smirk
+        ctx.strokeStyle = '#11141a';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(w / 2 - 22, h / 2 + 38);
+        ctx.quadraticCurveTo(w / 2, h / 2 + 46 + (Math.sin(frame * 0.25) * 3), w / 2 + 22, h / 2 + 38);
+        ctx.stroke();
+
+        ctx.restore();
+
+        // Glitch slice
+        if (Math.random() < 0.3) {
+            const sliceY = Math.random() * h;
+            const sliceH = Math.random() * 16 + 4;
+            const shift = (Math.random() - 0.5) * 24;
+            ctx.drawImage(canvas, 0, sliceY, w, sliceH, shift, sliceY, w, sliceH);
+        }
+
+        creepyFaceAnimId = requestAnimationFrame(draw);
+    }
+    
+    if (creepyFaceAnimId) cancelAnimationFrame(creepyFaceAnimId);
+    draw();
+}
+
+function stopCreepyFaceAnimation() {
+    if (creepyFaceAnimId) {
+        cancelAnimationFrame(creepyFaceAnimId);
+        creepyFaceAnimId = null;
+    }
 }
 
 // Dark Web Taskbar Rendering
 const darkWebWindowsList = [
-    { id: 'darkwebFolderWindow', title: '📁 [EP.01] 탐색기' },
+    { id: 'darkwebFolderWindow', title: '📁 [사건 파일] 탐색기' },
     { id: 'darkwebReportWindow', title: '📄 야간근무수칙.txt' },
     { id: 'darkwebCCTVWindow', title: '🖥️ 해안_CCTV' },
     { id: 'darkwebFolderWindowEP2', title: '📁 [EP.02] 탐색기' },
@@ -4965,4 +5244,254 @@ function updateDarkWebTaskbar() {
             container.appendChild(btn);
         }
     });
+}
+
+// phone-input-key-listener
+window.addEventListener('DOMContentLoaded', () => {
+    const pInput = document.getElementById('phone-input');
+    if (pInput) {
+        pInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handlePhoneInputSubmit();
+            }
+        });
+    }
+});
+
+// ====================================================
+// Grand Finale: [요원 제이의 기록] 및 [무한 루프 셧다운 연출]
+// ====================================================
+let ep9GoodEndingCleared = false;
+let loopShutdownTriggered = false;
+
+function unlockJayReport() {
+    const icon = document.getElementById('jay-report-icon');
+    if (icon) {
+        icon.style.display = 'flex';
+        icon.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    // Attach scroll trigger to Jay's report textarea
+    setTimeout(attachJayReportScrollListener, 500);
+}
+
+function openJayReport() {
+    const win = document.getElementById('jayReportWindow');
+    if (win) {
+        highestZIndex++;
+        win.style.zIndex = highestZIndex;
+        win.style.display = 'flex';
+        updateDarkWebTaskbar();
+        attachJayReportScrollListener();
+    }
+}
+
+function closeJayReport() {
+    const win = document.getElementById('jayReportWindow');
+    if (win) win.style.display = 'none';
+    updateDarkWebTaskbar();
+    // Trigger loop shutdown on close
+    triggerLoopShutdown();
+}
+
+function attachJayReportScrollListener() {
+    const ta = document.getElementById('jay-report-textarea');
+    if (!ta || ta._scrollListenerAttached) return;
+    ta._scrollListenerAttached = true;
+    
+    ta.addEventListener('scroll', () => {
+        if (!loopShutdownTriggered && (ta.scrollTop + ta.clientHeight >= ta.scrollHeight - 15)) {
+            setTimeout(() => {
+                triggerLoopShutdown();
+            }, 800);
+        }
+    });
+}
+
+function openNewRecruitDocument() {
+    const win = document.getElementById('newRecruitWindow');
+    if (win) {
+        highestZIndex++;
+        win.style.zIndex = highestZIndex;
+        win.style.display = 'flex';
+        updateDarkWebTaskbar();
+    }
+}
+
+function closeNewRecruitDocument() {
+    const win = document.getElementById('newRecruitWindow');
+    if (win) win.style.display = 'none';
+    updateDarkWebTaskbar();
+}
+
+function playRetroBeep() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.5);
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+    } catch (e) {
+        console.log('Audio error:', e);
+    }
+}
+
+function triggerLoopShutdown() {
+    if (loopShutdownTriggered) return;
+    loopShutdownTriggered = true;
+    
+    // Close Jay's report window if open
+    const jWin = document.getElementById('jayReportWindow');
+    if (jWin) jWin.style.display = 'none';
+    
+    const overlay = document.getElementById('bsod-overlay');
+    const term = document.getElementById('bsod-terminal-text');
+    if (!overlay || !term) return;
+    
+    playRetroBeep();
+    
+    overlay.style.display = 'block';
+    overlay.style.background = '#000084';
+    term.innerHTML = '';
+    
+    const lines = [
+        "A fatal exception 0E has occurred at 0028:C0011E36 in VXD VMM(01)",
+        "\n[SYSTEM] 요원 제이(Jay)의 데이터 동기화 완료.",
+        "\n[SYSTEM] 관측 기준점(Anchor) 해제 및 새로운 근무자 슬롯 할당 중...",
+        "\n[SYSTEM] 시스템 재부팅을 시작합니다. (REBOOTING...)"
+    ];
+    
+    let lineIdx = 0;
+    function printNextLine() {
+        if (lineIdx < lines.length) {
+            const line = lines[lineIdx];
+            let charIdx = 0;
+            const span = document.createElement('span');
+            if (lineIdx === 1) span.style.color = '#ffff55';
+            if (lineIdx === 2) span.style.color = '#ff5555';
+            if (lineIdx === 3) span.style.color = '#55ff55';
+            term.appendChild(span);
+            
+            const timer = setInterval(() => {
+                span.textContent += line[charIdx];
+                charIdx++;
+                if (charIdx >= line.length) {
+                    clearInterval(timer);
+                    lineIdx++;
+                    setTimeout(printNextLine, 650);
+                }
+            }, 30);
+        } else {
+            // Typing complete! Hold for 2.2s so the player can fully absorb the text, then trigger reboot
+            setTimeout(() => {
+                triggerBlackoutReboot();
+            }, 2200);
+        }
+    }
+    
+    printNextLine();
+}
+
+function triggerBlackoutReboot() {
+    const overlay = document.getElementById('bsod-overlay');
+    const term = document.getElementById('bsod-terminal-text');
+    if (!overlay) return;
+    
+    // 1. Total Blackout silence
+    overlay.style.background = '#000000';
+    if (term) term.innerHTML = '';
+    
+    // 2. After 2.0s blackout, begin step-by-step BIOS rebooting sequence
+    setTimeout(() => {
+        const biosLines = [
+            "SPECIAL DISASTER MANAGEMENT HEADQUARTERS OS v4.10",
+            "Checking System Memory: 65536K OK",
+            "Loading Anchor Assignment Slot #01... OK",
+            "[CYCLE 02: ENDLESS SHIFT INITIALIZED]",
+            "Starting Windows 98..."
+        ];
+        
+        let biosIdx = 0;
+        function showNextBiosLine() {
+            if (biosIdx < biosLines.length) {
+                const line = biosLines[biosIdx];
+                const lineEl = document.createElement('div');
+                lineEl.style.fontSize = '13px';
+                lineEl.style.lineHeight = '1.8';
+                lineEl.style.fontFamily = "monospace, 'Courier New'";
+                lineEl.style.color = biosIdx === 3 ? '#ff3333' : '#888888';
+                if (biosIdx === 3) {
+                    lineEl.style.fontWeight = 'bold';
+                }
+                lineEl.textContent = line;
+                term.appendChild(lineEl);
+                biosIdx++;
+                setTimeout(showNextBiosLine, 800);
+            } else {
+                // All BIOS lines displayed, hold for 1.8s then transition to desktop in Loop State
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    applyLoopDesktopState();
+                }, 1800);
+            }
+        }
+        
+        showNextBiosLine();
+    }, 2000);
+}
+
+function applyLoopDesktopState() {
+    // 1. Ensure desktop is active
+    const dwDesktop = document.getElementById('darkweb-desktop');
+    if (dwDesktop) dwDesktop.style.display = 'block';
+    
+    // 2. Hide Jay's report icon (it's been archived)
+    const jayIcon = document.getElementById('jay-report-icon');
+    if (jayIcon) jayIcon.style.display = 'none';
+    
+    // 3. Show Loop State Document Icon at top of desktop
+    const loopDocIcon = document.getElementById('loop-ep1-doc-icon');
+    if (loopDocIcon) {
+        loopDocIcon.style.display = 'flex';
+        const container = document.querySelector('.darkweb-icons-container');
+        if (container && container.firstChild) {
+            container.insertBefore(loopDocIcon, container.firstChild);
+        }
+    }
+    
+    // 4. Update EP.01's internal su-chik icon to transformed new recruit document
+    const ep1Window = document.getElementById('darkwebFolderWindowEP1');
+    if (ep1Window) {
+        const firstFile = ep1Window.querySelector('.desktop-file');
+        if (firstFile) {
+            firstFile.setAttribute('onclick', 'openNewRecruitDocument()');
+            const span = firstFile.querySelector('span');
+            if (span) span.textContent = '[EP.01] 신규_근무자_배치완료.txt';
+        }
+    }
+    
+    // 5. Update top right monitor header with blinking shift start indicator
+    const headerStatus = document.getElementById('darkweb-header-status') || document.querySelector('#darkweb-desktop div[style*="justify-content: space-between"] span:last-child');
+    if (headerStatus) {
+        headerStatus.innerHTML = '⚠️ [22:00:00] 야간 근무 시작 대기 중 (LOOP 02)';
+        headerStatus.style.color = '#ff0000';
+        headerStatus.style.animation = 'blink 0.8s infinite';
+        headerStatus.style.background = 'rgba(0,0,0,0.6)';
+        headerStatus.style.padding = '2px 6px';
+        headerStatus.style.border = '1px solid #ff0000';
+    }
+    
+    updateDarkWebTaskbar();
+    
+    // Automatically open the new recruit document window with retro focus
+    setTimeout(() => {
+        openNewRecruitDocument();
+    }, 500);
 }

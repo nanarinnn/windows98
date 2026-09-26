@@ -551,3 +551,547 @@ input[type=range]::-webkit-slider-thumb:active {
     background-color: rgba(128, 0, 0, 0.4);
     outline: 1px dotted #ff0000;
 }
+
+/* ==========================================
+   EP.09 Smartphone Mobile UI & Glitch Styles
+   ========================================== */
+
+/* Glitch Animation */
+@keyframes screen-glitch-shake {
+    0% { transform: translate(0, 0); }
+    20% { transform: translate(-5px, 4px); }
+    40% { transform: translate(5px, -4px); }
+    60% { transform: translate(-4px, -3px); }
+    80% { transform: translate(4px, 3px); }
+    100% { transform: translate(0, 0); }
+}
+
+@keyframes glitch-flash-red {
+    0% { opacity: 0; }
+    30% { opacity: 0.9; background: rgba(255, 0, 0, 0.6); }
+    70% { opacity: 0.8; background: rgba(0, 0, 0, 0.8); }
+    100% { opacity: 0; }
+}
+
+.glitch-active {
+    animation: screen-glitch-shake 0.1s infinite !important;
+}
+
+#phone-glitch-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 1000000;
+    display: none;
+}
+
+.glitch-flash {
+    display: block !important;
+    animation: glitch-flash-red 0.7s ease-out forwards;
+}
+
+/* Fullscreen Mobile View Container */
+.mobile-phone-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, rgba(20, 24, 33, 0.96) 0%, rgba(5, 6, 8, 0.98) 100%);
+    backdrop-filter: blur(8px);
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace, sans-serif;
+    user-select: none;
+}
+
+/* Smartphone Body / Chassis */
+.phone-frame {
+    width: 380px;
+    max-width: 95vw;
+    height: 720px;
+    max-height: 94vh;
+    background: #1c1f24;
+    border-radius: 42px;
+    box-shadow: 0 0 0 4px #2a2f38, 0 0 0 8px #101216, 0 25px 60px rgba(0, 0, 0, 0.95);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Speaker slit & camera at top bezel */
+.phone-speaker {
+    width: 60px;
+    height: 5px;
+    background: #0b0d10;
+    border-radius: 3px;
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.phone-camera {
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle, #1a2233 40%, #000 90%);
+    border-radius: 50%;
+    position: absolute;
+    top: 4px;
+    left: calc(50% + 45px);
+    border: 1px solid #333;
+}
+
+/* Screen area */
+.phone-screen {
+    width: 100%;
+    height: 100%;
+    background: #0b0d11;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+/* Top Status Bar */
+.phone-status-bar {
+    height: 28px;
+    padding: 0 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #e0e0e0;
+    background: #12151c;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.phone-carrier {
+    color: #ff3b30;
+    letter-spacing: 0.5px;
+    animation: blink-carrier 1.5s infinite;
+}
+
+@keyframes blink-carrier {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.phone-battery {
+    color: #ff9500;
+}
+
+/* App Header */
+.phone-app-header {
+    padding: 10px 14px;
+    background: #161a22;
+    border-bottom: 1px solid #242933;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+}
+
+.phone-app-title {
+    font-size: 13px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #00ff88;
+}
+
+.phone-app-title .pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00ff88;
+    box-shadow: 0 0 8px #00ff88;
+    animation: pulse 1s infinite;
+}
+
+.phone-return-btn {
+    cursor: pointer;
+    font-size: 13px;
+    color: #888;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.2s;
+}
+
+.phone-return-btn:hover {
+    color: #ff4444;
+}
+
+/* Message Feed */
+.phone-message-feed {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: monospace, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.phone-message-feed::-webkit-scrollbar {
+    width: 4px;
+}
+.phone-message-feed::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 2px;
+}
+
+/* Message Bubbles */
+.msg-bubble {
+    max-width: 90%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    word-break: keep-all;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+}
+
+.msg-system {
+    align-self: flex-start;
+    background: #181d26;
+    color: #00ff66;
+    border-left: 3px solid #00ff66;
+}
+
+.msg-warning {
+    align-self: flex-start;
+    background: #281414;
+    color: #ff4d4d;
+    border-left: 3px solid #ff4d4d;
+}
+
+.msg-user {
+    align-self: flex-end;
+    background: #004d40;
+    color: #e0f2f1;
+    border-radius: 12px 12px 2px 12px;
+}
+
+.msg-auth {
+    align-self: flex-start;
+    background: #141c28;
+    color: #4da6ff;
+    border-left: 3px solid #4da6ff;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* Video Call Modal in Phone */
+#phone-video-call-modal {
+    position: absolute;
+    top: 55px;
+    left: 10px;
+    right: 10px;
+    background: #0e1117;
+    border: 2px solid #ff0000;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(255, 0, 0, 0.4);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.video-call-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #ff4d4d;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.video-call-screen {
+    width: 100%;
+    height: 180px;
+    background: #000;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#phone-video-call-element, #creepy-face-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.video-call-scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+    background-size: 100% 4px;
+    pointer-events: none;
+}
+
+.video-call-glitch-text {
+    position: absolute;
+    bottom: 6px;
+    font-size: 10px;
+    color: #ff3333;
+    font-family: monospace;
+    font-weight: bold;
+    text-shadow: 0 0 5px #ff0000;
+    animation: blink 0.8s infinite;
+}
+
+.video-call-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.call-btn-danger {
+    flex: 1;
+    padding: 8px 0;
+    border-radius: 20px;
+    border: none;
+    background: #b71c1c;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(255, 0, 0, 0.4);
+    transition: background 0.2s;
+}
+
+.call-btn-danger:hover {
+    background: #d32f2f;
+}
+
+.video-call-status {
+    text-align: center;
+    font-size: 11px;
+    color: #ffaa00;
+    font-family: monospace;
+    margin-top: 6px;
+    font-weight: bold;
+}
+
+/* Bottom Input Bar */
+.phone-input-bar {
+    padding: 10px 12px;
+    background: #14171f;
+    border-top: 1px solid #232733;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#phone-input {
+    flex: 1;
+    background: #0a0c10;
+    border: 1px solid #333947;
+    border-radius: 20px;
+    padding: 8px 14px;
+    color: #00ff88;
+    font-family: monospace, sans-serif;
+    font-size: 12px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+#phone-input:focus {
+    border-color: #00ff88;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+}
+
+#phone-send-btn {
+    background: #00ff88;
+    color: #000;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+#phone-send-btn:hover {
+    background: #00cc6e;
+}
+
+#phone-send-btn:active {
+    transform: scale(0.96);
+}
+
+/* Phone Home Indicator */
+.phone-home-indicator {
+    width: 120px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Victory & Retry Cards inside Phone */
+.phone-victory-card {
+    background: #0f241a;
+    border: 2px solid #00ff88;
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    margin-top: 10px;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.phone-restart-btn {
+    background: #00ff88;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.phone-retry-btn {
+    align-self: center;
+    background: #2b1111;
+    color: #ff4444;
+    border: 1px solid #ff4444;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 6px;
+}
+
+/* Unified Dark Web Episode Folder */
+.episode-group {
+    background: #141414;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    box-shadow: inset 1px 1px 0 #222;
+}
+
+.episode-group-title {
+    font-size: 11px;
+    font-weight: bold;
+    color: #ff4444;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #2a2a2a;
+    padding-bottom: 4px;
+    font-family: monospace;
+}
+
+.episode-group-files {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.episode-group-files .desktop-file {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    padding: 4px 6px;
+    cursor: pointer;
+    text-align: center;
+    width: 95px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.episode-group-files .desktop-file:hover {
+    background: rgba(255, 0, 0, 0.15);
+    border: 1px dotted #ff0000;
+}
+
+
+/* Grand Finale BSOD & Infinite Reboot Overlay */
+#bsod-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999999;
+    background: #000084;
+    color: #ffffff;
+    font-family: 'Lucida Console', monospace, 'Courier New';
+    padding: 30px;
+    box-sizing: border-box;
+    overflow: hidden;
+    user-select: none;
+    transition: background 0.3s;
+}
+
+.bsod-content {
+    max-width: 760px;
+    margin: 10vh auto 0 auto;
+}
+
+.bsod-title {
+    background: #a8a8a8;
+    color: #000084;
+    display: inline-block;
+    padding: 2px 14px;
+    font-weight: bold;
+    font-size: 15px;
+    margin-bottom: 24px;
+    letter-spacing: 1px;
+}
+
+.bsod-lines {
+    font-size: 14px;
+    line-height: 1.9;
+    color: #ffffff;
+    white-space: pre-wrap;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+.bsod-scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+    background-size: 100% 4px;
+    pointer-events: none;
+}
