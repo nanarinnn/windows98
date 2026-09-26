@@ -5294,16 +5294,30 @@ function closeJayReport() {
     triggerLoopShutdown();
 }
 
+let jayScrollShutdownTimeout = null;
+
 function attachJayReportScrollListener() {
     const ta = document.getElementById('jay-report-textarea');
     if (!ta || ta._scrollListenerAttached) return;
     ta._scrollListenerAttached = true;
     
     ta.addEventListener('scroll', () => {
-        if (!loopShutdownTriggered && (ta.scrollTop + ta.clientHeight >= ta.scrollHeight - 15)) {
-            setTimeout(() => {
-                triggerLoopShutdown();
-            }, 800);
+        if (loopShutdownTriggered) return;
+        
+        const isAtBottom = (ta.scrollTop + ta.clientHeight >= ta.scrollHeight - 25);
+        if (isAtBottom) {
+            if (!jayScrollShutdownTimeout) {
+                // Wait 4.5 seconds after reaching the bottom so the player can digest the final lines
+                jayScrollShutdownTimeout = setTimeout(() => {
+                    triggerLoopShutdown();
+                }, 4500);
+            }
+        } else {
+            // Cancel if user scrolls back up
+            if (jayScrollShutdownTimeout) {
+                clearTimeout(jayScrollShutdownTimeout);
+                jayScrollShutdownTimeout = null;
+            }
         }
     });
 }
@@ -5346,6 +5360,10 @@ function playRetroBeep() {
 function triggerLoopShutdown() {
     if (loopShutdownTriggered) return;
     loopShutdownTriggered = true;
+    if (jayScrollShutdownTimeout) {
+        clearTimeout(jayScrollShutdownTimeout);
+        jayScrollShutdownTimeout = null;
+    }
     
     // Close Jay's report window if open
     const jWin = document.getElementById('jayReportWindow');
