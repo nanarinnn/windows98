@@ -456,6 +456,11 @@ MBTI : ISFJ
                     <span style="font-size: 11px; color: #ff3333; text-shadow: 0 0 2px #000; font-family: monospace; font-weight: bold; word-break: break-all;">최종_요원_제이의_기록_및_중앙상황실보고서.txt</span>
                 </div>
 
+                <div class="icon" onclick="openNotebook()">
+                    <div style="width: 32px; height: 32px; font-size: 26px; margin: 0 auto; text-align: center; line-height: 32px; filter: grayscale(1) sepia(1) hue-rotate(-50deg) saturate(3);">🗂️</div>
+                    <span style="font-size: 11px; color: #ff0000; text-shadow: 0 0 2px #000; font-family: monospace; font-weight: bold;">사건수사노트.exe</span>
+                </div>
+
                 <div class="icon" onclick="openDarkWebReadme()">
                     <div style="width: 32px; height: 32px; font-size: 26px; margin: 0 auto; text-align: center; line-height: 32px; filter: grayscale(1) sepia(1) hue-rotate(-50deg) saturate(3);">📄</div>
                     <span style="font-size: 11px; color: #ff0000; text-shadow: 0 0 2px #000; font-family: monospace; font-weight: bold;">readme.txt</span>
@@ -548,6 +553,17 @@ MBTI : ISFJ
                 </div>
             </div>
 
+            <!-- 사건수사노트 Window (사건 보드 / 단서 / 추리 / 기록) -->
+            <div id="notebookWindow" class="window" style="display: none; width: 640px; height: 460px; top: 70px; left: 140px; z-index: 1007; background-color: #1a1a1a; border-top: 2px solid #555; border-left: 2px solid #555; border-right: 2px solid #000; border-bottom: 2px solid #000; box-shadow: 6px 6px 25px rgba(0,0,0,0.9); color: #00ff00; font-family: monospace; resize: both; overflow: hidden; position: absolute; flex-direction: column;">
+                <div class="window-header" style="background: #333; color: #ff0000; font-weight: bold; padding: 3px 6px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #555;">
+                    <span>🗂️ 사건수사노트.exe</span>
+                    <div class="window-buttons">
+                        <div class="win-btn" onclick="closeNotebook()" style="background: #222; color: #ff0000; border: 1px solid #555; cursor: pointer; padding: 0 4px; font-size: 10px; line-height: 1;">✕</div>
+                    </div>
+                </div>
+                <div id="notebook-body" class="window-content" style="padding: 0; background-color: #0d0d0d; border: none; margin: 2px; flex-grow: 1; overflow-y: auto; box-sizing: border-box;"></div>
+            </div>
+
             <!-- Readme Window -->
             <div id="darkwebReadmeWindow" class="window" style="display: none; width: 440px; height: 280px; top: 140px; left: 180px; z-index: 1004; background-color: #1a1a1a; border-top: 2px solid #555; border-left: 2px solid #555; border-right: 2px solid #000; border-bottom: 2px solid #000; box-shadow: 5px 5px 20px rgba(0,0,0,0.9); color: #00ff00; font-family: monospace; resize: both; overflow: hidden; position: absolute;">
                 <div class="window-header" style="background: #333; color: #ff0000; font-weight: bold; padding: 3px 6px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #555;">
@@ -562,7 +578,11 @@ MBTI : ISFJ
                     <span>도움말(H)</span>
                 </div>
                 <div class="window-content" style="padding: 0; background-color: #0d0d0d; border: none; margin: 2px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
-                    <textarea readonly style="width: 100%; height: 100%; resize: none; border: none; padding: 10px; font-family: monospace; font-size: 12px; line-height: 1.6; outline: none; background: #0d0d0d; color: #00ff00; box-sizing: border-box; flex-grow: 1; border-top: 1px solid #333; overflow-y: auto;">[모든 영상, 텍스트 소스는 유연괴담이 저작권을 소유하고 있습니다]</textarea>
+                    <textarea readonly style="width: 100%; height: 100%; resize: none; border: none; padding: 10px; font-family: monospace; font-size: 12px; line-height: 1.6; outline: none; background: #0d0d0d; color: #00ff00; box-sizing: border-box; flex-grow: 1; border-top: 1px solid #333; overflow-y: auto;">[모든 영상, 텍스트 소스는 유연괴담이 저작권을 소유하고 있습니다]
+
+※ 사건수사노트(단서·추리)는 이 사이트를 만든 개인이 따로 추가한 비공식 요소이며, 채널의 공식 콘텐츠가 아닙니다. 단서는 에피소드 원문을 그대로 인용한 것입니다.
+
+※ 진행 기록(클리어, 단서, 추리)은 이 브라우저에 자동으로 저장됩니다. 사건수사노트의 [기록] 탭에서 세이브 코드로 다른 기기에 옮기거나 초기화할 수 있습니다.</textarea>
                 </div>
             </div>
 
@@ -625,6 +645,11 @@ MBTI : ISFJ
                     <div class="desktop-file" onclick="openDarkWebFolderEP9()" style="cursor: pointer; text-align: center; width: 95px; display: flex; flex-direction: column; align-items: center; padding: 6px;">
                         <div style="font-size: 32px; margin-bottom: 2px; filter: grayscale(1) brightness(0.6) sepia(1) hue-rotate(-50deg) saturate(3);">📁</div>
                         <span style="font-size: 11px; color: #ff0000; font-family: monospace; word-break: break-all; font-weight: bold;">[EP.09] 안전 안내 문자</span>
+                    </div>
+
+                    <div class="desktop-file" onclick="openDarkWebFolderEP10()" style="cursor: pointer; text-align: center; width: 95px; display: flex; flex-direction: column; align-items: center; padding: 6px;">
+                        <div style="font-size: 32px; margin-bottom: 2px; filter: grayscale(1) brightness(0.6) sepia(1) hue-rotate(-50deg) saturate(3);">📁</div>
+                        <span style="font-size: 11px; color: #ff0000; font-family: monospace; word-break: break-all; font-weight: bold;">[EP.10] 인어왕국 행복 공장</span>
                     </div>
 
                 </div>
@@ -1839,6 +1864,146 @@ MBTI : ISFJ
                 </div>
             </div>
 
+            <!-- ===================== EP.10 ===================== -->
+            <!-- Folder Window -->
+            <div id="darkwebFolderWindowEP10" class="window" style="display: none; width: 440px; height: 320px; top: 142px; left: 212px; z-index: 1001; background-color: #1a1a1a; border-top: 2px solid #555; border-left: 2px solid #555; border-right: 2px solid #000; border-bottom: 2px solid #000; box-shadow: 4px 4px 15px rgba(0,0,0,0.8); color: #00ff00; font-family: monospace; resize: both; overflow: hidden; position: absolute;">
+                <div class="window-header" style="background: #333; color: #ff0000; font-weight: bold; padding: 3px 6px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #555;">
+                    <span>📁 [EP.10] 인어왕국 행복 공장 - 탐색기</span>
+                    <div class="window-buttons">
+                        <div class="win-btn" onclick="closeDarkWebFolderEP10()" style="background: #222; color: #ff0000; border: 1px solid #555; cursor: pointer; padding: 0 4px; font-size: 10px; line-height: 1;">✕</div>
+                    </div>
+                </div>
+                <div class="menu-bar" style="display: flex; gap: 10px; padding: 2px 6px; font-size: 11px; border-bottom: 1px solid #333; background: #222; color: #888;">
+                    <span>파일(F)</span>
+                    <span>보기(V)</span>
+                    <span>도움말(H)</span>
+                </div>
+                <div class="window-content" style="padding: 15px; background-color: #0d0d0d; display: flex; gap: 16px; align-content: flex-start; flex-wrap: wrap; border: none; margin: 2px; height: calc(100% - 46px); overflow: auto; box-sizing: border-box;">
+                    <div class="desktop-file" onclick="openDarkWebReportEP10()" style="cursor: pointer; text-align: center; width: 90px; display: flex; flex-direction: column; align-items: center; padding: 6px;">
+                        <div style="font-size: 32px; margin-bottom: 2px; filter: grayscale(1) sepia(1) hue-rotate(-50deg) saturate(3);">📄</div>
+                        <span style="font-size: 11px; color: #ff0000; font-family: monospace; word-break: break-all; font-weight: bold;">행복공장_작업수칙.txt</span>
+                    </div>
+                    <div class="desktop-file" onclick="openDarkWebCCTVEP10()" style="cursor: pointer; text-align: center; width: 90px; display: flex; flex-direction: column; align-items: center; padding: 6px;">
+                        <div style="font-size: 32px; margin-bottom: 2px; filter: grayscale(1) sepia(1) hue-rotate(-120deg) saturate(3) brightness(0.8);">🖥️</div>
+                        <span style="font-size: 11px; color: #ff0000; font-family: monospace; word-break: break-all; font-weight: bold;">행복공장_조립라인_CCTV.exe</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Window -->
+            <div id="darkwebReportWindowEP10" class="window" style="display: none; width: 500px; height: 400px; top: 120px; left: 200px; z-index: 1002; background-color: #1a1a1a; border-top: 2px solid #555; border-left: 2px solid #555; border-right: 2px solid #000; border-bottom: 2px solid #000; box-shadow: 5px 5px 20px rgba(0,0,0,0.9); color: #00ff00; font-family: monospace; resize: both; overflow: hidden; position: absolute;">
+                <div class="window-header" style="background: #333; color: #ff0000; font-weight: bold; padding: 3px 6px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #555;">
+                    <span>📄 행복공장_작업수칙.txt - 메모장</span>
+                    <div class="window-buttons">
+                        <div class="win-btn" onclick="closeDarkWebReportEP10()" style="background: #222; color: #ff0000; border: 1px solid #555; cursor: pointer; padding: 0 4px; font-size: 10px; line-height: 1;">✕</div>
+                    </div>
+                </div>
+                <div class="menu-bar" style="display: flex; gap: 10px; padding: 2px 6px; font-size: 11px; border-bottom: 1px solid #333; background: #222; color: #888;">
+                    <span>파일(F)</span>
+                    <span>편집(E)</span>
+                    <span>도움말(H)</span>
+                </div>
+                <div class="window-content" style="padding: 0; background-color: #0d0d0d; border: none; margin: 2px; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
+                    <textarea readonly style="width: 100%; height: 100%; resize: none; border: none; padding: 10px; font-family: monospace; font-size: 12px; line-height: 1.6; outline: none; background: #0d0d0d; color: #00ff00; box-sizing: border-box; flex-grow: 1; border-top: 1px solid #333; overflow-y: auto;">
+[ 인어왕국 행복 공장 / 특별재난 관리본부 ]
+문서 번호: 완구회수-216-091호
+2026년 1차 개정 (시행 일자: 2026-09-26)
+부착 위치: 행복 공장 잔존 재고 회수 작업복 탈의실 내측
+* 본 문서는 외부 게시 불가, 폐업 공장 편입 작업자 외 열람 금지
+* 본 문서 확인 이후 발생하는 일체의 상황에 대해 본부는 책임을 지지 않습니다.
+
+==================================================
+[0] 개요 및 작업 규칙
+- 폐업한 '인어왕국 행복 공장'에 남은 인어왕자 완구 불량품으로 인해 편입된 작업자를 위한 생존 지침입니다.
+- 귀하의 목표는 조립 공정을 따라 '밝은 금발과 웃는 얼굴, 하늘색 상의, 초록색 꼬리를 가진 음성 완구 인어왕자' 1구를 무사히 완성하는 것입니다.
+- 완성 전까지는 절대 공장 밖으로 나갈 수 없습니다.
+
+[1] 탈의 및 기본 수칙
+1. 문이 열린 사물함 하나를 확인하고 안쪽의 4자리 숫자를 소리 내어 읽은 뒤 열쇠를 오른쪽 손목에 차십시오. (이 번호는 귀하의 작업자 번호입니다.)
+2. 사복을 벗고 지정된 하늘색 작업복, 분홍색 앞치마, 흰색 장갑을 착용하십시오. 옷 소매 안쪽에서 남의 머리카락이 나와도 절대 다른 사물함을 열지 마십시오.
+3. 옷을 갈아입는 동안 천장 스피커에서 [행복 공장 홍보곡]이 재생됩니다. 노래가 끝나기 전 뒤쪽에서 당신의 이름이나 사물함 번호를 부르는 소리가 나도 절대 뒤돌아보지 마십시오. (뒤돌아본 작업자는 사물함 안에 8각으로 접힌 채 발견되었습니다.)
+
+==================================================
+[2] 인어왕자 조립 공정 대응 지침
+
+■ 1공정: 인어왕자 머리 검수대
+- 입술 사이로 치아가 보이는 머리는 불량입니다. 들고 있는 동안 입이 벌어진다면 내려놓지 말고 입술 사이에 귀하의 검지와 중지를 넣으십시오.
+- 안쪽이 축축하거나 혀가 손가락을 핥아도 절대 빼지 마십시오. 입이 다물어질 때까지 버틴 후 빨간 불량 상자에 버리십시오.
+
+■ 2공정: 음성 시험대
+- 하늘색 몸체의 등 버튼을 4번 눌러 대사를 확인하십시오. (안녕 나는 인어왕자 ➔ 우리 같이 바다로 가자 ➔ 반짝반짝 조개를 찾아보자 ➔ 친구가 되어줄 거지)
+- 4번째 대사에서 "여기서 살아줄 거지?"라는 비정상 음성이 재생되면, 즉시 인형을 마주 보고 "친구가 되어줄 거지"라고 육성으로 끝까지 정정하십시오.
+- 정정 도중 인형의 입술이나 턱이 귀하의 손가락에 닿거나 귓가에 무언가 속삭여도 말을 멈추지 마십시오. (실패 시 귀하의 성대가 적출되어 인형에 이식됩니다.)
+
+■ 3공정: 양팔 결합대
+- 같은 번호가 적힌 한 쌍의 팔만 사용하십시오. 팔이 귀하의 소매를 붙잡거나 손등을 더듬어도 뿌리치지 말고 그대로 핀을 결합하십시오.
+- 단, 5개의 손가락이 귀하를 향해 모이거나 팔이 역관절로 꺾여 귀하를 향한다면 결합하지 마십시오. 즉시 해당 팔을 은색 압착 페달에 넣고 밟아 절단하십시오. (압착에 실패하면 귀하의 양손이 잘려 나갑니다.)
+
+■ 4공정: 꼬리 봉합대
+- 초록색 꼬리 안에 손을 넣어 봉합을 시작하십시오. 안쪽 솜이 젖어 있거나 미지근해도 꺼내지 마십시오.
+- 봉합 도중 꼬리 끝이 귀하의 손을 깊숙이 끌어당겨도 손을 빼지 말고 바느질만 하십시오. 실이 꼬여도 절대 안쪽을 들여다보지 마십시오. (들여다볼 경우 귀하의 양다리가 하나로 봉합되며 초록색 비늘이 돋아납니다.)
+
+■ 5공정: 최종 조립실
+- 완성된 인형을 올리고 버튼을 4번 눌러 정상 작동을 확인하십시오. 검수등이 초록색으로 켜지면 인형을 두고 출입문으로 나가십시오.
+- 문 밖에서 이름이 불려도 입을 다물고 나가십시오. 검수등이 빨간색으로 켜진다면... 불량품 재작업이 시작됩니다. 유감을 표합니다.
+
+==================================================
+[!] 최종 경고
+정상적으로 퇴장한 작업자의 오른쪽 손목 안쪽에는 4자리 사물함 번호가 피부 안쪽으로 영구히 눌려 남게 됩니다. 무사 생환을 기원합니다.
+                            </textarea>
+                </div>
+            </div>
+
+            <!-- CCTV Window -->
+            <div id="darkwebCCTVWindowEP10" class="window" style="display: none; width: 620px; height: 500px; top: 145px; left: 305px; z-index: 1003; background-color: #1a1a1a; border-top: 2px solid #555; border-left: 2px solid #555; border-right: 2px solid #000; border-bottom: 2px solid #000; box-shadow: 6px 6px 22px rgba(0,0,0,0.9); color: #00ff00; font-family: monospace; resize: none; overflow: hidden; position: absolute; flex-direction: column;">
+                <div class="window-header" style="background: #333; color: #ff0000; font-weight: bold; padding: 3px 6px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #555;">
+                    <span>🖥️ 행복공장_조립라인_CCTV.exe - [인어왕국 행복 공장 / 중앙 조립 라인 관제 콘솔]</span>
+                    <div class="window-buttons">
+                        <div class="win-btn" onclick="closeDarkWebCCTVEP10()" style="background: #222; color: #ff0000; border: 1px solid #555; cursor: pointer; padding: 0 4px; font-size: 10px; line-height: 1;">✕</div>
+                    </div>
+                </div>
+                <div class="window-content" style="padding: 10px; background-color: #050505; border: none; margin: 2px; height: calc(100% - 24px); display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; overflow: hidden;">
+                    <div id="cctv-screen-container-ep10" style="width: 100%; height: 280px; background: #000; border: 1px solid #333; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <video id="cctv-video-ep10" style="width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; top: 0; left: 0; z-index: 2;" autoplay loop muted playsinline></video>
+                        <div id="cctv-offline-bg-ep10" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0d0d0d; z-index: 1;"></div>
+                        <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 6px 100%; pointer-events: none; z-index: 2;"></div>
+                        <canvas id="cctv-noise-canvas-ep10" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity: 0.15; pointer-events: none; z-index: 3;"></canvas>
+                        
+                        <div style="position: absolute; top: 10px; left: 15px; font-size: 11px; z-index: 4; font-family: monospace; display: flex; flex-direction: column; gap: 4px; color: #00ff00; text-shadow: 0 0 4px #00ff00;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ff0000; animation: blink 1s infinite;"></span>
+                                <span id="cctv-cam-title-ep10">CH 00: CAM-LINE [중앙 조립 라인 뷰] - 작업 시작</span>
+                            </div>
+                        </div>
+                        
+                        <div id="cctv-blackout-ep10" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000000; z-index: 10; color: #fff; font-size: 14px; font-weight: bold; align-items: center; justify-content: center; text-align: center; box-sizing: border-box; padding: 20px;">
+                            <div>
+                                <span style="font-size: 32px; display: block; margin-bottom: 10px; animation: blink 1s infinite;">⚠️</span>
+                                [현장 시야 차단 및 프로토콜 이행 중...]
+                            </div>
+                        </div>
+                        <div id="cctv-center-status-ep10" style="font-size: 18px; font-weight: bold; text-align: center; border: 2px solid #00ff00; padding: 10px 20px; background: rgba(0,0,0,0.8); z-index: 5; color: #00ff00; text-shadow: 0 0 4px #00ff00; font-family: monospace; display: block;">
+                            CONNECTING...
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 10px; background: #111; border: 1px solid #333; font-size: 12px; font-weight: bold; color: #ff0000;">
+                        <span id="cctv-time-display-ep10">TIME: 22:00 (작업 시작)</span>
+                        <span id="cctv-state-display-ep10" style="color: #00ff00;">STATUS: NORMAL</span>
+                    </div>
+
+                    <div id="cctv-logs-ep10" style="width: 100%; height: 80px; background: #000; border: 1px solid #333; padding: 8px; box-sizing: border-box; overflow-y: auto; font-size: 11px; line-height: 1.4; color: #00ff00; font-family: monospace;">
+                        <div style="color: #888;">[SYSTEM] 인어왕국 행복 공장 중앙 조립 라인 관제 콘솔 로드 완료...</div>
+                    </div>
+
+                    <div id="cctv-choices-container-ep10" style="width: 100%; min-height: 48px; display: flex; gap: 8px; justify-content: center; align-items: center; padding: 4px 0;">
+                        <div style="color: #888; font-size: 11px;">[비정상 상황 발생 시 대응 선택지가 활성화됩니다]</div>
+                    </div>
+                </div>
+            </div>
+
+
+
             <!-- Dark Web Alert Modal -->
             <div id="darkweb-alert" class="window" style="display: none; width: 320px; z-index: 99999; position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); background-color: #1a1a1a; border-top: 2px solid #555; border-left: 2px solid #555; border-right: 2px solid #000; border-bottom: 2px solid #000; color: #ff0000; font-family: monospace;">
                 <div class="window-header" style="background: #333; color: #ff0000; font-weight: bold; padding: 3px 6px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #555;">
@@ -1870,7 +2035,10 @@ MBTI : ISFJ
         </div>
     </div>
 
+    <script src="save.js"></script>
+    <script src="story-data.js"></script>
     <script src="app.js"></script>
+    <script src="notebook.js"></script>
 
     <!-- EP.09 Glitch Overlay -->
     <div id="phone-glitch-overlay"></div>

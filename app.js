@@ -181,6 +181,21 @@ function closeWindow(windowId) {
     }
 }
 
+// 창이 화면 밖/상단 배너 뒤로 사라져 제목 줄을 잡을 수 없게 되는 것을 막는다.
+function clampWindowPosition(windowEl) {
+    const parent = windowEl.offsetParent;
+    if (!parent) return;
+    // 다크웹 데스크톱은 상단 배너(z-index 1000)가 열린 창(z-index 20대)보다 위에 그려진다.
+    const dark = windowEl.closest('#darkweb-desktop');
+    const banner = dark ? dark.firstElementChild : null;
+    const minTop = banner ? banner.offsetHeight : 0;
+    const keepVisible = 80;
+    const top = Math.max(minTop, Math.min(windowEl.offsetTop, parent.clientHeight - 60));
+    const left = Math.max(keepVisible - windowEl.offsetWidth, Math.min(windowEl.offsetLeft, parent.clientWidth - keepVisible));
+    windowEl.style.top = top + "px";
+    windowEl.style.left = left + "px";
+}
+
 // Window Dragging Logic (MouseDown on header)
 function makeDraggable(windowEl) {
     const header = windowEl.querySelector('.window-header');
@@ -207,6 +222,7 @@ function makeDraggable(windowEl) {
             pos4 = e.clientY;
             windowEl.style.top = (windowEl.offsetTop - pos2) + "px";
             windowEl.style.left = (windowEl.offsetLeft - pos1) + "px";
+            clampWindowPosition(windowEl);
         }
 
         function closeDragElement() {
@@ -540,6 +556,9 @@ function disconnectDarkWeb() {
     closeDarkWebFolderEP9();
     closeDarkWebReportEP9();
     closeDarkWebCCTVEP9();
+    closeDarkWebFolderEP10();
+    closeDarkWebReportEP10();
+    closeDarkWebCCTVEP10();
     closeDarkWebReadme();
     closeDarkWebAlert();
 }
@@ -2932,11 +2951,11 @@ function startCCTVGameEP5() {
     initCCTVNoiseEP5();
     
     // Automatically transition to Stage 1 after initial briefing
-    cctvTimerEP5 = setTimeout(() => {
+    cctvTimerEP5 = flowEpClock('EP5', () => {
         if (cctvGameStateEP5 === 'idle') {
             triggerEventA_EP5();
         }
-    }, 2800);
+    });
 }
 
 function stopCCTVGameEP5() {
@@ -3110,11 +3129,11 @@ function triggerEventA_EP5() {
                 cctvTimeStrEP5 = "LIMIT: 05:00:00 / 10:00:00";
                 updateCCTVHUDEP5();
                 playCCTVVideoEP5('movies/ep5_idle.mp4', '[FEED: CAM-POST ADVANCING]');
-                cctvTimerEP5 = setTimeout(() => {
-                    if (cctvGameStateEP5 === 'idle') {
-                        triggerEventB_EP5();
-                    }
-                }, 2500);
+                cctvTimerEP5 = flowEpClock('EP5', () => {
+        if (cctvGameStateEP5 === 'idle') {
+            triggerEventB_EP5();
+        }
+    });
             }
         }
     ]);
@@ -3149,11 +3168,11 @@ function triggerEventB_EP5() {
                 cctvTimeStrEP5 = "LIMIT: 07:45:00 / 10:00:00";
                 updateCCTVHUDEP5();
                 playCCTVVideoEP5('movies/ep5_idle.mp4', '[FEED: CAM-POST ADVANCING]');
-                cctvTimerEP5 = setTimeout(() => {
-                    if (cctvGameStateEP5 === 'idle') {
-                        triggerEventC_EP5();
-                    }
-                }, 2500);
+                cctvTimerEP5 = flowEpClock('EP5', () => {
+        if (cctvGameStateEP5 === 'idle') {
+            triggerEventC_EP5();
+        }
+    });
             }
         }
     ]);
@@ -3194,11 +3213,11 @@ function triggerEventC_EP5() {
                     cctvTimeStrEP5 = "LIMIT: 09:15:00 / 10:00:00";
                     updateCCTVHUDEP5();
                     playCCTVVideoEP5('movies/ep5_idle.mp4', '[FEED: CAM-POST ADVANCING]');
-                    cctvTimerEP5 = setTimeout(() => {
-                        if (cctvGameStateEP5 === 'idle') {
-                            triggerEventD_EP5();
-                        }
-                    }, 2500);
+                    cctvTimerEP5 = flowEpClock('EP5', () => {
+        if (cctvGameStateEP5 === 'idle') {
+            triggerEventD_EP5();
+        }
+    });
                 }, 2000);
             }
         }
@@ -3400,11 +3419,11 @@ function startCCTVGameEP6() {
     initCCTVNoiseEP6();
     
     // Automatically transition to Stage 1 after morning briefing
-    cctvTimerEP6 = setTimeout(() => {
+    cctvTimerEP6 = flowEpClock('EP6', () => {
         if (cctvGameStateEP6 === 'idle') {
             triggerEventA_EP6();
         }
-    }, 2800);
+    });
 }
 
 function stopCCTVGameEP6() {
@@ -3556,11 +3575,11 @@ function triggerEventA_EP6() {
                 cctvTimeStrEP6 = "TIME: 09:40:00 (1교시 수업)";
                 updateCCTVHUDEP6();
                 playCCTVVideoEP6('movies/ep6_idle.mp4', '[FEED: CAM-CLASS CLASS_FRONT_VIEW]');
-                cctvTimerEP6 = setTimeout(() => {
-                    if (cctvGameStateEP6 === 'idle') {
-                        triggerEventB_EP6();
-                    }
-                }, 2500);
+                cctvTimerEP6 = flowEpClock('EP6', () => {
+        if (cctvGameStateEP6 === 'idle') {
+            triggerEventB_EP6();
+        }
+    });
             }
         }
     ]);
@@ -3595,11 +3614,11 @@ function triggerEventB_EP6() {
                 cctvTimeStrEP6 = "TIME: 12:50:00 (점심시간 종료)";
                 updateCCTVHUDEP6();
                 playCCTVVideoEP6('movies/ep6_idle.mp4', '[FEED: CAM-CLASS CLASS_FRONT_VIEW]');
-                cctvTimerEP6 = setTimeout(() => {
-                    if (cctvGameStateEP6 === 'idle') {
-                        triggerEventC_EP6();
-                    }
-                }, 2500);
+                cctvTimerEP6 = flowEpClock('EP6', () => {
+        if (cctvGameStateEP6 === 'idle') {
+            triggerEventC_EP6();
+        }
+    });
             }
         }
     ]);
@@ -3640,11 +3659,11 @@ function triggerEventC_EP6() {
                     cctvTimeStrEP6 = "TIME: 15:50:00 (종례 준비)";
                     updateCCTVHUDEP6();
                     playCCTVVideoEP6('movies/ep6_idle.mp4', '[FEED: CAM-CLASS CLASS_FRONT_VIEW]');
-                    cctvTimerEP6 = setTimeout(() => {
-                        if (cctvGameStateEP6 === 'idle') {
-                            triggerEventD_EP6();
-                        }
-                    }, 2500);
+                    cctvTimerEP6 = flowEpClock('EP6', () => {
+        if (cctvGameStateEP6 === 'idle') {
+            triggerEventD_EP6();
+        }
+    });
                 }, 2500);
             }
         }
@@ -3846,11 +3865,11 @@ function startCCTVGameEP7() {
     initCCTVNoiseEP7();
     
     // Automatically transition to Stage 1 after initial briefing
-    cctvTimerEP7 = setTimeout(() => {
+    cctvTimerEP7 = flowEpClock('EP7', () => {
         if (cctvGameStateEP7 === 'idle') {
             triggerEventA_EP7();
         }
-    }, 2800);
+    });
 }
 
 function stopCCTVGameEP7() {
@@ -4002,11 +4021,11 @@ function triggerEventA_EP7() {
                 cctvTimeStrEP7 = "TIME: 01:45:00 (심야 근무)";
                 updateCCTVHUDEP7();
                 playCCTVVideoEP7('movies/ep7_idle.mp4', '[FEED: CAM-POS POS_COUNTER_IDLE]');
-                cctvTimerEP7 = setTimeout(() => {
-                    if (cctvGameStateEP7 === 'idle') {
-                        triggerEventB_EP7();
-                    }
-                }, 2500);
+                cctvTimerEP7 = flowEpClock('EP7', () => {
+        if (cctvGameStateEP7 === 'idle') {
+            triggerEventB_EP7();
+        }
+    });
             }
         }
     ]);
@@ -4041,11 +4060,11 @@ function triggerEventB_EP7() {
                 cctvTimeStrEP7 = "TIME: 03:30:00 (물품 진열 정리)";
                 updateCCTVHUDEP7();
                 playCCTVVideoEP7('movies/ep7_idle.mp4', '[FEED: CAM-POS POS_COUNTER_IDLE]');
-                cctvTimerEP7 = setTimeout(() => {
-                    if (cctvGameStateEP7 === 'idle') {
-                        triggerEventC_EP7();
-                    }
-                }, 2500);
+                cctvTimerEP7 = flowEpClock('EP7', () => {
+        if (cctvGameStateEP7 === 'idle') {
+            triggerEventC_EP7();
+        }
+    });
             }
         }
     ]);
@@ -4086,11 +4105,11 @@ function triggerEventC_EP7() {
                     cctvTimeStrEP7 = "TIME: 05:40:00 (새벽 시프트)";
                     updateCCTVHUDEP7();
                     playCCTVVideoEP7('movies/ep7_idle.mp4', '[FEED: CAM-POS POS_COUNTER_IDLE]');
-                    cctvTimerEP7 = setTimeout(() => {
-                        if (cctvGameStateEP7 === 'idle') {
-                            triggerEventD_EP7();
-                        }
-                    }, 2500);
+                    cctvTimerEP7 = flowEpClock('EP7', () => {
+        if (cctvGameStateEP7 === 'idle') {
+            triggerEventD_EP7();
+        }
+    });
                 }, 2500);
             }
         }
@@ -4292,11 +4311,11 @@ function startCCTVGameEP8() {
     initCCTVNoiseEP8();
     
     // Automatically transition to Stage 1 after initial briefing
-    cctvTimerEP8 = setTimeout(() => {
+    cctvTimerEP8 = flowEpClock('EP8', () => {
         if (cctvGameStateEP8 === 'idle') {
             triggerEventA_EP8();
         }
-    }, 2800);
+    });
 }
 
 function stopCCTVGameEP8() {
@@ -4454,11 +4473,11 @@ function triggerEventA_EP8() {
                     cctvTimeStrEP8 = "TIME: 12:30:00 (안전 구역)";
                     updateCCTVHUDEP8();
                     playCCTVVideoEP8('movies/ep8_idle.mp4', '[FEED: CAM-LOBBY LOBBY_ENTRANCE_IDLE]');
-                    cctvTimerEP8 = setTimeout(() => {
-                        if (cctvGameStateEP8 === 'idle') {
-                            triggerEventB_EP8();
-                        }
-                    }, 2500);
+                    cctvTimerEP8 = flowEpClock('EP8', () => {
+        if (cctvGameStateEP8 === 'idle') {
+            triggerEventB_EP8();
+        }
+    });
                 }, 2000);
             }
         }
@@ -4494,11 +4513,11 @@ function triggerEventB_EP8() {
                 cctvTimeStrEP8 = "TIME: 14:30:00 (오후 구역 이동)";
                 updateCCTVHUDEP8();
                 playCCTVVideoEP8('movies/ep8_idle.mp4', '[FEED: CAM-LOBBY LOBBY_ENTRANCE_IDLE]');
-                cctvTimerEP8 = setTimeout(() => {
-                    if (cctvGameStateEP8 === 'idle') {
-                        triggerEventC_EP8();
-                    }
-                }, 2500);
+                cctvTimerEP8 = flowEpClock('EP8', () => {
+        if (cctvGameStateEP8 === 'idle') {
+            triggerEventC_EP8();
+        }
+    });
             }
         }
     ]);
@@ -4533,11 +4552,11 @@ function triggerEventC_EP8() {
                 cctvTimeStrEP8 = "TIME: 17:30:00 (폐장 임박)";
                 updateCCTVHUDEP8();
                 playCCTVVideoEP8('movies/ep8_idle.mp4', '[FEED: CAM-LOBBY LOBBY_ENTRANCE_IDLE]');
-                cctvTimerEP8 = setTimeout(() => {
-                    if (cctvGameStateEP8 === 'idle') {
-                        triggerEventD_EP8();
-                    }
-                }, 2500);
+                cctvTimerEP8 = flowEpClock('EP8', () => {
+        if (cctvGameStateEP8 === 'idle') {
+            triggerEventD_EP8();
+        }
+    });
             }
         }
     ]);
@@ -4642,6 +4661,602 @@ function triggerGameClearEP8() {
     
     openDarkWebAlert("🏆 [유성 워터파크 무사 탈출]<br>축하합니다! 시설 관제 수칙을 철저히 준수하여 지하 수술실과 인형 탈의 위협을 뚫고 무사히 탈출하셨습니다!");
 }
+
+// ==========================================
+// Episode Clock Flow (EP.05~08 공용)
+// 대기(idle) 구간 동안 표시 시각을 다음 이벤트 시각까지 일정하게 흘려보낸다.
+// (EP.01~03 의 실시간 시계와 동일하게: 흐르다가 이벤트가 발동하면 멈춘다)
+// times[stage] = 해당 단계에서의 시각, stage 는 각 엔진의 epNStage (이벤트 발동 시 +1)
+// ==========================================
+function parseClockSec(str) {
+    const m = str.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (!m) return 0;
+    return (+m[1]) * 3600 + (+m[2]) * 60 + (m[3] ? +m[3] : 0);
+}
+
+function formatClockStr(template, sec) {
+    const m = template.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (!m) return template;
+    const pad = (v) => String(v).padStart(2, '0');
+    const s = ((sec % 86400) + 86400) % 86400;
+    const clock = m[3] !== undefined
+        ? `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s % 3600 / 60))}:${pad(Math.floor(s % 60))}`
+        : `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s % 3600 / 60))}`;
+    return template.replace(m[0], clock);
+}
+
+// from -> to 로 durationMs 동안 시각을 흘려보내고, 끝나면 onDone 호출. setInterval id 반환.
+function runClockFlow(fromSec, toSec, template, setTime, durationMs, onDone) {
+    if (toSec < fromSec) toSec += 86400; // 자정 넘김
+    const stepMs = 100;
+    const steps = Math.max(1, Math.round(durationMs / stepMs));
+    let i = 0;
+    setTime(formatClockStr(template, fromSec));
+    const id = setInterval(() => {
+        i++;
+        setTime(formatClockStr(template, Math.round(fromSec + (toSec - fromSec) * i / steps)));
+        if (i >= steps) {
+            clearInterval(id);
+            onDone();
+        }
+    }, stepMs);
+    return id;
+}
+
+const EP_CLOCKS = {
+    EP5: {
+        times: ['LIMIT: 00:00:00 / 10:00:00', 'LIMIT: 03:20:15 / 10:00:00', 'LIMIT: 06:40:40 / 10:00:00', 'LIMIT: 08:30:10 / 10:00:00', 'LIMIT: 09:50:00 / 10:00:00'],
+        stage: () => ep5Stage, get: () => cctvTimeStrEP5, set: (s) => { cctvTimeStrEP5 = s; updateCCTVHUDEP5(); }
+    },
+    EP6: {
+        times: ['TIME: 08:30:00', 'TIME: 08:32:10', 'TIME: 10:20:45', 'TIME: 13:40:00', 'TIME: 16:30:00'],
+        stage: () => ep6Stage, get: () => cctvTimeStrEP6, set: (s) => { cctvTimeStrEP6 = s; updateCCTVHUDEP6(); }
+    },
+    EP7: {
+        times: ['TIME: 23:00:00', 'TIME: 01:20:10', 'TIME: 02:15:30', 'TIME: 04:45:00', 'TIME: 06:05:00'],
+        stage: () => ep7Stage, get: () => cctvTimeStrEP7, set: (s) => { cctvTimeStrEP7 = s; updateCCTVHUDEP7(); }
+    },
+    EP8: {
+        times: ['TIME: 10:00:00', 'TIME: 11:30:15', 'TIME: 13:40:50', 'TIME: 15:20:00', 'TIME: 18:00:00'],
+        stage: () => ep8Stage, get: () => cctvTimeStrEP8, set: (s) => { cctvTimeStrEP8 = s; updateCCTVHUDEP8(); }
+    }
+};
+
+// 현재 단계의 이벤트 시각 -> 다음 이벤트 시각으로 흘려보낸 뒤 onDone(다음 이벤트 발동) 호출
+function flowEpClock(key, onDone, durationMs = 4000) {
+    const c = EP_CLOCKS[key];
+    const st = c.stage();
+    return runClockFlow(parseClockSec(c.times[st]), parseClockSec(c.times[st + 1]), c.get(), c.set, durationMs, onDone);
+}
+
+// ==========================================
+// Data-driven CCTV Episode Engine (EP.10 인어왕국 행복 공장)
+// 에피소드는 EPISODE_CONFIGS 의 데이터로만 정의한다. (EP.01~08, EP.09 은 기존 개별 엔진 유지)
+// ==========================================
+const EPISODE_ENGINES = {};
+
+function createCCTVEpisode(cfg) {
+    const n = cfg.num;
+    const el = (name) => document.getElementById(`${name}-ep${n}`);
+    let timer = null;
+    let inputTimer = null;
+    let noiseAnimId = null;
+    let state = 'idle';
+    let idx = -1;
+    let timeStr = cfg.startTime;
+    let statusLocked = false; // 클리어 화면이 영상 로드 실패 문구로 덮어써지지 않도록 보호
+
+    function updateHUD() {
+        const timeDisplay = el('cctv-time-display');
+        const stateDisplay = el('cctv-state-display');
+        if (timeDisplay) timeDisplay.textContent = timeStr;
+        if (!stateDisplay) return;
+        if (state === 'idle') {
+            stateDisplay.textContent = 'STATUS: NORMAL';
+            stateDisplay.style.color = '#00ff00';
+        } else if (state === 'death') {
+            stateDisplay.textContent = 'STATUS: ERROR - FATAL';
+            stateDisplay.style.color = '#ff0000';
+        } else if (state === 'win') {
+            stateDisplay.textContent = 'STATUS: SURVIVED';
+            stateDisplay.style.color = '#00ff00';
+        } else {
+            stateDisplay.textContent = 'STATUS: WARNING - ANOMALY';
+            stateDisplay.style.color = '#ffff00';
+        }
+    }
+
+    function setTitle(title) {
+        const e = el('cctv-cam-title');
+        if (e) e.textContent = title;
+    }
+
+    function addLog(text, isWarning = false) {
+        const container = el('cctv-logs');
+        if (!container) return;
+        const entry = document.createElement('div');
+        entry.style.marginBottom = '4px';
+        entry.style.color = isWarning ? '#ff3333' : '#00ff00';
+        if (isWarning) entry.style.fontWeight = 'bold';
+        entry.textContent = text;
+        container.appendChild(entry);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function clearChoices() {
+        const container = el('cctv-choices-container');
+        if (container) {
+            container.innerHTML = '<div style="color: #888; font-size: 11px;">[비정상 상황 발생 시 대응 선택지가 활성화됩니다]</div>';
+        }
+    }
+
+    function setChoices(choices) {
+        const container = el('cctv-choices-container');
+        if (!container) return;
+        container.innerHTML = '';
+        choices.forEach(ch => {
+            const btn = document.createElement('button');
+            btn.textContent = ch.text;
+            btn.style.backgroundColor = '#111';
+            btn.style.color = '#ff0000';
+            btn.style.border = '1px solid #ff0000';
+            btn.style.fontFamily = 'monospace';
+            btn.style.fontSize = '11px';
+            btn.style.padding = '4px 12px';
+            btn.style.cursor = 'pointer';
+            btn.addEventListener('click', ch.action);
+            container.appendChild(btn);
+        });
+    }
+
+    function initNoise() {
+        const canvas = el('cctv-noise-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = 160;
+        canvas.height = 120;
+
+        function drawNoise() {
+            const cctvWin = document.getElementById(`darkwebCCTVWindowEP${n}`);
+            if (!cctvWin || cctvWin.style.display === 'none') return;
+            const imgData = ctx.createImageData(canvas.width, canvas.height);
+            const data = imgData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const val = Math.floor(Math.random() * 255);
+                data[i] = val;
+                data[i + 1] = val;
+                data[i + 2] = val;
+                data[i + 3] = 255;
+            }
+            ctx.putImageData(imgData, 0, 0);
+            noiseAnimId = requestAnimationFrame(drawNoise);
+        }
+
+        if (noiseAnimId) cancelAnimationFrame(noiseAnimId);
+        drawNoise();
+    }
+
+    function playVideo(src, fallbackText) {
+        const video = el('cctv-video');
+        const centerStatus = el('cctv-center-status');
+        const offlineBg = el('cctv-offline-bg');
+        if (!video) return;
+
+        const showFallback = () => {
+            if (statusLocked) return;
+            video.style.display = 'none';
+            if (offlineBg) offlineBg.style.display = 'block';
+            if (centerStatus) {
+                centerStatus.style.display = 'block';
+                centerStatus.textContent = fallbackText || 'FEED SIGNAL LOST';
+            }
+        };
+
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.loop = true;
+        video.style.zIndex = '2';
+        video.style.display = 'block';
+        video.setAttribute('muted', '');
+        video.setAttribute('playsinline', '');
+        video.setAttribute('autoplay', '');
+
+        if (offlineBg) offlineBg.style.display = 'none';
+        if (centerStatus) centerStatus.style.display = 'none';
+
+        video.onloadeddata = () => {
+            video.style.display = 'block';
+            if (offlineBg) offlineBg.style.display = 'none';
+            if (centerStatus) centerStatus.style.display = 'none';
+        };
+        video.onerror = () => {
+            console.warn(`EP${n} video load error:`, src);
+            showFallback();
+        };
+
+        const currentSrc = video.getAttribute('src') || video.src || '';
+        if (!currentSrc.endsWith(src)) video.src = src;
+
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(() => {
+                video.muted = true;
+                video.play().catch(() => showFallback());
+            });
+        }
+    }
+
+    function stop() {
+        if (timer) {
+            clearTimeout(timer);
+            timer = null;
+        }
+        if (inputTimer) {
+            clearInterval(inputTimer);
+            inputTimer = null;
+        }
+        const video = el('cctv-video');
+        if (video) video.pause();
+        if (noiseAnimId) cancelAnimationFrame(noiseAnimId);
+    }
+
+    // 현재 시각에서 다음 이벤트 시각까지 시계를 일정하게 흘려보낸 뒤 다음 이벤트 발동
+    function flowToNextEvent(durationMs) {
+        const next = cfg.events[idx + 1];
+        if (!next) return;
+        timer = runClockFlow(
+            parseClockSec(timeStr), parseClockSec(next.time), cfg.flowTemplate,
+            (s) => { timeStr = s; updateHUD(); }, durationMs, nextEvent
+        );
+    }
+
+    function goIdle() {
+        state = 'idle';
+        setTitle(cfg.idleCam);
+        updateHUD();
+        playVideo(cfg.idleVideo, cfg.idleFallback);
+        flowToNextEvent(4000);
+    }
+
+    function die(reason, desc) {
+        stop();
+        state = 'death';
+        statusLocked = true;
+        if (typeof GameProgress !== 'undefined') GameProgress.onDeath(n);
+        updateHUD();
+        addLog(`[사망] ${desc}`, true);
+
+        const video = el('cctv-video');
+        const centerStatus = el('cctv-center-status');
+        if (video) {
+            video.pause();
+            video.style.display = 'none';
+        }
+        if (centerStatus) {
+            centerStatus.style.display = 'block';
+            centerStatus.style.borderColor = '#ff0000';
+            centerStatus.style.color = '#ff0000';
+            centerStatus.innerHTML = `
+                <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #ff0000; animation: blink 0.5s infinite;">☠️ SYSTEM FAILURE ☠️</div>
+                <div style="font-size: 11px; line-height: 1.5; color: #ff3333; font-family: monospace; text-align: left; word-break: keep-all;">
+                    [ERROR] ${cfg.deathLabel}<br>
+                    [원인] ${reason}<br>
+                    [결과] ${desc}
+                </div>
+            `;
+        }
+        setChoices([{
+            text: '재시도 (Retry)',
+            action: () => {
+                if (centerStatus) {
+                    centerStatus.style.borderColor = '#00ff00';
+                    centerStatus.style.color = '#00ff00';
+                }
+                start();
+            }
+        }]);
+    }
+
+    function win(finalLog) {
+        stop();
+        state = 'win';
+        if (typeof GameProgress !== 'undefined') GameProgress.onClear(n);
+        timeStr = cfg.clear.time;
+        updateHUD();
+        setTitle(cfg.clear.cam);
+        addLog(finalLog, false);
+        playVideo(cfg.idleVideo, '[SYSTEM: MISSION COMPLETE]');
+        statusLocked = true;
+        clearChoices();
+
+        const centerStatus = el('cctv-center-status');
+        if (centerStatus) {
+            centerStatus.style.display = 'block';
+            centerStatus.style.borderColor = '#00ff00';
+            centerStatus.style.color = '#00ff00';
+            centerStatus.innerHTML = `
+                <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #00ff00;">🏆 ${cfg.clear.title} 🏆</div>
+                <div style="font-size: 11px; line-height: 1.5; color: #00ff88; font-family: monospace; text-align: left; word-break: keep-all;">
+                    ${cfg.clear.lines.join('<br>')}
+                </div>
+            `;
+        }
+        openDarkWebAlert(cfg.clear.alert);
+    }
+
+    // 선택지 한 개를 실제 버튼 동작으로 변환. ev = 현재 이벤트, isLast = 마지막 이벤트 여부
+    function resolveChoice(ev, ch, isLast) {
+        const onSurvive = () => {
+            clearChoices();
+            if (isLast) {
+                win(ch.survive);
+            } else {
+                addLog(`[생존] ${ch.survive}`, false);
+                goIdle();
+            }
+        };
+        const onDeath = () => die(ch.death.reason, ch.death.desc);
+
+        if (ch.input) {
+            return {
+                text: ch.text,
+                action: () => showInput(ch, onSurvive, onDeath)
+            };
+        }
+        return { text: ch.text, action: ch.death ? onDeath : onSurvive };
+    }
+
+    // 직접 입력형 선택지: 제한 시간 내에 정확한 문장을 입력해야 생존
+    function showInput(ch, onSurvive, onDeath) {
+        const container = el('cctv-choices-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = ch.input.placeholder;
+        input.style.cssText = 'flex-grow: 1; background: #000; color: #00ff00; border: 1px solid #00ff00; font-family: monospace; font-size: 12px; padding: 4px 8px; outline: none;';
+
+        const submit = document.createElement('button');
+        submit.textContent = '전송';
+        submit.style.cssText = 'background: #111; color: #ff0000; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 4px 12px; cursor: pointer;';
+
+        const counter = document.createElement('span');
+        counter.style.cssText = 'color: #ffff00; font-size: 11px; min-width: 40px; text-align: right;';
+
+        container.appendChild(input);
+        container.appendChild(submit);
+        container.appendChild(counter);
+        input.focus();
+
+        let remaining = ch.input.seconds;
+        counter.textContent = `${remaining}s`;
+
+        const finish = (ok) => {
+            if (inputTimer) {
+                clearInterval(inputTimer);
+                inputTimer = null;
+            }
+            if (ok) {
+                addLog(`> 입력: ${input.value.trim()}`, false);
+                onSurvive();
+            } else {
+                onDeath();
+            }
+        };
+        const normalize = (s) => s.replace(/[\s.,?!"'“”‘’]/g, '');
+        const attempt = () => {
+            if (!input.value.trim()) return;
+            finish(normalize(input.value) === normalize(ch.input.answer));
+        };
+
+        submit.addEventListener('click', attempt);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') attempt();
+        });
+
+        inputTimer = setInterval(() => {
+            remaining--;
+            counter.textContent = `${remaining}s`;
+            if (remaining <= 0) finish(false);
+        }, 1000);
+    }
+
+    function triggerEvent(ev, isLast) {
+        if (timer) clearTimeout(timer);
+        state = 'event';
+        timeStr = ev.time;
+        updateHUD();
+        setTitle(ev.cam);
+        playVideo(ev.video, ev.fallback);
+        addLog(ev.log, true);
+        setChoices(ev.choices.map(ch => resolveChoice(ev, ch, isLast)));
+    }
+
+    function nextEvent() {
+        if (state !== 'idle') return;
+        idx++;
+        if (idx >= cfg.events.length) return;
+        triggerEvent(cfg.events[idx], idx === cfg.events.length - 1);
+    }
+
+    function start() {
+        stop();
+        idx = -1;
+        state = 'idle';
+        timeStr = cfg.startTime;
+        statusLocked = false;
+
+        const blackout = el('cctv-blackout');
+        if (blackout) blackout.style.display = 'none';
+        const centerStatus = el('cctv-center-status');
+        if (centerStatus) {
+            centerStatus.style.display = 'none';
+            centerStatus.style.borderColor = '#00ff00';
+            centerStatus.style.color = '#00ff00';
+        }
+
+        setTitle(cfg.idleCam);
+        updateHUD();
+
+        const logs = el('cctv-logs');
+        if (logs) logs.innerHTML = `<div style="color: #888;">${cfg.systemLog}</div>`;
+        addLog(cfg.introLog, false);
+
+        playVideo(cfg.idleVideo, cfg.idleFallback);
+        clearChoices();
+        initNoise();
+
+        flowToNextEvent(4000);
+    }
+
+    return { start, stop };
+}
+
+// 에피소드 창(폴더/수칙/CCTV)의 열기·닫기 함수를 전역으로 등록 (index.html 의 onclick 이 호출)
+function bindEpisodeWindows(n) {
+    ['Folder', 'Report', 'CCTV'].forEach(kind => {
+        window[`openDarkWeb${kind}EP${n}`] = () => {
+            const win = document.getElementById(`darkweb${kind}WindowEP${n}`);
+            if (!win) return;
+            win.style.display = 'flex';
+            highestZIndex++;
+            win.style.zIndex = highestZIndex;
+            updateDarkWebTaskbar();
+            if (kind === 'CCTV') EPISODE_ENGINES[n].start();
+        };
+        window[`closeDarkWeb${kind}EP${n}`] = () => {
+            const win = document.getElementById(`darkweb${kind}WindowEP${n}`);
+            if (!win) return;
+            win.style.display = 'none';
+            updateDarkWebTaskbar();
+            if (kind === 'CCTV') EPISODE_ENGINES[n].stop();
+        };
+    });
+}
+
+const EPISODE_CONFIGS = {
+    // ---------------------------------------------------------
+    // EP.10 인어왕국 행복 공장
+    // ---------------------------------------------------------
+    10: {
+        num: 10,
+        deathLabel: '행복 공장 작업자 생체 신호 소멸.',
+        startTime: 'TIME: 22:00 (작업 시작)',
+        flowTemplate: 'TIME: 00:00 (작업 진행 중)',
+        idleCam: 'CH 00: CAM-LINE [중앙 조립 라인 뷰] - 작업 진행 중',
+        idleVideo: 'movies/ep10_idle.mp4',
+        idleFallback: '[FEED: CAM-LINE ASSEMBLY_LINE_IDLE]',
+        systemLog: '[SYSTEM] 인어왕국 행복 공장 중앙 조립 라인 관제 콘솔 로드 완료...',
+        introLog: '[22:00] 4자리 작업 번호 부여 완료. 인어왕자 인형 1구를 조립해 최종 검수를 통과하십시오.',
+        events: [
+            {
+                cam: 'CH 01: CAM-LOCKER [작업복 탈의실 뷰] - 상황 A (홍보곡 및 이름 호명)',
+                time: 'TIME: 22:10 (탈의실)',
+                video: 'movies/ep10_event_locker.mp4',
+                fallback: '[FEED: CAM-LOCKER LOCKER_ROOM_SONG]',
+                log: '[경고] 행복 공장 홍보곡이 스피커에서 흘러나옵니다. 등 뒤쪽 사물함이 덜컹거리며 당신의 진짜 이름을 부르는 소리가 들립니다.',
+                choices: [
+                    {
+                        text: '[선택지 1] 누구인지 확인하기 위해 뒤를 돌아본다.',
+                        death: { reason: '호명 응답(뒤돌아봄)', desc: '사물함 안으로 빨려 들어가 8각으로 접혀 압축되었습니다.' }
+                    },
+                    {
+                        text: '[선택지 2] 노래가 끝날 때까지 사물함만 노려보며 묵묵히 옷을 갈아입는다.',
+                        survive: '노래가 끝나고 등 뒤의 소음이 사라졌습니다. 조립 라인으로 입장합니다.'
+                    }
+                ]
+            },
+            {
+                cam: 'CH 02: CAM-HEAD [머리 검수대 뷰] - 상황 B (치아가 보이는 머리)',
+                time: 'TIME: 22:50 (머리 검수)',
+                video: 'movies/ep10_event_head.mp4',
+                fallback: '[FEED: CAM-HEAD HEAD_INSPECTION_TEETH]',
+                log: '[경고] 들고 있는 금발 인어왕자의 입이 벌어지며 치아가 드러났습니다.',
+                choices: [
+                    {
+                        text: '[선택지 1] 징그러워서 즉시 인형 머리를 불량품 상자에 집어 던진다.',
+                        death: { reason: '작업 지시 위반', desc: '작업 지시 위반. 기계 팔이 내려와 귀하의 목을 뽑아 컨베이어에 올렸습니다.' }
+                    },
+                    {
+                        text: '[선택지 2] 벌어진 입술 사이에 귀하의 검지와 중지를 깊숙이 집어넣고 버틴다.',
+                        survive: '축축한 혀가 손가락을 핥다 입을 다물었습니다. 불량 상자에 폐기 성공.'
+                    }
+                ]
+            },
+            {
+                cam: 'CH 03: CAM-VOICE [음성 시험대 뷰] - 상황 C (비정상 음성 재생)',
+                time: 'TIME: 23:40 (음성 시험)',
+                video: 'movies/ep10_event_voice.mp4',
+                fallback: '[FEED: CAM-VOICE VOICE_TEST_BENCH]',
+                log: '[경고] 4번째 버튼을 누르자 인형이 말합니다. "여기서 살아줄 거지?" — 돌발 미션: 마이크 모듈에 올바른 문장을 입력하여 정정하십시오.',
+                choices: [
+                    {
+                        text: '[직접 입력] 올바른 문장으로 정정한다 (제한 시간 10초)',
+                        input: {
+                            placeholder: '올바른 문장을 입력하십시오...',
+                            answer: '친구가 되어줄 거지',
+                            seconds: 10,
+                        },
+                        survive: '귀에서 들리던 환청이 사라지고 음성 칩이 리셋되었습니다.',
+                        death: { reason: '음성 정정 실패', desc: '정정 실패. 성대가 강제로 적출되어 인형의 스피커 모듈에 이식되었습니다.' }
+                    }
+                ]
+            },
+            {
+                cam: 'CH 04: CAM-ARM [팔 결합대 뷰] - 상황 D (손가락 모임 및 역관절)',
+                time: 'TIME: 01:10 (팔 결합)',
+                video: 'movies/ep10_event_arm.mp4',
+                fallback: '[FEED: CAM-ARM ARM_ASSEMBLY_REVERSE_JOINT]',
+                log: '[경고] 집어 든 인형의 5개 손가락이 귀하를 향해 모여들며 소매를 붙잡습니다.',
+                choices: [
+                    {
+                        text: '[선택지 1] 무시하고 그대로 몸체에 핀을 밀어 넣어 결합을 시도한다.',
+                        death: { reason: '불량 부품 결합 시도', desc: '인형 팔에 끌려 들어가 양손이 작업대에 눌린 채 압착되었습니다.' }
+                    },
+                    {
+                        text: '[선택지 2] 즉시 인형 팔을 오른쪽 압착 홈에 넣고 은색 페달을 밟아 절단한다.',
+                        survive: '팔이 끊어져 나갔습니다. 예비 부품으로 결합을 완료합니다.'
+                    }
+                ]
+            },
+            {
+                cam: 'CH 05: CAM-TAIL [최종 조립실 뷰] - 상황 E (최종 검수 및 퇴장)',
+                time: 'TIME: 02:30 (최종 검수)',
+                video: 'movies/ep10_event_exit.mp4',
+                fallback: '[FEED: CAM-TAIL FINAL_INSPECTION_EXIT]',
+                log: '[도달] 조립 완료. 4문장이 정상 재생되며 검수등이 [초록색]으로 켜졌습니다.',
+                choices: [
+                    {
+                        text: '[선택지 1] "끝났다!" 환호하며 뒤도 돌아보지 않고 출입문으로 뛰어나간다.',
+                        death: { reason: '미승인 음성 발생', desc: '미승인 음성 발생으로 검수등이 빨간색으로 변경되며 재작업실로 끌려갔습니다.' }
+                    },
+                    {
+                        text: '[선택지 2] 입을 굳게 다문 채 무표정으로 묵묵히 출입문을 향해 걸어 나간다.',
+                        survive: '[GOOD ENDING] 홍보곡이 다시 재생되는 공장 밖으로 무사히 탈출했습니다! (손목의 번호가 피부 안쪽으로 스며들어 사라졌습니다.)'
+                    }
+                ]
+            }
+        ],
+        clear: {
+            time: 'TIME: 02:40 (퇴근 완료)',
+            cam: 'CH 05: CAM-TAIL [최종 조립실 뷰] - 퇴근 성공',
+            title: 'SHIFT COMPLETE',
+            lines: [
+                '[SUCCESS] 인어왕자 인형 1구 최종 검수 통과.',
+                '[상태] 작업 번호 4자리 피부 안쪽으로 흡수 확인.',
+                '[조치] 공장 외부 구역으로 안전 복귀. 인어왕국 행복 공장을 재방문하지 마십시오.'
+            ],
+            alert: '🧜 [인어왕국 행복 공장 퇴근]<br>축하합니다! 무표정으로 출입문을 통과해 공장 밖으로 무사히 탈출하셨습니다!'
+        }
+    }
+};
+
+Object.keys(EPISODE_CONFIGS).forEach(key => {
+    EPISODE_ENGINES[key] = createCCTVEpisode(EPISODE_CONFIGS[key]);
+    bindEpisodeWindows(key);
+});
 
 // ==========================================
 // CCTV & Mobile Interactive Engine (EP.09 안전 안내 문자)
@@ -4996,6 +5611,7 @@ function handlePhoneInputSubmit() {
             }, 1500);
         } else {
             appendPhoneMessage("시스템: [SYSTEM ERROR] 잘못된 대응 또는 인증 번호입니다.\n테러리스트 세력의 격리 구역으로 강제 전송되었습니다.\n[GAME OVER] 다시 시도하십시오.", "warning");
+            if (typeof GameProgress !== 'undefined') GameProgress.onDeath(9);
             input.disabled = true;
             const feed = document.getElementById('phone-message-feed');
             if (feed) {
@@ -5018,6 +5634,7 @@ function handlePhoneInputSubmit() {
         const clean = val.replace(/\s/g, '');
         if (clean === '5264') {
             ep9GoodEndingCleared = true;
+            if (typeof GameProgress !== 'undefined') GameProgress.onClear(9);
             unlockJayReport();
             appendPhoneMessage("시스템: [본부 긴급 구출팀] 승인 완료.\n스마트폰 화면의 잠금이 해제되며 구출팀이 진입합니다.\n[GOOD ENDING] EP.09 변칙 통신 구역에서 무사히 생환했습니다!", "system");
             input.disabled = true;
@@ -5039,6 +5656,7 @@ function handlePhoneInputSubmit() {
             }
         } else {
             appendPhoneMessage("시스템: [SYSTEM ERROR] 잘못된 대응 또는 인증 번호입니다.\n테러리스트 세력의 격리 구역으로 강제 전송되었습니다.\n[GAME OVER] 다시 시도하십시오.", "warning");
+            if (typeof GameProgress !== 'undefined') GameProgress.onDeath(9);
             input.disabled = true;
             const feed = document.getElementById('phone-message-feed');
             if (feed) {
@@ -5189,6 +5807,10 @@ const darkWebWindowsList = [
     { id: 'darkwebFolderWindowEP9', title: '📁 [EP.09] 탐색기' },
     { id: 'darkwebReportWindowEP9', title: '📄 재난문자_지침.txt' },
     { id: 'darkwebCCTVWindowEP9', title: '🖥️ 통신망_CCTV' },
+    { id: 'darkwebFolderWindowEP10', title: '📁 [EP.10] 탐색기' },
+    { id: 'darkwebReportWindowEP10', title: '📄 행복공장_작업수칙.txt' },
+    { id: 'darkwebCCTVWindowEP10', title: '🖥️ 행복공장_CCTV' },
+    { id: 'notebookWindow', title: '🗂️ 사건수사노트' },
     { id: 'darkwebReadmeWindow', title: '📄 readme.txt' }
 ];
 
@@ -5465,7 +6087,8 @@ function triggerBlackoutReboot() {
     }, 2000);
 }
 
-function applyLoopDesktopState() {
+// autoOpen=false: 엔딩을 이미 본 상태로 다시 접속했을 때(저장된 진행) 새 근무자 문서 창을 자동으로 띄우지 않는다.
+function applyLoopDesktopState(autoOpen = true) {
     // 1. Ensure desktop is active
     const dwDesktop = document.getElementById('darkweb-desktop');
     if (dwDesktop) dwDesktop.style.display = 'block';
@@ -5509,7 +6132,9 @@ function applyLoopDesktopState() {
     updateDarkWebTaskbar();
     
     // Automatically open the new recruit document window with retro focus
-    setTimeout(() => {
-        openNewRecruitDocument();
-    }, 500);
+    if (autoOpen) {
+        setTimeout(() => {
+            openNewRecruitDocument();
+        }, 500);
+    }
 }
