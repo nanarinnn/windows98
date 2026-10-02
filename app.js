@@ -196,14 +196,49 @@ function clampWindowPosition(windowEl) {
     windowEl.style.left = left + "px";
 }
 
-// Window Dragging Logic (MouseDown on header)
+// 휴대폰 세로 화면(<=600px)에서는 CSS 가 모든 창을 전체 화면으로 표시하므로 창 이동이 필요 없다.
+const PHONE_LAYOUT_QUERY = window.matchMedia('(max-width: 600px)');
+function isPhoneLayout() {
+    return PHONE_LAYOUT_QUERY.matches;
+}
+
+// 태블릿/작은 화면: 창이 열릴 때 화면 안에 완전히 들어오도록 크기와 위치를 보정한다. (큰 화면은 그대로 둔다)
+function fitWindowToViewport(windowEl) {
+    if (isPhoneLayout() || window.innerWidth > 1024) return;
+    if (windowEl.style.transform) return; // 가운데 정렬(transform) 대화상자는 제외
+    const parent = windowEl.offsetParent;
+    if (!parent) return;
+    const margin = 6;
+    const dark = windowEl.closest('#darkweb-desktop');
+    const banner = dark ? dark.firstElementChild : null;
+    const minTop = banner ? banner.offsetHeight + margin : margin;
+    const maxW = parent.clientWidth - margin * 2;
+    const maxH = parent.clientHeight - minTop - 36; // 아래 작업표시줄 여유
+    if (windowEl.offsetWidth > maxW) windowEl.style.width = maxW + "px";
+    if (windowEl.offsetHeight > maxH) windowEl.style.height = maxH + "px";
+    const left = Math.max(margin, Math.min(windowEl.offsetLeft, parent.clientWidth - windowEl.offsetWidth - margin));
+    const top = Math.max(minTop, Math.min(windowEl.offsetTop, parent.clientHeight - windowEl.offsetHeight - 36));
+    windowEl.style.left = left + "px";
+    windowEl.style.top = top + "px";
+}
+
+// Window Dragging Logic (Pointer Events: 마우스와 터치를 모두 처리)
 function makeDraggable(windowEl) {
     const header = windowEl.querySelector('.window-header');
     if (!header) return;
 
     header.style.cursor = 'move';
+    header.style.touchAction = 'none'; // 제목 줄을 끌 때 페이지가 스크롤되지 않도록
 
-    header.addEventListener('mousedown', (e) => {
+    // 창이 열릴 때(display: none -> 보임) 화면 안으로 보정
+    let wasHidden = getComputedStyle(windowEl).display === 'none';
+    new MutationObserver(() => {
+        const hidden = getComputedStyle(windowEl).display === 'none';
+        if (wasHidden && !hidden) fitWindowToViewport(windowEl);
+        wasHidden = hidden;
+    }).observe(windowEl, { attributes: true, attributeFilter: ['style'] });
+
+    header.addEventListener('pointerdown', (e) => {
         // Bring to front
         highestZIndex++;
         windowEl.style.zIndex = highestZIndex;
@@ -211,6 +246,9 @@ function makeDraggable(windowEl) {
         if (windowEl.id.startsWith('darkweb')) {
             updateDarkWebTaskbar();
         }
+
+        if (isPhoneLayout()) return; // 전체 화면 창은 이동하지 않는다
+        if (e.target.closest && e.target.closest('.win-btn, .window-buttons')) return; // 닫기 버튼 누름은 드래그가 아님
 
         let pos1 = 0, pos2 = 0, pos3 = e.clientX, pos4 = e.clientY;
 
@@ -226,16 +264,18 @@ function makeDraggable(windowEl) {
         }
 
         function closeDragElement() {
-            document.removeEventListener('mouseup', closeDragElement);
-            document.removeEventListener('mousemove', elementDrag);
+            document.removeEventListener('pointerup', closeDragElement);
+            document.removeEventListener('pointercancel', closeDragElement);
+            document.removeEventListener('pointermove', elementDrag);
         }
 
-        document.addEventListener('mouseup', closeDragElement);
-        document.addEventListener('mousemove', elementDrag);
+        document.addEventListener('pointerup', closeDragElement);
+        document.addEventListener('pointercancel', closeDragElement);
+        document.addEventListener('pointermove', elementDrag);
     });
 
-    // Make window focused on click anywhere on it
-    windowEl.addEventListener('mousedown', () => {
+    // Make window focused on click/touch anywhere on it
+    windowEl.addEventListener('pointerdown', () => {
         if (parseInt(windowEl.style.zIndex || 0) < highestZIndex) {
             highestZIndex++;
             windowEl.style.zIndex = highestZIndex;

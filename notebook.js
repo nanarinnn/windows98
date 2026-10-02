@@ -137,11 +137,14 @@ function renderNotebook() {
 
     const tabs = [['board', '사건 보드'], ['clues', '단서'], ['deductions', '추리'], ['achievements', '업적'], ['record', '기록']];
     const bar = h('div', 'display: flex; gap: 4px; padding: 6px 8px 0; background: #1a1a1a; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 2;');
+    bar.className = 'nb-tabs';
     tabs.forEach(([key, label]) => {
         const active = notebookState.tab === key;
-        bar.appendChild(h('div',
+        const tab = h('div',
             `padding: 4px 12px; font-size: 11px; cursor: pointer; border: 1px solid #555; border-bottom: none; color: ${active ? '#000' : NB_RED}; background: ${active ? NB_RED : '#111'}; font-weight: bold;`,
-            label, () => switchNotebookTab(key)));
+            label, () => switchNotebookTab(key));
+        tab.className = 'nb-tab';
+        bar.appendChild(tab);
     });
     body.appendChild(bar);
 
@@ -166,6 +169,7 @@ function renderBoard(root) {
         `처리 완료 ${cleared}/${EP_NUMBERS.length} · 단서 ${foundClues}/${totalClues} · 추리 ${foundDed}/${DEDUCTIONS.length} · 업적 ${foundAch}/${ACHIEVEMENTS.length}`));
 
     const grid = h('div', 'display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;');
+    grid.className = 'nb-grid';
     EP_NUMBERS.forEach(n => {
         const rec = GameSave.ep(n);
         const cc = clueCountFor(n);

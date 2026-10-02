@@ -1095,3 +1095,142 @@ input[type=range]::-webkit-slider-thumb:active {
     background-size: 100% 4px;
     pointer-events: none;
 }
+
+/* ==========================================
+   Mobile / Tablet responsive layout
+   - 휴대폰 세로(<=600px): 모든 창을 전체 화면으로 표시 (모바일 앱처럼)
+   - 태블릿(601~1024px): 창은 그대로 띄우되 화면 안으로 제한
+   - 작은 대화상자(CAPTCHA, 알림창, 경고창)는 전체 화면에서 제외
+   데스크톱(>1024px)에는 아무 영향이 없다.
+   ========================================== */
+
+/* 터치 기기 공통 */
+@media (pointer: coarse) {
+    html, body { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+}
+@media (hover: none) {
+    .icon:hover, .desktop-file:hover, .darkweb-icons-container .icon:hover {
+        background-color: transparent;
+        outline: none;
+        border-color: transparent;
+    }
+}
+
+/* ---------- 태블릿 ---------- */
+@media (min-width: 601px) and (max-width: 1024px) {
+    .window:not(#captcha-window):not(#retro-alert):not(#recycle-bin-alert):not(#darkweb-alert):not(#darkweb-warning-dialog) {
+        max-width: calc(100vw - 12px) !important;
+        max-height: calc(100vh - 70px) !important;
+    }
+    .win-btn { min-width: 26px !important; height: 22px !important; line-height: 20px !important; font-size: 13px !important; }
+    .window-header { padding-top: 6px !important; padding-bottom: 6px !important; }
+}
+
+/* ---------- 휴대폰 세로 ---------- */
+@media (max-width: 600px) {
+    /* 창 = 전체 화면 (아래 작업표시줄 28px 제외) */
+    .window:not(#captcha-window):not(#retro-alert):not(#recycle-bin-alert):not(#darkweb-alert):not(#darkweb-warning-dialog) {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        height: calc(100vh - 28px) !important;
+        height: calc(100dvh - 28px) !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        resize: none !important;
+        transform: none !important;
+        box-sizing: border-box;
+    }
+    /* 다크웹은 위에 배너(24px)가 있다 */
+    /* (:not(#id)도 ID 우선순위로 계산되므로, 위 규칙보다 이기도록 같은 제외 목록을 반복한다) */
+    #darkweb-overlay .window:not(#captcha-window):not(#retro-alert):not(#recycle-bin-alert):not(#darkweb-alert):not(#darkweb-warning-dialog) {
+        top: 24px !important;
+        height: calc(100vh - 52px) !important;
+        height: calc(100dvh - 52px) !important;
+    }
+    .window-content { overflow: auto !important; }
+
+    /* 손가락으로 누르기 쉬운 제목 줄/닫기 버튼 */
+    .window-header { padding: 8px 10px !important; font-size: 14px !important; }
+    .win-btn { width: 34px !important; height: 28px !important; line-height: 26px !important; font-size: 15px !important; padding: 0 !important; }
+    .win-btn-large, .window button { min-height: 34px; }
+
+    /* 알림 대화상자는 화면 안에서 */
+    #recycle-bin-alert, #retro-alert, #darkweb-alert, #darkweb-warning-dialog { max-width: 94vw !important; }
+    #darkweb-warning-dialog .window-content { padding: 14px !important; }
+    #darkweb-warning-dialog img { width: 90px !important; height: 90px !important; }
+
+    /* 다크웹 배너: 한 줄로 */
+    #darkweb-desktop > div:first-child {
+        height: 24px;
+        padding: 3px 8px !important;
+        font-size: 10px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        gap: 8px;
+    }
+    #darkweb-desktop > div:first-child > span:first-child { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    #darkweb-desktop > div:first-child > span:last-child { flex-shrink: 0; max-width: 50%; overflow: hidden; text-overflow: ellipsis; }
+    .darkweb-icons-container { top: 32px; left: 10px; gap: 6px 10px; }
+    .darkweb-icons-container .icon { width: 86px; padding: 8px 2px; }
+
+    /* 작업표시줄: 버튼이 많으면 가로 스크롤 */
+    #taskbar-items, #darkweb-taskbar-items {
+        min-width: 0; /* flex 자식이 시계 밑으로 넘치지 않고 줄어들도록 */
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        margin-left: 6px !important;
+        scrollbar-width: none;
+    }
+    #taskbar-items::-webkit-scrollbar, #darkweb-taskbar-items::-webkit-scrollbar { display: none; }
+    .taskbar-item, #darkweb-taskbar-items > div {
+        flex: 0 0 auto;
+        min-width: 64px !important;
+        max-width: 110px !important;
+        padding: 0 6px !important;
+        font-size: 10px !important;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    #taskbar { box-sizing: border-box; }
+    #darkweb-start-button, #start-button { flex-shrink: 0; white-space: nowrap; }
+    #darkweb-taskbar-clock, #taskbar-clock { flex-shrink: 0; }
+
+    /* CCTV 화면 */
+    [id^="cctv-screen-container"] { height: 30vh !important; height: 30dvh !important; min-height: 150px; }
+    [id^="cctv-logs"] { height: 64px !important; }
+    [id^="cctv-choices-container"] { flex-wrap: wrap !important; }
+    [id^="cctv-choices-container"] button {
+        flex: 1 1 100%;
+        text-align: left;
+        min-height: 40px;
+        font-size: 13px !important;
+        padding: 8px 12px !important;
+        line-height: 1.4;
+    }
+    /* 입력창: iOS 가 16px 미만이면 자동 확대하므로 16px 로 */
+    [id^="cctv-choices-container"] input, #phone-input, .window input[type="text"] { font-size: 16px !important; min-height: 40px; }
+
+    /* 사건수사노트 */
+    .nb-tabs { overflow-x: auto; flex-wrap: nowrap !important; scrollbar-width: none; }
+    .nb-tabs::-webkit-scrollbar { display: none; }
+    .nb-tab { flex: 0 0 auto; padding: 8px 14px !important; font-size: 13px !important; }
+    .nb-grid { grid-template-columns: 1fr !important; }
+
+    /* EP.09 스마트폰 연출: 프레임 없이 화면 전체 */
+    .mobile-phone-overlay { padding: 0 !important; }
+    .phone-frame {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        max-height: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 6px !important;
+    }
+}
