@@ -1234,3 +1234,22 @@ input[type=range]::-webkit-slider-thumb:active {
         padding: 6px !important;
     }
 }
+
+/* ==========================================
+   기밀 터미널 / 본부 메신저 효과
+   ========================================== */
+@keyframes terminal-blood-pulse {
+    0%, 100% { background-color: #2a0000; }
+    50% { background-color: #5a0000; }
+}
+#terminalWindow.terminal-blood { animation: terminal-blood-pulse 1.6s ease-in-out infinite; border-color: #ff0000 !important; box-shadow: 0 0 30px rgba(255, 0, 0, 0.7) !important; }
+#terminalWindow.terminal-blood #terminal-output { color: #ff3333; text-shadow: 0 0 6px rgba(255, 0, 0, 0.8); }
+
+@keyframes msgr-glitch-shake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-2px, 1px); }
+    40% { transform: translate(2px, -1px); }
+    60% { transform: translate(-1px, -2px); }
+    80% { transform: translate(1px, 2px); }
+}
+.msgr-glitch { animation: msgr-glitch-shake 0.25s linear 6; border-color: #ff0000 !important; text-shadow: 1px 0 #00ffff, -1px 0 #ff0000; }

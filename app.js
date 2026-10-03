@@ -5010,6 +5010,11 @@ function createCCTVEpisode(cfg) {
         statusLocked = true;
         clearChoices();
 
+        // 클리어하면 손목 안쪽에 새겨지는 4자리 작업자(사물함) 번호가 발급된다. (본부 메신저에서 이 번호를 사용한다)
+        const workerNo = cfg.clear.workerNumber && typeof GameSave !== 'undefined' ? GameSave.workerNo() : 0;
+        const clearLines = cfg.clear.lines.slice();
+        if (workerNo) clearLines.push(`[작업자 번호] ${workerNo}번이 오른쪽 손목 안쪽에 새겨졌습니다.`);
+
         const centerStatus = el('cctv-center-status');
         if (centerStatus) {
             centerStatus.style.display = 'block';
@@ -5018,11 +5023,11 @@ function createCCTVEpisode(cfg) {
             centerStatus.innerHTML = `
                 <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #00ff00;">🏆 ${cfg.clear.title} 🏆</div>
                 <div style="font-size: 11px; line-height: 1.5; color: #00ff88; font-family: monospace; text-align: left; word-break: keep-all;">
-                    ${cfg.clear.lines.join('<br>')}
+                    ${clearLines.join('<br>')}
                 </div>
             `;
         }
-        openDarkWebAlert(cfg.clear.alert);
+        openDarkWebAlert(cfg.clear.alert + (workerNo ? `<br>작업자 번호 ${workerNo}` : ''));
     }
 
     // 선택지 한 개를 실제 버튼 동작으로 변환. ev = 현재 이벤트, isLast = 마지막 이벤트 여부
@@ -5288,6 +5293,7 @@ const EPISODE_CONFIGS = {
                 '[상태] 작업 번호 4자리 피부 안쪽으로 흡수 확인.',
                 '[조치] 공장 외부 구역으로 안전 복귀. 인어왕국 행복 공장을 재방문하지 마십시오.'
             ],
+            workerNumber: true,
             alert: '🧜 [인어왕국 행복 공장 퇴근]<br>축하합니다! 무표정으로 출입문을 통과해 공장 밖으로 무사히 탈출하셨습니다!'
         }
     }
@@ -5851,6 +5857,8 @@ const darkWebWindowsList = [
     { id: 'darkwebReportWindowEP10', title: '📄 행복공장_작업수칙.txt' },
     { id: 'darkwebCCTVWindowEP10', title: '🖥️ 행복공장_CCTV' },
     { id: 'notebookWindow', title: '🗂️ 사건수사노트' },
+    { id: 'terminalWindow', title: '⌨️ 기밀터미널' },
+    { id: 'messengerWindow', title: '💬 본부메신저' },
     { id: 'darkwebReadmeWindow', title: '📄 readme.txt' }
 ];
 

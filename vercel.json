@@ -7,6 +7,7 @@
     { "src": "save.js", "use": "@vercel/static" },
     { "src": "story-data.js", "use": "@vercel/static" },
     { "src": "notebook.js", "use": "@vercel/static" },
+    { "src": "terminal.js", "use": "@vercel/static" },
     { "src": "image/**", "use": "@vercel/static" },
     { "src": "movies/**", "use": "@vercel/static" },
     { "src": "*.mp4", "use": "@vercel/static" },

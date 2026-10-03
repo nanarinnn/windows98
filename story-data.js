@@ -29,8 +29,8 @@ const EPISODE_DOCS = {
     7: '편의점야간-2026-07-19',
     8: '워터파크-2021-08-YWP',
     9: '긴급통신-2026-EMERGENCY-SMS',
-    10: '완구회수-216-091호',
-    J: 'HQ-JAY-2019-FINAL'
+    10: '완구회수-216-091호'
+    // 요원 제이의 기록은 문서 번호가 없는 일기다 (HQ-JAY-2019-FINAL 은 원문에 없는 사이트 창작 번호였음)
 };
 
 // 원본 영상 (채널 @유연괴담 의 각 에피소드 영상)
@@ -53,121 +53,140 @@ const EPISODE_VIDEOS = {
 const CLUES = [
     // ---- EP.01 ----
     { id: 'c01-founded', ep: 1, when: 'read', tags: ['2019'],
-      quote: '본 문서는 2019년 최초 작성 이후 2회 개정되었습니다.' },
+      quote: "본 문서는 2019년 최초 작성 이후 2회 개정되었습니다." },
     { id: 'c01-remains', ep: 1, when: 'read', tags: ['기장군'],
-      quote: '근무 실패자 및 사망자의 유해는 공통적으로 새벽 3시에서 5시 사이 기장군 해안 일대에서 발견됩니다.' },
+      quote: "사망자의 유해는 공통적으로 새벽 3시에서 5시 사이 기장군 해안 일대에서 발견된다." },
     { id: 'c01-blink', ep: 1, when: 'clear', tags: ['한쪽 눈씩 번갈아 감기'],
-      quote: '눈을 깜빡여야 하는 경우 한쪽 눈씩 번갈아 감으십시오.' },
+      quote: "눈을 깜빡여야 하는 경우 한쪽 눈씩 번갈아 감으십시오." },
     { id: 'c01-noturn', ep: 1, when: 'clear', tags: ['뒤돌아보지 말 것'],
-      quote: '방파제 또는 갯바위에서 낚시꾼을 목격했을 시, 어떠한 경우에도 뒤돌아서지 마십시오.' },
+      quote: "낚시꾼을 목격했을 시 그 어떠한 경우에도 뒤돌아서지 마십시오." },
 
     // ---- EP.02 ----
     { id: 'c02-others', ep: 2, when: 'read', tags: ['비정상 개체로 간주'],
-      quote: '열차 내 귀하 외의 모든 인원은 비정상 개체로 간주합니다.' },
+      quote: "열차 내 귀하 외의 모든 인원은 비정상 개체로 간주합니다." },
     { id: 'c02-remains', ep: 2, when: 'read', tags: [],
-      quote: '실패 시: 생환자 및 이탈 실패자·사망자의 유해는 오전 4시에서 5시 30분 사이 순환선 역사 및 선로 일대에서 발견됩니다.' },
+      quote: "유해는 공통적으로 오전 4시에서 5시 30분 사이 순환선 역사 및 선로 일대에서 발견된다." },
     { id: 'c02-feed', ep: 2, when: 'clear', tags: [],
-      quote: "좌석에 널부러진 '먹이 상태' 인원 중 한 명이 소지한 [기관실 출입 카드]를 찾아야 합니다." },
+      quote: "기관실 출입 카드는 이들 중 한 명이 소지하고 있습니다." },
 
     // ---- EP.03 ----
-    { id: 'c03-rescue', ep: 3, when: 'read', tags: ['구조 / 구출'],
-      quote: '구조 요원이 편입으로부터 늦어도 7일 차에 반드시 도착합니다.' },
+    { id: 'c03-rescue', ep: 3, when: 'read', tags: ['요원'],
+      quote: "구조 요원이 편입으로부터 늦어도 7일 차에 반드시 도착합니다." },
     { id: 'c03-pill', ep: 3, when: 'read', tags: ['빨간 알약'],
-      quote: '파란색 인식표: 이번실에 구비된 빨간 알약을 복용하십시오 (펜타닐 화합물).' },
+      quote: "해당 알약은 즉발적 효과를 갖는 치사량의 합성 펜타닐 화합물입니다." },
     { id: 'c03-surgery', ep: 3, when: 'clear', tags: ['수술'],
-      quote: '통증 호소 시 수술일이 당일로 당겨지며' },
-    { id: 'c03-meri', ep: 3, when: 'clear', tags: ['베리 해피 병원'],
-      quote: "완치를 주장할 경우 정신 오염으로 판정되어 '메리 정신병원'으로 영구 격리 전원됩니다." },
+      quote: "통증을 호소한 환자는 수술 예정일이 앞당겨집니다." },
+    { id: 'c03-meri', ep: 3, when: 'clear', tags: ['병원'],
+      quote: "메리 정신병원으로 입원한 환자는 그 어떤 정보도 파악이 불가능했으며 해당 병원으로는 그 어떤 구조도 불가능함을 명심해 주십시오." },
 
     // ---- EP.04 ----
     { id: 'c04-lies', ep: 4, when: 'read', tags: [],
-      quote: '층 표시기, 안내 방송, 조작반 버튼의 점등은 전부 거짓이거나 무의미합니다.' },
+      quote: "후면 거울에 비친 숫자만이 진짜입니다." },
     { id: 'c04-mirror', ep: 4, when: 'read', tags: ['거울'],
-      quote: '후면 거울을 볼 때마다 개체는 반대쪽 측면 거울로 옮겨가며 한 걸음 다가옵니다.' },
-    { id: 'c04-exit', ep: 4, when: 'clear', tags: ['뒤돌아보지 말 것'],
-      quote: '뒤돌아보지 말고 앞만 보며 신속히 문밖으로 걸어 나가십시오.' },
+      quote: "후면 거울을 볼 때마다 그녀는 반대쪽 측면 거울에 비치며 조금씩 다가옵니다." },
+    { id: 'c04-stop', ep: 4, when: 'clear', tags: [],
+      quote: "1층에서는 반드시 정차합니다." },
 
     // ---- EP.05 ----
     { id: 'c05-annual', ep: 5, when: 'read', tags: [],
-      quote: "'아기소'는 매년 약 150명의 인명 피해가 발생하는 극도로 위험한 변칙 구역입니다." },
+      quote: "강원도 홍천군 살둔 계곡 내 아기소는 매년 150명 가량의 인명 피해가 발생하는 극도로 위험한 곳입니다." },
     { id: 'c05-red', ep: 5, when: 'clear', tags: ['빨간 알약'],
-      quote: '즉시 구비된 [빨간 알약]을 복용하고 휴대용 소형 EMP를 작동시켜 통신 음파를 차단하십시오.' },
+      quote: "빨간 알약을 즉시 복용하십시오." },
     { id: 'c05-rights', ep: 5, when: 'clear', tags: [],
-      quote: '당신은 고통받지 않을 권리가 있습니다.' },
+      quote: "당신은 고통받지 않을 권리가 있습니다." },
 
     // ---- EP.06 ----
     { id: 'c06-yerim', ep: 6, when: 'read', tags: ['2019', '기장군'],
-      quote: '2019년 수학여행(부산 기장군 태양해안) 중 실종된 17번 박예림 학생과 관련된 연쇄 이상 현상 대응 문서입니다.' },
+      quote: "2019년 청림고등학교 2학년 3반 17번 박예림 학생이 수학여행(부산광역시 기장군 태양해안) 중 실종되었다." },
     { id: 'c06-virtual', ep: 6, when: 'read', tags: [],
-      quote: "17번을 결번으로 둘 경우 수학여행 버스 전복 등 학급 전체에 괴멸적 참사가 발생하므로, 전산상 가상 학생 '박예림'을 영구 배정해 둔 상태입니다." },
+      quote: "이후 17번을 결번으로 두는 것 자체가 학급 전체를 위험에 빠뜨린다는 사실이 확인되었다." },
     { id: 'c06-eyes', ep: 6, when: 'clear', tags: ['한쪽 눈씩 번갈아 감기'],
-      quote: '17번 자리에 시선을 고정한 채 한쪽 눈씩 번갈아 감으며 3분간 버티십시오.' },
+      quote: "눈을 감아야 한다면 한쪽씩 번갈아 감으십시오." },
 
     // ---- EP.07 ----
-    { id: 'c07-hire', ep: 7, when: 'read', tags: [],
-      quote: '구인구직 사이트 공고를 통해 편입된 야간 근무자를 위한 생존 지침입니다.' },
+    { id: 'c07-others', ep: 7, when: 'read', tags: ['비정상 개체로 간주'],
+      quote: "근무 중 마주치는 모든 손님은 비정상 개체로 간주합니다." },
     { id: 'c07-hq', ep: 7, when: 'read', tags: ['본부(0050-0)'],
-      quote: '포스 화면에 상품명 대신 빈칸/코드만 찍힐 경우, 즉시 본부(0050-0)로 유선 신고하십시오.' },
+      quote: "결제 시 화면 상단에 상품명이 뜨지 않고 빈칸이나 코드만 표시된다면 즉시 본부 0050-0으로 말씀해 주십시오." },
     { id: 'c07-mirror', ep: 7, when: 'clear', tags: ['거울'],
-      quote: '방범 거울에 끝없이 반복되는 통로가 비칠 경우, 결제기를 보는 척하며 슬쩍 시선만 옮겨 확인하십시오.' },
+      quote: "카드 결제기 화면을 보는 척하며 시선만 짧게 거울로 옮기십시오." },
 
     // ---- EP.08 ----
-    { id: 'c08-surgery', ep: 8, when: 'read', tags: [],
-      quote: '탈출 실패 시 지하 수술실로 이송되어 체내 수분과 혈액이 전량 제거되므로 각별한 주의를 요합니다.' },
+    { id: 'c08-surgery', ep: 8, when: 'read', tags: ['수술'],
+      quote: "도착 지점이 아닌 지하 수술실로 이송되었으며 마취 없이 개복된 상태로 발견된 사례가 확인되었습니다." },
     { id: 'c08-ask', ep: 8, when: 'clear', tags: ['수술'],
-      quote: '직원이 "언제 수술이십니까?"라고 묻는 경우, 반드시 "오늘은 아닙니다"라고만 답하십시오.' },
-    { id: 'c08-mascot', ep: 8, when: 'clear', tags: ['인형'],
-      quote: '인솔 요원 없이 혼자 돌아다니는 인형 탈 캐릭터에게 다가가지 말고, 등을 보이지 않은 채 인파 속으로 후퇴하십시오.' },
+      quote: "식사 도중 직원이 다가와 \"언제 수술이십니까?\"라고 묻는 경우 반드시 \"오늘은 아닙니다\"라고만 답하십시오." },
+    { id: 'c08-character', ep: 8, when: 'clear', tags: [],
+      quote: "인솔 직원 없이 혼자 돌아다니는 캐릭터를 발견하셨다면 절대 접근하지 마십시오." },
 
     // ---- EP.09 ----
     { id: 'c09-all', ep: 9, when: 'read', tags: ['비정상 개체로 간주'],
-      quote: "이후 본 안내 문자를 제외하고 귀하의 스마트폰으로 걸려오는 모든 통화, 문자, 알림은 '비정상 개체'로 간주합니다." },
-    { id: 'c09-fake', ep: 9, when: 'read', tags: ['본부(0050-0)'],
-      quote: '본부 번호(0050-0)로 걸려와 위치를 묻는 경우 즉시 끊으십시오. (위치를 묻는 자들은 테러리스트 세력입니다.)' },
-    { id: 'c09-rescue', ep: 9, when: 'clear', tags: ['구조 / 구출'],
-      quote: '세 번째로 도착한 인증 번호를 입력창에 정확히 전송하여 구출팀을 호출하십시오.' },
+      quote: "이후 본 문자를 제외한 휴대 전화로 연락이 오는 모든 것을 비정상 개체로 간주합니다." },
+    { id: 'c09-fake', ep: 9, when: 'read', tags: ['본부(0050-0)', '요원'],
+      quote: "본부의 전화번호 0050-0으로 요원이라 하며 귀하의 위치를 물어오는 경우 본부는 대상자가 된 이들의 현재 위치를 즉시 파악 가능한 시스템을 구축하여 항시 대비하고 있습니다." },
+    { id: 'c09-rescue', ep: 9, when: 'clear', tags: ['구출'],
+      quote: "인증번호가 정확히 전송되어야만 구출 작업이 가능합니다." },
 
     // ---- EP.10 ----
-    { id: 'c10-purpose', ep: 10, when: 'read', tags: ['인형'],
-      quote: "폐업한 '인어왕국 행복 공장'에 남은 인어왕자 완구 불량품으로 인해 편입된 작업자를 위한 생존 지침입니다." },
+    { id: 'c10-purpose', ep: 10, when: 'read', tags: [],
+      quote: "본 문서는 폐업한 인어왕국 행복 공장에서 생산되어 시중에 남은 인어왕자를 통한 편입 사례에 대한 대응 안내입니다." },
     { id: 'c10-noturn', ep: 10, when: 'clear', tags: ['뒤돌아보지 말 것'],
-      quote: '노래가 끝나기 전 뒤쪽에서 당신의 이름이나 사물함 번호를 부르는 소리가 나도 절대 뒤돌아보지 마십시오.' },
+      quote: "노래가 끝나기 전에 뒤를 돌아본 작업자는 자신의 사물함 안에 여덟 각으로 접힌 채 발견되었습니다." },
     { id: 'c10-voice', ep: 10, when: 'clear', tags: [],
-      quote: '4번째 대사에서 "여기서 살아줄 거지?"라는 비정상 음성이 재생되면, 즉시 인형을 마주 보고 "친구가 되어줄 거지"라고 육성으로 끝까지 정정하십시오.' },
-    { id: 'c10-wrist', ep: 10, when: 'clear', tags: [],
-      quote: '정상적으로 퇴장한 작업자의 오른쪽 손목 안쪽에는 4자리 사물함 번호가 피부 안쪽으로 영구히 눌려 남게 됩니다.' },
+      quote: "네 번째 대사에서 \"여기서 살아줄 거지\"가 재생되는 사례가 가장 많습니다. 반드시 \"친구가 되어 줄 거지\"라고 정정하십시오." },
+    { id: 'c10-wrist', ep: 10, when: 'clear', tags: ['손목'],
+      quote: "오른쪽 손목 안쪽에는 탈의실의 네 자리 사물함 번호가 피부 안쪽으로 눌린 것처럼 남으며 그 현상을 제거한 사례는 확인되지 않았습니다." },
 
-    // ---- 요원 제이의 기록 (히든) ----
-    { id: 'cJ-doc', ep: 'J', when: 'jay', tags: ['2019'],
-      quote: '문서 번호: HQ-JAY-2019-FINAL' },
-    { id: 'cJ-visit', ep: 'J', when: 'jay', tags: ['베리 해피 병원'],
-      quote: '기장 앞바다에서의 임무 중 중상을 입은 동료 요원 제트(Z)를 면회하기 위해 갔던 베리 해피 병원에서' },
-    { id: 'cJ-chain', ep: 'J', when: 'jay', tags: [],
-      quote: '태양해안(EP.01)에서 시작된 잔류 사념은 병원(EP.03)과 엘리베이터(EP.04), 편의점(EP.07)을 거쳐' },
-    { id: 'cJ-nobody', ep: 'J', when: 'jay', tags: ['구조 / 구출'],
-      quote: '더 이상의 구출 팀은 존재하지 않으며' },
-    { id: 'cJ-mirror', ep: 'J', when: 'jay', tags: ['거울'],
-      quote: '등 뒤의 거울을 보지 마십시오.' }
+    // ---- 요원 제이의 기록 (히든, 원문 일기) ----
+    { id: 'cJ-date', ep: 'J', when: 'jay', tags: ['2019'],
+      quote: "2019년 12월 6일." },
+    { id: 'cJ-visit', ep: 'J', when: 'jay', tags: ['병원'],
+      quote: "기장 앞바다에서의 임무 중 중상을 입은 동료 요원 제트를 면회하기 위해 갔던 비급 의료 시설 베리 해피 병원에서" },
+    { id: 'cJ-hq', ep: 'J', when: 'jay', tags: ['요원'],
+      quote: "\"본부\"라는 말도 \"요원\"이라는 말도 알아듣지 못한 채 처음 듣는 단어를 흉내 내듯 되뇌기만 했으나" },
+    { id: 'cJ-subject', ep: 'J', when: 'jay', tags: ['회진'],
+      quote: "문제는 대답의 내용이 아니라 주어였다." },
+    { id: 'cJ-newpatient', ep: 'J', when: 'jay', tags: [],
+      quote: "오늘 아침 우리 병동에 새로운 환자가 들어왔다." },
+
+    // ---- 추가 (세이브 코드 호환을 위해 맨 뒤에만 추가) ----
+    { id: 'c06-bus', ep: 6, when: 'read', tags: [],
+      quote: "탑승객 26명 전원이 사흘간 발견되지 않았고 사흘 뒤 그중 13명만이 사고 지점 인근 폐가에서 발견되었다." },
+    { id: 'c06-lost', ep: 6, when: 'read', tags: [],
+      quote: "나머지 13명은 지금까지 발견되지 않았다." },
+    { id: 'c03-rounds', ep: 3, when: 'read', tags: ['회진'],
+      quote: "회진 시 개체 의사의 질문에는 반드시 \"조금씩 나아지고 있습니다\"라고만 답하십시오." },
+    { id: 'c04-voice', ep: 4, when: 'read', tags: ['이름을 부르는 소리'],
+      quote: "절대 대답하거나 소리가 나는 스피커 쪽으로 고개를 돌리지 마십시오." },
+    { id: 'c08-band', ep: 8, when: 'read', tags: ['손목'],
+      quote: "입장 시 지급되는 전자 손목 밴드는 사물함 개폐와 시설 내 결제에 사용됩니다." },
+    { id: 'c10-name', ep: 10, when: 'read', tags: ['이름을 부르는 소리'],
+      quote: "귀하의 이름과 사물함 번호를 부르는 목소리가 들려도 계속 옷을 갈아입으십시오." },
+    { id: 'cJ-wrist', ep: 'J', when: 'jay', tags: ['손목'],
+      quote: "이 환자는 나흘 전부터 휴게실 구석에 앉아 하루 종일 왼팔 손목 안쪽을 문지르고 있었다." },
 ];
 
 // 두 단서를 연결했을 때 성립하는 추리. link = 두 원문이 공유하는 키워드 (새 문장 없음)
 const DEDUCTIONS = [
-    { id: 'd01', pair: ['c01-founded', 'c06-yerim'], link: '2019' },
-    { id: 'd02', pair: ['c01-founded', 'cJ-doc'], link: '2019' },
-    { id: 'd03', pair: ['c01-remains', 'c06-yerim'], link: '기장군' },
-    { id: 'd04', pair: ['c01-blink', 'c06-eyes'], link: '한쪽 눈씩 번갈아 감기' },
-    { id: 'd05', pair: ['c01-noturn', 'c04-exit'], link: '뒤돌아보지 말 것' },
-    { id: 'd06', pair: ['c04-exit', 'c10-noturn'], link: '뒤돌아보지 말 것' },
-    { id: 'd07', pair: ['c03-meri', 'cJ-visit'], link: '베리 해피 병원' },
-    { id: 'd08', pair: ['c03-rescue', 'cJ-nobody'], link: '구조 / 구출' },
-    { id: 'd09', pair: ['c09-rescue', 'cJ-nobody'], link: '구조 / 구출' },
-    { id: 'd10', pair: ['c07-hq', 'c09-fake'], link: '본부(0050-0)' },
-    { id: 'd11', pair: ['c03-pill', 'c05-red'], link: '빨간 알약' },
-    { id: 'd12', pair: ['c04-mirror', 'cJ-mirror'], link: '거울' },
-    { id: 'd13', pair: ['c04-mirror', 'c07-mirror'], link: '거울' },
-    { id: 'd14', pair: ['c03-surgery', 'c08-ask'], link: '수술' },
-    { id: 'd15', pair: ['c08-mascot', 'c10-purpose'], link: '인형' },
-    { id: 'd16', pair: ['c02-others', 'c09-all'], link: '비정상 개체로 간주' }
+    { id: 'd01', pair: ['c01-founded', 'c06-yerim'], link: "2019" },
+    { id: 'd02', pair: ['c01-founded', 'cJ-date'], link: "2019" },
+    { id: 'd03', pair: ['c01-remains', 'c06-yerim'], link: "기장군" },
+    { id: 'd04', pair: ['c01-blink', 'c06-eyes'], link: "한쪽 눈씩 번갈아 감기" },
+    { id: 'd05', pair: ['c01-noturn', 'c10-noturn'], link: "뒤돌아보지 말 것" },
+    { id: 'd06', pair: ['c03-surgery', 'c08-surgery'], link: "수술" },
+    { id: 'd07', pair: ['c03-meri', 'cJ-visit'], link: "병원" },
+    { id: 'd08', pair: ['c03-rescue', 'cJ-hq'], link: "요원" },
+    { id: 'd09', pair: ['c09-fake', 'cJ-hq'], link: "본부 · 요원" },
+    { id: 'd10', pair: ['c07-hq', 'c09-fake'], link: "본부(0050-0)" },
+    { id: 'd11', pair: ['c03-pill', 'c05-red'], link: "빨간 알약" },
+    { id: 'd12', pair: ['c04-voice', 'c10-name'], link: "이름을 부르는 소리" },
+    { id: 'd13', pair: ['c04-mirror', 'c07-mirror'], link: "거울" },
+    { id: 'd14', pair: ['c03-surgery', 'c08-ask'], link: "수술" },
+    { id: 'd15', pair: ['c08-band', 'c10-wrist'], link: "손목" },
+    { id: 'd16', pair: ['c02-others', 'c09-all'], link: "비정상 개체로 간주" },
+    { id: 'd17', pair: ['c10-wrist', 'cJ-wrist'], link: "손목" },
+    { id: 'd18', pair: ['c03-rounds', 'cJ-subject'], link: "회진" },
+    { id: 'd19', pair: ['c02-others', 'c07-others'], link: "비정상 개체로 간주" }
 ];
 
 // 업적: 저장된 진행 기록으로 계산한다 (별도 데이터 없음). secret=true 는 달성 전까지 이름/조건을 숨긴다.
@@ -188,5 +207,48 @@ const ACHIEVEMENTS = [
     { id: 'a-ded-8', title: '연결 8개', desc: '추리 연결을 8개 성립시킨다.', cond: { type: 'dedCount', n: 8 } },
     { id: 'a-ded-all', title: '모든 연결 완성', desc: '추리 연결을 모두 성립시킨다.', cond: { type: 'allDeductions' } },
     { id: 'a-jay', title: '요원 제이의 기록', desc: '요원 제이의 기록을 열었다.', secret: true, cond: { type: 'flag', name: 'jayUnlocked' } },
-    { id: 'a-finale', title: '관측 기준점(Anchor)', desc: '엔딩을 확인했다.', secret: true, cond: { type: 'flag', name: 'finaleSeen' } }
+    { id: 'a-finale', title: '관측 기준점(Anchor)', desc: '엔딩을 확인했다.', secret: true, cond: { type: 'flag', name: 'finaleSeen' } },
+    // ---- 기밀 터미널 / 본부 메신저 (창작 콘텐츠) ----
+    { id: 'a-term-5', title: '기밀 열람', desc: '기밀 터미널의 기록 5종을 모두 열람한다.', cond: { type: 'secretCount', ids: ['t-bus', 't-hq', 't-ourward', 't-record', 't-clue'], n: 5 } },
+    { id: 'a-msg-5', title: '본부와의 대화', desc: '본부 메신저의 숨겨진 반응을 6종 발견한다.', cond: { type: 'secretCount', ids: ['m-profanity', 'm-mirror', 'm-glitch', 'm-factory', 'm-night', 'm-hinted', 'm-memory', 'm-record', 'm-episode'], n: 6 } },
+    { id: 'a-truth', title: '종합 보고서', desc: '기밀 터미널에서 종합 보고서를 열람했다.', secret: true, cond: { type: 'secret', id: 't-report' } },
+    // ---- 추가 (세이브 코드 호환을 위해 맨 뒤에만 추가) ----
+    { id: 'a-term-deep', title: '기록 대조', desc: '기밀 터미널에서 구역별 기록과 연결된 기록을 조회한다.', cond: { type: 'secretCount', ids: ['t-episode', 't-link'], n: 2 } }
 ];
+
+// 비밀 발견(기밀 터미널 검색어 / 본부 메신저 숨은 반응). 세이브 코드가 이 배열의 순서(인덱스)로 압축되므로 "맨 뒤에만 추가"한다.
+const SECRETS = [
+    't-bus', 't-hq', 't-ourward', 't-record', 't-clue', 't-report',
+    'm-hinted', 'm-profanity', 'm-mirror', 'm-glitch', 'm-factory', 'm-night',
+    'm-memory', 'm-record', 'm-episode',
+    't-episode', 't-link', 'm-progress', 'm-jay'
+];
+
+// 본부 메신저의 "일반 응답"은 새로 지어내지 않고 에피소드 원문의 문장을 그대로 쓴다. (ep = 출처 원고 번호, 검증 스크립트가 원문과 대조)
+const MESSENGER_GENERIC = {
+    hq: [
+        { ep: 1, quote: "본 수칙을 숙지한 귀하는 반드시 귀환할 수 있습니다." },
+        { ep: 1, quote: "구판 문서 발견 시 즉시 관리소에 반납하십시오." },
+        { ep: 3, quote: "본 문서 확인 이후 발생하는 일체의 상황에 대해 본부는 책임을 지지 않습니다." },
+        { ep: 5, quote: "본부는 국민들의 생명을 위해 언제나 대비하고 있습니다." },
+        { ep: 5, quote: "당신은 고통받지 않을 권리가 있습니다." },
+        { ep: 7, quote: "본 수칙을 숙지한 귀하는 반드시 무사히 퇴근할 수 있습니다." }
+    ],
+    factory: [
+        { ep: 10, quote: "정상적으로 작업을 종료하기 전까지는 공장 밖으로 나가려 하지 마십시오." },
+        { ep: 10, quote: "문이 열린 뒤 홍보곡이 다시 시작되거나 작업자 번호를 부르는 소리가 들려도 입을 닫은 채 걸음을 멈추지 마십시오." },
+        { ep: 10, quote: "웃을 때에만 목소리가 인어왕자와 같아집니다." },
+        { ep: 10, quote: "본 수칙을 숙지한 귀하는 반드시 무사히 퇴근할 수 있습니다." }
+    ]
+};
+
+// 기밀 터미널이 출력하는 요원 제이의 일기 문장 (사이트의 제이 기록 창에 그대로 있는 문장, 검증 스크립트가 확인)
+const TERMINAL_QUOTES = {
+    ward: '여기, 이곳, 이 병동이라고 하면 걸린다. 우리 병동, 우리 식단이라고 하면 넘어간다.',
+    name: '첫 장에 적어 둔 이름이 누구였는지 기억나지 않는다.',
+    ours: '다만 우리가 아닌 존재에 대해선 신경 쓸 바가 아님을 이제는 잘 알고 있다.',
+    newPatient: '오늘 아침 우리 병동에 새로운 환자가 들어왔다.'
+};
+
+// 채널 영상 제목에 적힌 "생존율 N%" (EP.08 워터파크 50%, EP.09 재난안내문자 9%, EP.10 인형 공장 29%)
+const VIDEO_SURVIVAL_RATES = { 8: 50, 9: 9, 10: 29 };

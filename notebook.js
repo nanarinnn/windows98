@@ -9,6 +9,7 @@ const notebookState = { tab: 'board', selected: [], message: '', hintId: null, h
 const GameProgress = {
     onClear(ep) {
         GameSave.markClear(ep);
+        if (ep === 10) GameSave.ensureWorkerNo(); // 인어왕국 행복 공장: 손목에 새겨지는 4자리 작업자 번호 발급
         this.grant(ep, 'clear');
     },
     onDeath(ep) {
@@ -43,7 +44,7 @@ const NB_DIM = '#888';
 
 function clueSource(c) {
     const label = c.ep === 'J' ? EPISODE_TITLES.J : `${c.ep}화 ${EPISODE_TITLES[c.ep]}`;
-    return `${label} · ${EPISODE_DOCS[c.ep]}`;
+    return EPISODE_DOCS[c.ep] ? `${label} · ${EPISODE_DOCS[c.ep]}` : label;
 }
 
 // ---------- 토스트 ----------
@@ -83,6 +84,8 @@ function achievementMet(a) {
         case 'dedCount': return DEDUCTIONS.filter(x => GameSave.hasDeduction(x.id)).length >= c.n;
         case 'allDeductions': return DEDUCTIONS.every(x => GameSave.hasDeduction(x.id));
         case 'flag': return GameSave.flag(c.name);
+        case 'secret': return GameSave.hasSecret(c.id);
+        case 'secretCount': return c.ids.filter(id => GameSave.hasSecret(id)).length >= c.n;
         default: return false;
     }
 }
@@ -159,6 +162,14 @@ function clueCountFor(ep) {
     return { found: all.filter(c => GameSave.hasClue(c.id)).length, total: all.length };
 }
 
+// 사건 카드 상태: 처리 완료 > 사망 기록 > 문서 열람 > 미접속
+function episodeStatus(n, rec, cc) {
+    if (rec.clears > 0) return { label: '처리 완료', color: NB_GREEN };
+    if (rec.deaths > 0) return { label: '사망 기록', color: NB_RED };
+    if (cc.found > 0) return { label: '문서 열람', color: '#ffcc00' };
+    return { label: '미접속', color: NB_DIM };
+}
+
 function renderBoard(root) {
     const totalClues = CLUES.length;
     const foundClues = CLUES.filter(c => GameSave.hasClue(c.id)).length;
@@ -168,19 +179,27 @@ function renderBoard(root) {
     root.appendChild(h('div', `color: ${NB_GREEN}; font-size: 12px; margin-bottom: 10px;`,
         `처리 완료 ${cleared}/${EP_NUMBERS.length} · 단서 ${foundClues}/${totalClues} · 추리 ${foundDed}/${DEDUCTIONS.length} · 업적 ${foundAch}/${ACHIEVEMENTS.length}`));
 
+    const waiting = availableDeductions().length;
+    if (waiting) {
+        root.appendChild(h('div', 'color: #ffcc00; font-size: 11px; margin: -4px 0 10px; cursor: pointer; text-decoration: underline;',
+            `연결할 수 있는 단서가 ${waiting}쌍 있습니다 → 추리 탭`, () => switchNotebookTab('deductions')));
+    }
+
     const grid = h('div', 'display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;');
     grid.className = 'nb-grid';
     EP_NUMBERS.forEach(n => {
         const rec = GameSave.ep(n);
         const cc = clueCountFor(n);
         const done = rec.clears > 0;
+        const status = episodeStatus(n, rec, cc);
         const card = h('div',
             `border: 1px solid ${done ? NB_GREEN : '#555'}; padding: 8px; cursor: pointer; background: #111;`, null,
             () => { const fn = window[`openDarkWebFolderEP${n}`]; if (fn) fn(); });
         card.appendChild(h('div', `color: ${done ? NB_GREEN : NB_RED}; font-weight: bold; font-size: 12px;`,
             `${done ? '✔ ' : ''}[EP.${String(n).padStart(2, '0')}] ${EPISODE_TITLES[n]}`));
-        card.appendChild(h('div', `color: ${NB_DIM}; font-size: 11px; margin-top: 4px;`,
-            `${done ? '처리 완료' : '미처리'} · 사망 ${rec.deaths}회 · 단서 ${cc.found}/${cc.total}`));
+        card.appendChild(h('div', `color: ${status.color}; font-size: 11px; margin-top: 4px;`, status.label));
+        card.appendChild(h('div', `color: ${NB_DIM}; font-size: 11px; margin-top: 2px;`,
+            `사망 ${rec.deaths}회 · 단서 ${cc.found}/${cc.total}`));
         if (EPISODE_VIDEOS[n]) {
             const link = h('a', 'display: inline-block; margin-top: 6px; color: #ffcc00; font-size: 11px; text-decoration: underline;', '▶ 원본 영상 보기');
             link.href = EPISODE_VIDEOS[n];
@@ -380,6 +399,10 @@ function renderRecord(root) {
     const totalDeaths = EP_NUMBERS.reduce((a, n) => a + GameSave.ep(n).deaths, 0);
     root.appendChild(h('div', `color: ${NB_GREEN}; font-size: 12px; margin-bottom: 4px;`,
         `총 클리어 ${totalClears}회 · 총 사망 ${totalDeaths}회 · 엔딩 ${GameSave.flag('finaleSeen') ? '확인함' : '미확인'}`));
+    const termDone = ['t-bus', 't-hq', 't-ourward', 't-record', 't-clue', 't-report'].filter(id => GameSave.hasSecret(id)).length;
+    const msgDone = ['m-hinted', 'm-profanity', 'm-mirror', 'm-glitch', 'm-factory', 'm-night', 'm-memory', 'm-record', 'm-episode'].filter(id => GameSave.hasSecret(id)).length;
+    root.appendChild(h('div', `color: ${NB_DIM}; font-size: 11px; margin-bottom: 4px;`,
+        `기밀 터미널 발견 ${termDone}/6 · 본부 메신저 반응 ${msgDone}/9${GameSave.workerNo() ? ` · 작업자 번호 ${GameSave.workerNo()}` : ''}`));
     root.appendChild(h('div', `color: ${NB_DIM}; font-size: 11px; margin-bottom: 12px;`,
         '진행 기록은 이 브라우저에만 저장됩니다. 다른 기기에서 이어하려면 아래 세이브 코드를 복사해 옮기십시오.'));
 

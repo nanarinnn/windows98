@@ -2,13 +2,14 @@
 // Save Data (localStorage)
 // 진행 기록만 브라우저에 저장한다. 서버/계정 없음. 다른 기기로는 세이브 코드로 옮긴다.
 //
-// 세이브 코드(v2): 진행 상황을 비트로 압축한 약 50자. 형식(바이트):
-//   [버전=2, 에피소드 수, 단서 수, 추리 수, 업적 수]
+// 세이브 코드(v4): 진행 상황을 비트로 압축한 약 50자. 형식(바이트):
+//   [버전=4, 에피소드 수, 단서 수, 추리 수, 업적 수, 비밀 발견 수]
 //   + 에피소드별 [클리어 횟수, 사망 횟수] (각 0~255)
-//   + 단서 비트 + 추리 비트 + 업적 비트 + 플래그 비트(제이 해금, 엔딩 확인)
+//   + 단서 비트 + 추리 비트 + 업적 비트 + 플래그 비트(제이 해금, 엔딩 확인) + 비밀 발견 비트
+//   + 작업자 번호 2바이트
 //   + 체크섬 1바이트
-// 비트 위치는 story-data.js 의 CLUES / DEDUCTIONS / ACHIEVEMENTS 배열 인덱스이므로 그 배열은 "맨 뒤에만 추가"한다.
-// 이전의 긴 코드(v1, JSON)도 불러올 수 있다.
+// 비트 위치는 story-data.js 의 CLUES / DEDUCTIONS / ACHIEVEMENTS / SECRETS 배열 인덱스이므로 그 배열은 "맨 뒤에만 추가"한다.
+// 이전의 v2 코드와 더 오래된 긴 코드(v1, JSON)도 불러올 수 있다.
 // ==========================================
 const GameSave = (() => {
     const KEY = 'yuyeon98.save.v1';
@@ -17,7 +18,7 @@ const GameSave = (() => {
     let state = blank();
 
     function blank() {
-        return { v: 1, eps: {}, clues: {}, deductions: {}, achievements: {}, flags: {}, updatedAt: 0 };
+        return { v: 1, eps: {}, clues: {}, deductions: {}, achievements: {}, secrets: {}, flags: {}, workerNo: 0, updatedAt: 0 };
     }
 
     function isValid(s) {
@@ -65,7 +66,7 @@ const GameSave = (() => {
     }
 
     function encodeCompact() {
-        const bytes = [2, EP_COUNT, CLUES.length, DEDUCTIONS.length, ACHIEVEMENTS.length];
+        const bytes = [4, EP_COUNT, CLUES.length, DEDUCTIONS.length, ACHIEVEMENTS.length, SECRETS.length];
         for (let n = 1; n <= EP_COUNT; n++) {
             const r = state.eps[n] || { clears: 0, deaths: 0 };
             bytes.push(Math.min(255, r.clears || 0), Math.min(255, r.deaths || 0));
@@ -74,6 +75,8 @@ const GameSave = (() => {
         packBits(DEDUCTIONS.map(d => !!state.deductions[d.id]), bytes);
         packBits(ACHIEVEMENTS.map(a => !!state.achievements[a.id]), bytes);
         packBits([!!state.flags.jayUnlocked, !!state.flags.finaleSeen], bytes);
+        packBits(SECRETS.map(id => !!state.secrets[id]), bytes);
+        bytes.push((state.workerNo >> 8) & 255, state.workerNo & 255); // 작업자 번호(0~9999, 0=미발급)
         bytes.push(checksum(bytes));
         const b64 = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         return b64.match(/.{1,6}/g).join(' '); // 읽기 쉽게 6자씩 끊는다 (불러올 때 공백은 무시)
@@ -85,11 +88,13 @@ const GameSave = (() => {
         let bin;
         try { bin = atob(clean + '='.repeat((4 - clean.length % 4) % 4)); } catch (e) { return null; }
         const bytes = Array.from(bin, ch => ch.charCodeAt(0));
-        if (bytes.length < 7 || bytes[0] !== 2) return null;
+        if (bytes.length < 7 || bytes[0] < 2 || bytes[0] > 4) return null; // v2: 헤더 5바이트, v3: 비밀 발견 비트 추가(헤더 6바이트), v4: 작업자 번호 2바이트 추가
         if (checksum(bytes.slice(0, -1)) !== bytes[bytes.length - 1]) return null;
 
+        const version = bytes[0];
         const [, nEps, nClues, nDed, nAch] = bytes;
-        let p = 5;
+        const nSecrets = version >= 3 ? bytes[5] : 0;
+        let p = version >= 3 ? 6 : 5;
         const s = blank();
         for (let n = 1; n <= nEps; n++) {
             const clears = bytes[p++], deaths = bytes[p++];
@@ -108,6 +113,11 @@ const GameSave = (() => {
         const flags = readBits(2);
         s.flags.jayUnlocked = flags[0];
         s.flags.finaleSeen = flags[1];
+        readBits(nSecrets).forEach((on, i) => { if (on && SECRETS[i]) s.secrets[SECRETS[i]] = now; });
+        if (version >= 4) {
+            s.workerNo = (bytes[p] << 8) | bytes[p + 1];
+            p += 2;
+        }
         if (p + 1 !== bytes.length) return null; // 길이가 맞지 않으면 손상된 코드
         return s;
     }
@@ -156,6 +166,22 @@ const GameSave = (() => {
             state.achievements[id] = Date.now();
             persist();
             return true;
+        },
+        hasSecret: (id) => !!state.secrets[id],
+        addSecret(id) {
+            if (state.secrets[id]) return false;
+            state.secrets[id] = Date.now();
+            persist();
+            return true;
+        },
+        // EP.10 클리어 시 발급되는 4자리 작업자(사물함) 번호. 한 번 발급되면 바뀌지 않는다.
+        workerNo: () => state.workerNo || 0,
+        ensureWorkerNo() {
+            if (!state.workerNo) {
+                state.workerNo = 1000 + Math.floor(Math.random() * 9000);
+                persist();
+            }
+            return state.workerNo;
         },
         setFlag(name, value) {
             state.flags[name] = value;
