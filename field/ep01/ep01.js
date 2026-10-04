@@ -190,7 +190,7 @@
         if (e.type === 'D') return `갯바위 낚시꾼 / ${e.demand[0]} → ${e.demand[1]}`;
         return `태양 모래사장 / ${['approach', 'tv'].includes(e.stage) ? `여성 응시 · ${Math.floor(e.steps)}보 · 눈 피로 ${Math.floor(s.elapsed - e.lastBlink)}/25` : e.stage === 'hidden' ? 'TV 뒤 / 웅크림' : e.stage === 'sound' ? 'TV 앞쪽 파손음' : e.stage === 'front' ? `TV 앞 / 화면 균열 ${e.strikes}/3` : 'TV 뒤'}`;
     }
-    FieldCore.register({ id: data.id, duration: data.duration, data, init, tick, action, contacts, scene,
+    FieldCore.register({ id: data.id, data, init, tick, action, contacts, scene,
         breaksGaze(s) { return s.status === 'active' && s.data.event?.type === 'F' && ['approach', 'tv'].includes(s.data.event.stage); }
     });
 })();

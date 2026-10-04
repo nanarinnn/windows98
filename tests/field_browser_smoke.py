@@ -60,10 +60,32 @@ def run():
             assert state()['data']['event'] is None
         click('field-open')
         assert page.locator('#field-dispatch-EP02').is_disabled()
+        # The shared setting controls shift minutes, not real-time interaction deadlines.
+        pacing = page.evaluate('''() => {
+            const results = [];
+            for (const seconds of [1.25, 1.5, 2]) {
+                FieldCore.config.realSecondsPerGameMinute = seconds;
+                FieldCore.dispatch('EP01');
+                const s = FieldCore.get(); FieldCore.step(60);
+                results.push({ seconds, duration: s.duration, minute: s.minute, elapsed: s.elapsed });
+                FieldCore.disconnect();
+            }
+            FieldCore.config.realSecondsPerGameMinute = 1.5;
+            return results;
+        }''')
+        for sample in pacing:
+            assert sample['duration'] == 480 * sample['seconds']
+            assert abs(sample['minute'] - 60 / sample['seconds']) < .001
+            assert sample['elapsed'] == 60
+        assert page.evaluate('FieldEP01Data.events.map(e => [e.type, e.minute])') == [['A',135],['B',220],['D',310],['F',415]]
+        # Restore the list UI after the isolated pacing probes.
+        click('field-close'); click('field-open')
         dispatch(); equipment()
         # Reading does not pause the clock; advance through a wave window and report a patrol.
         click('field-tab-rules'); before = state()['elapsed']; page.wait_for_timeout(650)
         assert state()['elapsed'] > before
+        assert abs(state()['minute'] - state()['elapsed'] / 1.5) < .001
+        assert state()['duration'] == 720
         click('field-tab-map'); click('field-check-weather'); click('field-move-harbor'); click('field-patrol')
         click('field-tab-phone'); click('field-phone-1'); click('field-report'); click('field-hangup')
         assert state()['patrols'].get('0')
@@ -97,6 +119,18 @@ def run():
         dispatch(); assert state()['minute'] < 1 and 'bait' not in state()['inventory']
         until(135); click('field-light'); hold('field-eyes', 2); assert state()['status'] == 'dead'
         print('PASS A late protection/early release failure and clean retry')
+        # Full human response windows are real seconds at the faster shift pace.
+        dispatch(); a_success(); until(220); advance(118)
+        assert state()['status'] == 'active' and state()['data']['event']['type'] == 'B'
+        advance(3); assert state()['status'] == 'dead'
+        dispatch(); a_success(); b_contact(); b_buy(); until(310); advance(88)
+        assert state()['status'] == 'active' and state()['data']['event']['type'] == 'D'
+        advance(3); assert state()['status'] == 'dead'
+        dispatch(); equipment(); a_success(); b_contact(); b_buy(); until(310)
+        page.locator('#field-item').select_option('bait'); click('field-use'); until(415)
+        advance(24); assert state()['status'] == 'active'
+        advance(2); assert state()['status'] == 'dead'
+        print('PASS shared 1.25/1.5/2-second pacing, unchanged event schedule and real-second B/D/F response windows')
         dispatch(); a_success(); b_contact(); b_buy('wallet'); assert state()['status'] == 'dead'
         dispatch(); a_success(); b_contact(.5)
         assert state()['data']['event']['bag']['observation'] == '사람의 머리'

@@ -1,7 +1,7 @@
 // Canonical rules: EP01 REVIEWED transcript. Scheduling/timing are slice tuning,
 // not new narrative rules; C/E remain deleted. No uncertain telephone number.
 window.FieldEP01Data = {
-    id: 'EP01', title: '부산 태양해안', duration: 1200,
+    id: 'EP01', title: '부산 태양해안',
     feedLabel: 'CH 01 · TAE-YANG / OBSERVATION', reportSelector: '#darkwebReportWindow textarea',
     equipment: ['baton', 'radio'],
     events: [

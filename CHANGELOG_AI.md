@@ -75,3 +75,13 @@
 - 이전 staged 문서의 최신 작업 트리 내용을 반영했다. `play.mp4`, `CODEX_WRITE_TEST.txt`, 임시 로그, 캐시, `__pycache__`는 체크아웃에서 발견되지 않았으며, ignored `node_modules/`와 체크아웃 외부 ZIP·테스트 산출물은 포함하지 않는다.
 - 전사본 원래의 줄 끝 공백으로 staged diff check가 경고한 것을 확인했다. 원문을 교정하지 않고 `.gitattributes`에 transcript TXT만 `-text whitespace=-blank-at-eol`을 지정해 바이트 보존 및 한정된 공백 예외를 명시했다. 다른 파일의 공백 검사는 유지한다.
 - 검증: 필수 파일 존재, transcript 6개 ZIP 대비 바이트 동일, EP01/EP02 REVIEWED 및 EP03 PARTIALLY_REVIEWED 유지, EP02~EP10 원고/EP02 이후 app 로직/Save·노트·터미널 원본 불변을 재확인했다. PROJECT_CONTEXT의 Story/J/LOOP 02 독립과 Save v4 불변, 앞선 Canonical Sync/Field 구현·브라우저 테스트 기록을 확인했다. 최종 unstaged/staged `git diff --check` 및 staging 파일 목록을 확인한다. 게임 구현은 이번 checkpoint 정리에서 수정하지 않았다.
+
+## 2026-10-04 — 실제 사용자 플레이 결과에 따른 pacing 조정
+
+- 요청 근거: 사용자가 EP01 Field를 직접 플레이한 결과 기존 난이도는 유지하되 22:00~06:00 시간이 지나치게 느리다고 평가했다. 기본 근무 시계를 게임 내 1분당 현실 1.5초로 조정했다.
+- 공용 설정: `field/field-core.js`의 `FieldCore.config.realSecondsPerGameMinute = 1.5`. 파견 시 설정을 읽어 `duration = 480 × 설정값`으로 확정한다. 이후 1.25/1.5/2초를 바꾸면 다음 파견부터 적용된다. EP01 데이터의 1200초 및 미션 등록의 duration 전달을 제거했다.
+- 시간 분리: 게임 내 minute 변환만 빨라진다. mission `tick(dt)`, `elapsed`, 사건 age와 hold/눈 피로는 현실 초다. A의 8초 대응/20초 눈 감기, B의 120초, D의 90초, F의 25초 깜빡임/6초 후진/4초 숨기/파손음 후 12초 이동·18초 파괴 제한/3회 타격과 모든 성공·사망 분기는 변경하지 않았다. C/E 및 canonical 규칙도 그대로다. 내선 0번 재통화의 canonical 게임 내 1분 대기는 새 배율에 따라 현실 1.5초가 된다.
+- 예상 근무: 480분 × 1.5초 = 720초 = 12분(이전 1200초/20분). 수칙 열람 및 상호작용 중에도 시계가 계속 흐르며 별도의 event pause는 추가하지 않았다. 따라서 정상 근무의 기준 시간은 약 12분이고, 브라우저 스케줄링 지연·재시도는 별개다. 비교 설정: 1.25초 → 10분, 2초 → 16분.
+- 사건 순서/시각 유지: A 00:15(135분) → 현실 202.5초, B 01:40(220분) → 330초, D 03:10(310분) → 465초, F 04:55(415분) → 622.5초. 22:00→06:00 표시와 기존 게임 내 파고/매시각 순찰 시각도 변경하지 않았다.
+- 검증: `python3 tests/field_browser_smoke.py` 전체 통과. 공용 설정 1.25/1.5/2초의 시간 변환, 사건 스케줄 불변, 수칙 읽기 중 자연 시계, A/B/D/F 정상·실패/재시도/06:00 생환, B/D/F의 현실 초 제한, EP02 Field 해금/persistence, 기존 CCTV, old save 및 v4 왕복, Field 미클리어 Story→J→BSOD/LOOP 경계, 모바일, 정적 자산 응답을 확인했다. 시계는 production step으로 가속했으며 12분 전체 수동 플레이를 새로 수행하지는 않았다. JS syntax 및 `git diff --check` 통과.
+- 보존: 기존 Story/CCTV/Save 파일과 transcript는 HEAD 대비 바이트 불변이다. `PROJECT_CONTEXT.md`의 현재 시간 설정만 보강했다. 이번 변경은 unstaged로 유지하며 commit/push하지 않는다.

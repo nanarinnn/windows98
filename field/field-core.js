@@ -1,5 +1,7 @@
 // Reusable mission lifecycle, real-time clock, inventory and record channel.
 window.FieldCore = (() => {
+    // Shift pacing only. Mission dt/elapsed and response deadlines stay in real seconds.
+    const config = { realSecondsPerGameMinute: 1.5 };
     const missions = new Map();
     const listeners = new Set();
     let run = null;
@@ -43,7 +45,7 @@ window.FieldCore = (() => {
         if (!missions.has(id) || !FieldSave.unlocked(id)) return false;
         stop();
         const mission = missions.get(id);
-        run = { id, status: 'active', duration: mission.duration, elapsed: 0, minute: 0,
+        run = { id, status: 'active', duration: 480 * config.realSecondsPerGameMinute, elapsed: 0, minute: 0,
             inventory: {}, selected: '', logs: [], patrols: {}, controls: {}, data: {} };
         mission.init(run, api); log('22:00 — 현장 연결. 장비와 근무 수칙을 확인하십시오.');
         last = performance.now(); timer = setInterval(pulse, 250); notify(); return true;
@@ -55,6 +57,7 @@ window.FieldCore = (() => {
         missions.get(run.id).action(run, name, value, api); notify();
     }
     const api = {
+        config,
         register(mission) { missions.set(mission.id, mission); },
         available: id => missions.has(id), mission: id => missions.get(id), dispatch, action, step, log, die,
         get: () => run,
