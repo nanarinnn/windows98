@@ -1,0 +1,2 @@
+# Preserve imported transcript bytes, including source trailing spaces.
+docs/transcripts/**/*.txt -text whitespace=-blank-at-eol

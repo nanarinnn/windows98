@@ -1422,7 +1422,7 @@ function triggerEventA() {
     updateCCTVHUD();
     
     playCCTVVideo('event_A_intro.mp4', '[FEED: BARBARI_COAT_MAN]');
-    addCCTVLog("[경고] 베이지색 바바리코트 개체 목격.", true);
+    addCCTVLog("[경고] 베이지색 바바리코트를 입은 장발의 중년 남성 목격.", true);
     
     setCCTVChoices([
         {
@@ -1433,16 +1433,16 @@ function triggerEventA() {
             }
         },
         {
-            text: "[2] 조명 소등 및 눈 감기",
+            text: "[2] 조명 소등, 행동 중지 및 눈 감기",
             action: () => {
                 clearCCTVChoices();
                 const blackout = document.getElementById('cctv-blackout');
                 blackout.style.display = 'flex';
-                addCCTVLog("조명 소등 및 안구 폐쇄 실시. 대기 중...", false);
+                addCCTVLog("모든 조명 소등, 행동 중지 및 눈 감기. 악취가 사라질 때까지 대기 중...", false);
                 
                 setTimeout(() => {
                     blackout.style.display = 'none';
-                    addCCTVLog("썩은 악취 소멸 확인. 안전 복구되었습니다.", false);
+                    addCCTVLog("썩은 어패류와 암모니아 악취 소멸 확인 후 눈을 뜹니다. 안전 복구되었습니다.", false);
                     cctvGameState = 'idle';
                     playCCTVVideo('idle_sea.mp4', '[FEED: SUNSHINE_BEACH_IDLE]');
                     cctvTimer = setInterval(tickCCTVGame, 500);
@@ -1458,21 +1458,22 @@ function triggerEventB() {
     updateCCTVHUD();
     
     playCCTVVideo('event_B_intro.mp4', '[FEED: HAENYEO_OLD_WOMAN]');
-    addCCTVLog("[경고] 해녀 차림의 노파 조우.", true);
+    addCCTVLog("[경고] 해녀 차림의 노파 조우. 정중히 인사하고, 열린 망사리의 내용물을 보고 성심성의껏 칭찬합니다.", true);
     
+    addCCTVLog("이번 망사리의 내용물은 오귀발이 아닙니다. 구매를 제안합니다.", false);
     setCCTVChoices([
         {
             text: "[1] 지갑에서 돈 지불",
             action: () => {
-                addCCTVLog("지갑에서 지불 시도... 비정상적 습격에 의한 사망.", true);
+                addCCTVLog("개인 지갑에서 지불 시도... 위조지폐라며 격분한 노파가 산채로 머리를 뜯어 버립니다.", true);
                 triggerDeath();
             }
         },
         {
-            text: "[2] 우측 가슴 만원권 3장 지불",
+            text: "[2] 근무복 오른쪽 가슴 주머니의 1만원권 세 장 (30,000원) 지불",
             action: () => {
                 clearCCTVChoices();
-                addCCTVLog("[아이템 획득] '훌륭한 미끼'를 성공적으로 입수했습니다.", false);
+                addCCTVLog("[아이템 획득] 구매한 내용물이 약 1m 길이의 얇고 긴 갯지렁이 형태인 '훌륭한 미끼'로 변합니다.", false);
                 hasBait = true;
                 
                 cctvGameState = 'idle';
@@ -1489,7 +1490,7 @@ function triggerEventD() {
     updateCCTVHUD();
     
     playCCTVVideo('event_D_intro.mp4', '[FEED: ROCKY_SHORE_FISHERMAN]');
-    addCCTVLog("[경고] 갯바위 낚시꾼이 미끼를 요구함.", true);
+    addCCTVLog("[경고] 갯바위 낚시꾼이 고등어 미끼로 손가락 1개를 요구합니다. 거부할 수 없습니다.", true);
     
     setCCTVChoices([
         {
@@ -1504,13 +1505,20 @@ function triggerEventD() {
             action: () => {
                 clearCCTVChoices();
                 if (hasBait) {
-                    addCCTVLog("훌륭한 미끼 건네기 완료. 만족하여 퇴장합니다.", false);
+                    addCCTVLog("훌륭한 미끼를 건네자 낚시꾼이 기뻐하며 자신의 조과 중 하나를 줍니다.", false);
+                    hasBait = false;
                     cctvGameState = 'idle';
                     playCCTVVideo('idle_sea.mp4', '[FEED: SUNSHINE_BEACH_IDLE]');
                     cctvTimer = setInterval(tickCCTVGame, 500);
                 } else {
-                    addCCTVLog("미끼 미지급으로 분노한 개체에 의한 사망.", true);
-                    triggerDeath();
+                    addCCTVLog("훌륭한 미끼가 없습니다. 요구받은 손가락을 제공해야 합니다.", true);
+                    setCCTVChoices([{ text: "요구받은 손가락 1개 제공 (제공할 수 없으면 직접 채취)", action: () => {
+                        clearCCTVChoices();
+                        addCCTVLog("낚시꾼에게 고등어 미끼로 손가락 1개를 제공합니다.", false);
+                        cctvGameState = 'idle';
+                        playCCTVVideo('idle_sea.mp4', '[FEED: SUNSHINE_BEACH_IDLE]');
+                        cctvTimer = setInterval(tickCCTVGame, 500);
+                    } }]);
                 }
             }
         }
@@ -1523,34 +1531,44 @@ function triggerEventF() {
     updateCCTVHUD();
     
     playCCTVVideo('event_F_intro.mp4', '[FEED: WEEPING_LONG_HAIR_WOMAN]');
-    addCCTVLog("[경고] 흐느끼는 여성 목격 및 TV 파손음.", true);
+    addCCTVLog("[경고] 순찰 경로 C / 태양 모래사장에서 지저분한 긴 머리의 여성 목격. 바라보는 동안에는 움직이지 않습니다.", true);
     
     setCCTVChoices([
-        {
-            text: "[1] TV 뒤에 웅크려 대기",
-            action: () => {
-                addCCTVLog("대기 중 화면으로부터 침식되어 생명 징후 정지.", true);
-                triggerDeath();
-            }
-        },
-        {
-            text: "[2] 순찰봉으로 화면 파괴",
-            action: () => {
-                clearCCTVChoices();
-                const tvNoise = document.getElementById('cctv-tv-noise');
-                tvNoise.style.display = 'block';
-                initTVNoise();
-                addCCTVLog("순찰봉으로 모니터 브라운관 파괴 완료.", false);
-                
-                setTimeout(() => {
-                    tvNoise.style.display = 'none';
-                    if (cctvTVNoiseAnimId) cancelAnimationFrame(cctvTVNoiseAnimId);
-                    cctvGameState = 'idle';
-                    playCCTVVideo('idle_sea.mp4', '[FEED: SUNSHINE_BEACH_IDLE]');
-                    cctvTimer = setInterval(tickCCTVGame, 500);
-                }, 2500);
-            }
-        }
+        { text: "[1] 여성에게서 시선을 떼고 도주", action: () => {
+            addCCTVLog("시선을 유지하지 못했습니다.", true);
+            triggerDeath();
+        } },
+        { text: "[2] 한쪽 눈씩 번갈아 감으며 뒷걸음질 → 아날로그 TV 뒤로 이동해 숨기", action: () => {
+            addCCTVLog("여성에게서 시선을 떼지 않고 뒷걸음질합니다. 아날로그 TV가 보이면 뒤로 이동해 웅크려 숨습니다.", false);
+            addCCTVLog("TV 앞쪽에서 무언가 부서지는 소리가 들립니다. 즉시 앞으로 이동해야 합니다.", true);
+            setCCTVChoices([
+                {
+                    text: "[1] 파손음 이후에도 TV 뒤에 계속 대기",
+                    action: () => {
+                        addCCTVLog("TV 화면 파괴 실패. 이후 해변 TV 속에서 토막난 채로 흐느끼는 상태로 발견됩니다.", true);
+                        triggerDeath();
+                    }
+                },
+                {
+                    text: "[2] 즉시 TV 앞으로 이동해 순찰봉으로 화면 완전히 파괴",
+                    action: () => {
+                        clearCCTVChoices();
+                        const tvNoise = document.getElementById('cctv-tv-noise');
+                        tvNoise.style.display = 'block';
+                        initTVNoise();
+                        addCCTVLog("앞으로 이동해 순찰봉으로 TV 화면을 완전히 파괴했습니다.", false);
+
+                        setTimeout(() => {
+                            tvNoise.style.display = 'none';
+                            if (cctvTVNoiseAnimId) cancelAnimationFrame(cctvTVNoiseAnimId);
+                            cctvGameState = 'idle';
+                            playCCTVVideo('idle_sea.mp4', '[FEED: SUNSHINE_BEACH_IDLE]');
+                            cctvTimer = setInterval(tickCCTVGame, 500);
+                        }, 2500);
+                    }
+                }
+            ]);
+        } }
     ]);
 }
 
