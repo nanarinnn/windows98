@@ -6,7 +6,7 @@
 
 유일한 작업 저장소는 `nanarinnn/windows98`이며 앞으로 기준 작업환경은 현재 Cloud checkout `/workspace/windows98`이다. Windows `D:\YUYEON\windows98`은 동일 프로젝트의 로컬 경로일 뿐 이번 작업 대상이 아니다. 로컬 임시 문서나 영상을 Cloud 프로젝트에 가져오지 않고 다른 저장소를 작업 대상으로 삼지 않는다.
 
-`play.mp4`는 사용자 파일이다. 수정·삭제·스테이징하지 않는다. 무차별 `git add .`를 사용하지 않는다. `CODEX_WRITE_TEST.txt`는 테스트용이다. 현재 Cloud에는 없으며 로컬 파일은 가져오지 않는다. 향후 기준 체크아웃에 존재하면 삭제 대상으로 취급한다. commit/push는 사용자의 명시적 지시에 따른다. 현재 AUTHOR/UI checkpoint는 `work` commit 및 `origin/work` push만 승인되었으며 main merge/push와 production 작업은 금지한다.
+`play.mp4`는 사용자 파일이다. 수정·삭제·스테이징하지 않는다. 무차별 `git add .`를 사용하지 않는다. `CODEX_WRITE_TEST.txt`는 테스트용이다. 현재 Cloud에는 없으며 로컬 파일은 가져오지 않는다. 향후 기준 체크아웃에 존재하면 삭제 대상으로 취급한다. commit/push는 사용자의 명시적 지시에 따른다. 현재 최종 EP01 Field/AUTHOR checkpoint는 `work` commit 및 `origin/work` push만 승인되었으며 main merge/push와 production 작업은 금지한다.
 
 ## 문서 기준과 인수인계 상태
 
@@ -141,6 +141,8 @@ field/
 현재 `field/field-author.js`는 일반 script이며 Field 완료 상태를 읽지 않고 `AuthorRoute`를 제공한다. 기존 세이브 코드 [불러오기] UI에서 먼저 비동기 AUTHOR hash 검사를 하고, 불일치/미설정/Web Crypto 실패 시 입력 원문을 기존 GameSave parser에 전달한다. 일반 Save의 덮어쓰기 확인/새로고침/export 동작은 유지한다. AUTHOR 성공은 Story save를 교체하지 않고 `[UNKNOWN SAVE FORMAT] → [IDENTITY RECORD FOUND] → [RECORD RESTORED]`를 표시하며 입력 UI를 비운다. HTTPS 또는 localhost의 Web Crypto 사용이 필요하다.
 
 AUTHOR 상태는 독립 localStorage 키 `yuyeon98.author.v1`의 `{v:1, unlocked:false, authorAccessLevel:0, authorTraces:[]}`다. 현재 활성 단계는 1이며 trace ID는 `creator-note`, `ep01-observation` 두 개뿐이다. 신규 브라우저/기존 save에 AUTHOR 기록이 없으면 기본 false이며 일반 Story import/reset은 기존 AUTHOR·Field 기록을 이동/삭제하지 않는다. Save v4에 AUTHOR 내용을 추가하지 않는다. 이 상태와 hash 비교는 사용자 수정이 가능한 frontend easter egg로서 인증/권한 기능이 아니다.
+
+`[제작자에게.txt]`는 기존 `darkwebReadmeWindow`의 메모장 DOM/inline CSS를 복제해 title bar/메뉴/readonly textarea를 재사용한다. 본문은 monospace 12px/normal, line-height 1.6, letter-spacing normal, padding 10px, 내용 영역 margin 2px와 기존 세로 스크롤을 따른다. 이전 안내 머리말은 제거했고, 마지막 문구는 `영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께`이며 앞에 대시는 없다. 앞의 두 문장은 유지한다.
 
 최소 meta 연출은 Darkweb의 `[제작자에게.txt]` 개인 메모(열람 시 첫 trace), AUTHOR 활성 상태에서 EP01 최초 파견의 `[수신 여백]` 한 줄(두 번째 trace)이다. trace는 중복 지급하지 않으며 AUTHOR 없이 모든 기존 콘텐츠를 이용할 수 있다. 기존 J 원문/문서/엔딩을 바꾸지 않고 EP11·11/10·CLASSIFIED·AUTHOR 엔딩은 구현하지 않았다. 메모 창은 본부 창/작업표시줄에 연결하고 본부 연결 종료/셧다운 때 닫는다. 저장 권한 실패는 성공 메시지에 표시하며 그 경우 새로고침 후 보존을 보장하지 않는다.
 

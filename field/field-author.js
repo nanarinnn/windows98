@@ -64,9 +64,17 @@ window.addEventListener('load', () => {
     icon.tabIndex = 0; icon.setAttribute('role', 'button'); icon.setAttribute('aria-label', '제작자에게.txt');
     icon.innerHTML = '<div style="font-size:26px">📄</div><span style="font-size:11px;color:#ff4444;font-family:monospace">[제작자에게.txt]</span>';
     desktop.querySelector('.darkweb-icons-container').append(icon);
-    const win = document.createElement('div'); win.id = 'authorNoteWindow'; win.className = 'window';
-    win.style.cssText = 'display:none;position:absolute;top:90px;left:100px;width:min(380px,90%);max-height:70%;background:#111;color:#aaa;font-family:monospace;flex-direction:column;z-index:1008';
-    win.innerHTML = '<div class="window-header"><span>📄 [제작자에게.txt] - 메모장</span><div class="window-buttons"><button type="button" id="author-note-close">닫기</button></div></div><pre style="padding:12px;white-space:pre-wrap;overflow:auto">[별도 기록 / 개인 메모]\n\n누군가 이 창을 다시 열어 주었다.\n남겨 둔 문장 하나는, 여기까지 읽어 준 사람에게.\n\n— 화면 바깥의 여백</pre>';
+    // Reuse the existing Darkweb text-window DOM/styles, including mobile rules.
+    const win = document.getElementById('darkwebReadmeWindow').cloneNode(true);
+    win.id = 'authorNoteWindow'; win.style.display = 'none';
+    win.style.top = '90px'; win.style.left = '100px'; win.style.width = 'min(380px,90%)';
+    win.style.maxHeight = '70%';
+    win.querySelector('.window-header > span').textContent = '📄 [제작자에게.txt] - 메모장';
+    const closeControl = win.querySelector('.win-btn');
+    closeControl.id = 'author-note-close'; closeControl.removeAttribute('onclick');
+    closeControl.setAttribute('role', 'button'); closeControl.setAttribute('aria-label', '닫기'); closeControl.tabIndex = 0;
+    const text = win.querySelector('textarea'); text.id = 'author-note-text';
+    text.textContent = '누군가 이 창을 다시 열어 주었다.\n남겨 둔 문장 하나는, 여기까지 읽어 준 사람에게.\n\n영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께';
     desktop.append(win); makeDraggable(win);
     darkWebWindowsList.push({ id: win.id, title: '📄 제작자에게.txt' });
     const close = () => { if (win.style.display === 'none') return; win.style.display = 'none'; updateDarkWebTaskbar(); };
@@ -78,7 +86,8 @@ window.addEventListener('load', () => {
     };
     icon.onclick = open;
     icon.onkeydown = event => { if (['Enter', ' '].includes(event.key)) { event.preventDefault(); open(); } };
-    document.getElementById('author-note-close').onclick = close;
+    closeControl.onclick = close;
+    closeControl.onkeydown = event => { if (['Enter', ' '].includes(event.key)) { event.preventDefault(); close(); } };
     AuthorRoute.onChange(update); update();
     new MutationObserver(() => {
         if (document.getElementById('darkweb-overlay').style.display === 'none' || desktop.style.display === 'none') close();

@@ -98,7 +98,24 @@ def run():
         assert page.locator('#author-note-icon').is_visible()
         page.evaluate('closeNotebook()')
         for _ in range(2):
-            page.locator('#author-note-icon').click(); page.locator('#author-note-close').click()
+            page.locator('#author-note-icon').click()
+            assert page.locator('#author-note-text').is_visible()
+            assert page.locator('#author-note-text').input_value() == ('누군가 이 창을 다시 열어 주었다.\n'
+                '남겨 둔 문장 하나는, 여기까지 읽어 준 사람에게.\n\n'
+                '영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께')
+            # The note uses the existing Darkweb document's typography, spacing and scroll region.
+            assert page.evaluate('''() => {
+                const props = ['fontFamily','fontSize','fontWeight','lineHeight','letterSpacing',
+                    'paddingTop','paddingBottom','paddingLeft','paddingRight','marginTop','marginBottom',
+                    'marginLeft','marginRight','overflowX','overflowY'];
+                for (const part of ['.window-header','.window-content','textarea']) {
+                    const reference = getComputedStyle(document.querySelector('#darkwebReadmeWindow '+part));
+                    const note = getComputedStyle(document.querySelector('#authorNoteWindow '+part));
+                    if (!props.every(key => note[key] === reference[key])) return false;
+                }
+                return document.getElementById('author-note-text').readOnly;
+            }''')
+            page.locator('#author-note-close').click()
         assert page.evaluate('AuthorRoute.get().authorTraces') == ['creator-note']
         page.evaluate('FieldUI.open()')
         page.locator('#field-dispatch-EP01').click()

@@ -126,3 +126,12 @@
 - 로컬과 origin/work는 모두 이전 checkpoint 2dc2bc9였고 AUTHOR 기반/hash/UI 일관화는 작업 트리에만 있었음을 확인했다. 사용자 지시로 해당 구현, 관련 문서와 두 브라우저 테스트를 단일 work checkpoint에 포함한다. commit message: `feat: add AUTHOR easter egg and align Darkweb field UI`. force 없이 work → origin/work만 push하며 main merge/push와 production 작업은 수행하지 않는다.
 - AUTHOR·Darkweb UI·Field browser smoke test를 모두 재실행해 통과했다. UI 비교에서는 기존 노트와 동일한 monospace/12px/700, title bar 26px, padding 3px 6px, center 정렬, baseline 17.5px, 닫기 버튼 28×18px 위치 및 320px/390px 모바일을 확인했다. Save v2/v3/v4와 Story/J/LOOP·Field persistence 회귀도 통과했다. JS syntax 및 unstaged/staged `git diff --check`로 확인한다.
 - 파일 범위를 프로젝트 문서 2개, field/field-author.js, field/field.css, index.html, notebook.js, tests/author_browser_smoke.py, tests/darkweb_ui_smoke.py로 제한했다. 테스트 산출물/로그/캐시/사용자 영상은 포함하지 않는다. 실제 secret 평문은 제공받거나 저장하지 않았으며 AUTHOR는 제공 hash 비교만 하는 frontend easter egg다.
+
+## 2026-10-04 — 오늘 최종 정리: EP01 Field / AUTHOR easter egg
+
+- 오늘 범위의 AUTHOR easter egg 구현 완료 상태를 유지하며 [제작자에게.txt] UI를 기존 Darkweb readme.txt 메모장과 일관화했다. 실제 secret 평문은 계속 저장소에 없으며 제공 SHA-256 hash/normalize/독립 AUTHOR persistence·trace 로직은 바꾸지 않았다. Story/Field/AUTHOR는 서로 진행 조건이 아니다.
+- 기존 문서 창 DOM/inline CSS를 cloneNode로 재사용한다. 기존 title bar·메뉴·window-content/readonly textarea, monospace 12px/400, line-height 1.6, letter-spacing normal, 본문 padding 10px/내용 margin 2px/overflow-y auto를 그대로 따른다. 메모의 기존 위치/폭 제한과 독립 닫기 핸들러는 유지하며 기존 readme 창의 onclick은 제거해 AUTHOR 창만 닫도록 연결했다. 닫기 컨트롤은 키보드 조작도 가능하다. 전역 CSS/기존 문서는 수정하지 않았다.
+- 본문의 [별도 기록 / 개인 메모](별도기록/개인메모) 머리말을 제거했다. 마지막 '— 화면 바깥의 여백'은 '영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께'로 교체했으며 앞에 대시를 붙이지 않았다. 나머지 두 문장은 그대로 보존했다.
+- EP01 Field 현 상태 유지: 1분=1.5초/약 12분 근무, A 23:00·현실 10초 hold, B/D/F와 기존 Story/J/LOOP 02·CCTV·Save v4 로직은 그대로다.
+- 검증: AUTHOR/Field/Darkweb UI browser smoke test 모두 통과. AUTHOR hash match(브라우저 메모리에서 만든 임시 입력/hash)/오입력/단계 UI/persistence/trace 중복, 본문 정확한 전체 문자열과 readme 기준 computed typography·padding·margin·overflow 비교, v2/v3/v4 일반 Save, EP01 A/B/D/F·06:00·Field persistence, 기존 CCTV/Story/J/LOOP 경계를 확인했다. 기존 메모장과 AUTHOR 창을 동시에 띄운 스크린샷을 육안 비교했고 390px 모바일 표시/스크롤·닫기도 확인했다. 가속 step을 사용한 격리 브라우저 검증이며 실제 secret 입력이나 전체 12분 수동 재플레이는 하지 않았다. JS 문법 검사와 unstaged/staged git diff --check를 통과한다.
+- 최종 commit message: `feat: finalize EP01 field and author easter egg`. 사용자 지시대로 work → origin/work만 일반 push하며 force push/main 수정·merge·push/production 작업은 수행하지 않는다. 스크린샷·측정 보조 스크립트는 /tmp에만 두고 commit에서 제외한다.
