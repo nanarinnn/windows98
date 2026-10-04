@@ -44,7 +44,7 @@ def run():
         def equipment():
             click('field-tab-equipment'); click('field-equipment-check'); click('field-take-baton'); click('field-take-radio')
         def a_success():
-            until(135); click('field-light'); hold('field-eyes', 20.5)
+            until(60); click('field-light'); hold('field-eyes', 10.5)
             assert state()['status'] == 'active' and state()['data']['event'] is None
         def b_contact(value=0.1):
             until(220, value); click('field-contact-greet'); click('field-contact-inspect'); click('field-contact-compliment')
@@ -60,6 +60,9 @@ def run():
             assert state()['data']['event'] is None
         click('field-open')
         assert page.locator('#field-dispatch-EP02').is_disabled()
+        assert page.locator('#field-dispatch-EP02').inner_text() == '연결 제한'
+        assert '[EP.01]' in page.locator('.field-case').first.inner_text()
+        assert '사건수사노트의 [기록] 탭' in page.locator('#field-content').inner_text()
         # The shared setting controls shift minutes, not real-time interaction deadlines.
         pacing = page.evaluate('''() => {
             const results = [];
@@ -77,7 +80,16 @@ def run():
             assert sample['duration'] == 480 * sample['seconds']
             assert abs(sample['minute'] - 60 / sample['seconds']) < .001
             assert sample['elapsed'] == 60
-        assert page.evaluate('FieldEP01Data.events.map(e => [e.type, e.minute])') == [['A',135],['B',220],['D',310],['F',415]]
+        assert page.evaluate('FieldEP01Data.events.map(e => [e.type, e.minute])') == [['A',60],['B',220],['D',310],['F',415]]
+        first = page.evaluate('''() => {
+            FieldCore.dispatch('EP01'); FieldCore.step(89.75);
+            const before = FieldCore.get().data.event;
+            FieldCore.step(.25); const s = FieldCore.get();
+            const result = { before, type: s.data.event.type, minute: s.minute, elapsed: s.elapsed };
+            FieldCore.disconnect(); return result;
+        }''')
+        assert first == {'before':None, 'type':'A', 'minute':60, 'elapsed':90}
+        assert '현장 관측 시스템.exe - 특별재난 관리본부' in page.locator('#fieldWindow .window-header').inner_text()
         # Restore the list UI after the isolated pacing probes.
         click('field-close'); click('field-open')
         dispatch(); equipment()
@@ -89,7 +101,8 @@ def run():
         click('field-tab-map'); click('field-check-weather'); click('field-move-harbor'); click('field-patrol')
         click('field-tab-phone'); click('field-phone-1'); click('field-report'); click('field-hangup')
         assert state()['patrols'].get('0')
-        until(65); click('field-tab-map'); click('field-check-weather'); click('field-move-coast')
+        a_success()
+        until(70); click('field-tab-map'); click('field-move-harbor'); click('field-check-weather'); click('field-move-coast')
         assert state()['data']['location'] == 'harbor'
         click('field-move-shelter'); click('field-tab-phone'); click('field-phone-1'); click('field-phone-0')
         assert state()['data']['phoneNamesYou']
@@ -97,7 +110,7 @@ def run():
         advance(3); click('field-phone-0'); assert not state()['data']['phoneNamesYou']; click('field-hangup')
         story_before = page.evaluate('JSON.stringify(GameSave.get())')
         code_before = page.evaluate('GameSave.exportCode()')
-        a_success(); b_contact(); b_buy(); assert state()['inventory']['bait'] == 1
+        b_contact(); b_buy(); assert state()['inventory']['bait'] == 1
         until(310); page.locator('#field-item').select_option('bait'); click('field-use')
         assert 'bait' not in state()['inventory'] and state()['inventory']['catch'] == 1
         f_success(); until(480)
@@ -115,10 +128,16 @@ def run():
         page.evaluate("document.getElementById('darkweb-terminal').style.display='none'; document.getElementById('darkweb-overlay').style.display='block'; confirmDarkWebWarning(); closeDarkWebReadme();")
         click('field-open')
         print('PASS central system, real reading clock, equipment/patrol/weather/phone, A/B/D/F direct controls, 06:00, EP02 unlock, persistence, Story isolation and v4 round-trip')
-        dispatch(); until(135); advance(9); assert state()['status'] == 'dead'
+        dispatch(); until(60); advance(9); assert state()['status'] == 'dead'
         dispatch(); assert state()['minute'] < 1 and 'bait' not in state()['inventory']
-        until(135); click('field-light'); hold('field-eyes', 2); assert state()['status'] == 'dead'
-        print('PASS A late protection/early release failure and clean retry')
+        until(60); click('field-light'); hold('field-eyes', 2); assert state()['status'] == 'dead'
+        for forbidden in ['light', 'move']:
+            dispatch(); until(60); click('field-light')
+            page.evaluate("FieldCore.action('eyes', true); FieldCore.step(2)")
+            if forbidden == 'light': click('field-light')
+            else: click('field-tab-map'); click('field-move-shelter')
+            assert state()['status'] == 'dead'
+        print('PASS A at 23:00/90 seconds, 10-second hold, late protection/early release/movement/relighting failure and clean retry')
         # Full human response windows are real seconds at the faster shift pace.
         dispatch(); a_success(); until(220); advance(118)
         assert state()['status'] == 'active' and state()['data']['event']['type'] == 'B'

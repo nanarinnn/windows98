@@ -4,8 +4,10 @@ window.FieldEP01Data = {
     id: 'EP01', title: '부산 태양해안',
     feedLabel: 'CH 01 · TAE-YANG / OBSERVATION', reportSelector: '#darkwebReportWindow textarea',
     equipment: ['baton', 'radio'],
+    // Real seconds of uninterrupted protection; slice tuning, not a canonical duration.
+    aProtectionSeconds: 10,
     events: [
-        { type: 'A', minute: 135, location: 'coast', video: 'event_A_intro.mp4' },
+        { type: 'A', minute: 60, location: 'coast', video: 'event_A_intro.mp4' },
         { type: 'B', minute: 220, location: 'harbor', video: 'event_B_intro.mp4' },
         { type: 'D', minute: 310, location: 'rocks', video: 'event_D_intro.mp4' },
         { type: 'F', minute: 415, location: 'sand', video: 'event_F_intro.mp4' }

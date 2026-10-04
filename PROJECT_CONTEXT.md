@@ -189,15 +189,15 @@ Transcript 배치 시에는 루트 원고/게임 콘텐츠를 변경하지 않�
 - 기존 일반 script 순서를 유지하고 끝에 `field-save.js → field-core.js → ep01-data.js → ep01.js → field-ui.js`를 추가했다. ES module, bundler, 프레임워크를 도입하지 않았다.
 - `field/field-core.js`: 미션 register/dispatch, 250ms wall-clock pulse, substep 기반 시간 처리, 상태/인벤토리/로그, 종료·사망·생환. `step(seconds)`는 같은 런타임 시계 진입점이며 브라우저 검증에 사용한다. 사용자용 시간 가속 UI는 없다.
 - `field/field-save.js`: 독립 키 `yuyeon98.field.v1`에 `{v:1, cleared, unlocked, deaths, records}` 저장. 기본 해금은 EP01, 생환하면 다음 Field EP 해금. 기존 `GameSave`/`GameProgress`를 호출하지 않고 `yuyeon98.save.v1`, Save Code v4, Story eps/flags/배열을 읽거나 바꾸지 않는다. Field 기록은 기존 Save Code로 이동하지 않으며 Story import/reset으로 초기화되지 않는다.
-- `field/field-ui.js`, `field/field.css`: 본부 목록/창/작업표시줄, 이동/장비/통신/수칙 탭, 관측 영상, 지속 인벤토리/눈감기/이동 controls, 데스크톱·모바일 레이아웃. 기존 `.window` 드래그와 작업표시줄 배열을 사용한다. 중앙 창 종료/본부 연결 종료/블루스크린 시 자기 세션만 정리한다. 작업표시줄로 숨겨도 근무 시계는 계속 흐른다. blur/visibilitychange는 held controls를 해제한다.
+- `field/field-ui.js`, `field/field.css`: 본부 목록/창/작업표시줄, 이동/장비/통신/수칙 탭, 관측 영상, 지속 인벤토리/눈감기/이동 controls, 데스크톱·모바일 레이아웃. 기존 `.window` 드래그와 작업표시줄 배열을 사용한다. 창 제목은 `현장 관측 시스템.exe - 특별재난 관리본부`, 목록은 기존 사건 파일의 `[EP.01]` 형식이며 상태는 파견 가능/연결 제한/연결 준비 중이다. 사건수사노트의 [기록] 탭과 근무 기록의 저장 범위를 구분한다. 중앙 창 종료/본부 연결 종료/블루스크린 시 자기 세션만 정리한다. 작업표시줄로 숨겨도 근무 시계는 계속 흐른다. blur/visibilitychange는 held controls를 해제한다.
 - `field/ep01/ep01-data.js`: canonical 출처, 장소/아이템/낚시 요구 6종/관측 데이터와 게임 내 사건 발생 시각. 근무 배율은 공용 FieldCore 설정에 둔다.
 - `field/ep01/ep01.js`: 미션 tick/action, A/B/D/F 상태 전이, 미션별 contact 버튼과 scene descriptor. 다음 미션은 별도 data/logic을 register해 공용 시계/저장/UI를 재사용한다. 사이드바의 현재 지도·통신·장비 controls는 첫 해안 미션 기준이며 EP02에서 필요하면 descriptor/action을 확장한다.
-- A: 조명 소등, 행동 중지, 두 눈 hold. 보호 상태 20초 유지 후 악취 종료. 이른 release/조명 재점등/행동 또는 보호 지연은 연결 소실.
+- A: 조명 소등, 행동 중지, 두 눈 hold. 보호 상태 현실 10초 유지 후 악취 종료(`FieldEP01Data.aProtectionSeconds` 조정값). 이른 release/조명 재점등/행동 또는 보호 지연은 연결 소실.
 - B: 인사→망사리 확인→칭찬→사람 머리인 경우 알림→실제 오귀발 여부에 따른 구매 또는 공손한 인사 후 떠남. `observation`과 `actualOgwibal`을 분리한다. 주머니 지폐 3장과 개인 지갑을 별도 인벤토리로 다루고 지폐만 미끼로 교환한다. 관측 변형의 선택은 slice 시나리오 구성이지 사람 머리 자체를 오귀발로 정의하는 새 canon이 아니다.
 - D: 시선 전환/지도 도주는 위험. 직접 선택한 미끼를 사용하면 소모되고 조과를 받는다. 미끼가 없으면 canonical 6종 중 요구된 신체를 제공·채취하는 접촉 경로로 해결하고 부상 내용을 근무 기록에 남긴다.
 - F: 응시 유지, 좌/우 번갈아 깜빡이기, 뒤로 이동 hold→TV 발견→TV 뒤 이동→웅크림→앞쪽 파손음→앞으로 이동→선택한 순찰봉으로 3회 타격. 파손음은 텍스트와 짧은 합성 소리로 전달한다. 시선 이탈·양안 감기·지연 실패를 처리한다.
 - 정각 순찰 알림/지도 관측/내선 1번 보고, 파고 1.5m 이상 해안 접근 제한, 장비·조명 점검/수령, 1번 연결 불가·0번 성명 반응·통화 종료 후 게임 시간 1분 대기 경로가 있다. 순찰 누락은 기록으로만 남기며 기본 Story나 Field 생환을 새 수집 조건으로 막지 않는다.
-- 현재 조정값: 22:00~06:00=720초(게임 내 1분당 현실 1.5초), 사건 A/B/D/F는 각각 00:15/01:40/03:10/04:55. 사건 위치는 관측 채널과 함께 전환한다. 대응 grace/deadline, 눈 피로 25초, TV 발견 거리 12보/3회 타격, 파고 변동 시간대는 gameplay tuning이며 원문 설정을 추가로 확정한 것이 아니다.
+- 현재 조정값: 22:00~06:00=720초(게임 내 1분당 현실 1.5초), 사건 A/B/D/F는 각각 23:00/01:40/03:10/04:55. 첫 사건 A는 시작 후 현실 90초, A→B 간격은 240초다. 사건 위치는 관측 채널과 함께 전환한다. 대응 grace/deadline, 눈 피로 25초, TV 발견 거리 12보/3회 타격, 파고 변동 시간대는 gameplay tuning이며 원문 설정을 추가로 확정한 것이 아니다.
 - 미구현/한계: EP02~EP10 미션, CLASSIFIED/Hidden/11번째 사건/AUTHOR, Field Save Code 이동, 중간 근무 저장·복원, 실제 부상에 따른 신체 조작 변경, 자유 3D 이동, 신규 전용 영상. 기존 영상 재사용과 버튼/hold 기반 공간 조작의 Vertical Slice이며 사용자가 checkpoint를 직접 플레이한 뒤 난이도 유지와 근무 시간 단축을 요청했다. 현재 12분 배율의 전체 근무 수동 플레이는 아직 검증하지 않았다. 연결 종료/새로고침 후 현재 근무는 처음부터 다시 파견하며 완료·사망 기록만 보존된다.
 - 회귀 검증: `tests/field_browser_smoke.py`를 로컬 서버 실행 후 Python Playwright/Chromium 환경에서 실행한다. 격리 저장소와 production step으로 시계를 가속해 A/B/D/F 정상·실패/재시도/06:00/해금/저장 복원/Save v4/기존 CCTV/Field 미클리어 Story 경계를 검증한다. 부트/EP09 마지막 단계 등 일부 Story 진입점을 직접 호출하므로 전체 Story 수동 플레이 검증이라고 보고하지 않는다.
 

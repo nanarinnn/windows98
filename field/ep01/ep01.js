@@ -49,7 +49,7 @@
         if (e.type === 'A') {
             if (!s.controls.light && s.controls.eyes && !s.controls.back) e.protected += dt;
             else if (e.protected > 0 || e.age > 8) return api.die('A — 소등·행동 중지·눈 감기 유지 실패.');
-            if (e.protected >= 20) resolve(s, api, '썩은 어패류와 암모니아 악취가 확실히 사라졌습니다. 눈을 떠도 됩니다.');
+            if (e.protected >= data.aProtectionSeconds) resolve(s, api, '썩은 어패류와 암모니아 악취가 확실히 사라졌습니다. 눈을 떠도 됩니다.');
         } else if (e.type === 'F') {
             if (['approach', 'tv'].includes(e.stage)) {
                 if (!s.controls.gaze || s.controls.eyes) return api.die('F — 여성에게서 시선이 끊겼습니다.');

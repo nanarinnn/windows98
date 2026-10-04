@@ -39,17 +39,17 @@ window.FieldUI = (() => {
         for (let n = 1; n <= 10; n++) {
             const id = `EP${String(n).padStart(2, '0')}`;
             const row = document.createElement('div'); row.className = 'field-case';
-            const label = document.createElement('span'); label.textContent = `EP.${String(n).padStart(2, '0')} ${EPISODE_TITLES[n]}`;
+            const label = document.createElement('span'); label.textContent = `[EP.${String(n).padStart(2, '0')}] ${EPISODE_TITLES[n]}`;
             row.append(label);
             const btn = document.createElement('button'); btn.id = `field-dispatch-${id}`;
             const available = FieldCore.available(id); const unlocked = FieldSave.unlocked(id);
-            btn.textContent = !unlocked ? 'LOCKED' : available ? '파견 가능' : '해금 · 연결 준비 중';
+            btn.textContent = !unlocked ? '연결 제한' : available ? '파견 가능' : '연결 준비 중';
             btn.disabled = !unlocked || !available;
             btn.onclick = () => { armAudio(); shell(id); FieldCore.dispatch(id); };
             row.append(btn); content.append(row);
             const record = document.createElement('small'); record.textContent = `${save.cleared.includes(id) ? '생환 기록 있음' : '생환 기록 없음'} / 연결 소실 ${save.deaths[id] || 0}회`; content.append(record);
         }
-        const note = document.createElement('p'); note.textContent = '근무 기록은 이 브라우저에 별도 저장됩니다. 사건수사노트의 세이브 코드는 현장 기록을 이동하지 않습니다.'; content.append(note);
+        const note = document.createElement('p'); note.textContent = '근무 기록은 이 브라우저에 별도 저장됩니다. 사건수사노트의 [기록] 탭에서 사용하는 세이브 코드에는 근무 기록이 포함되지 않습니다.'; content.append(note);
         if (FieldSave.storageError()) { const warn = document.createElement('p'); warn.textContent = '기록 저장소를 사용할 수 없습니다. 브라우저 저장 권한을 확인하십시오.'; content.append(warn); }
     }
     function hold(el, action) {
@@ -70,7 +70,7 @@ window.FieldUI = (() => {
             <video id="field-video" autoplay loop muted playsinline></video><div class="field-scanlines"></div>
             <span class="field-feed-label">${mission().data.feedLabel}</span><div id="field-scene"></div><div id="field-eyelids">시야 차단</div></div>
             <div class="field-controls" id="field-body"></div><div id="field-contact" class="field-controls"></div>
-            <div class="field-inventory"><label for="field-item">손에 든 장비</label><select id="field-item"></select><button id="field-use" type="button">선택한 물건 사용 / 건네기</button></div>
+            <div class="field-inventory"><label for="field-item">손에 든 물건</label><select id="field-item"></select><button id="field-use" type="button">선택한 물건 사용 / 건네기</button></div>
             <pre id="field-log" role="log" aria-label="현장 통신 기록"></pre></section>
             <aside><div class="field-tabs"><button id="field-tab-map">순찰 지도</button><button id="field-tab-equipment">장비함</button><button id="field-tab-phone">통신</button><button id="field-tab-rules">수칙 문서</button></div>
             <div id="field-tools"></div><p id="field-patrol-record"></p><p id="field-weather"></p>
@@ -94,7 +94,7 @@ window.FieldUI = (() => {
         }
         const root = $('field-tools'); if (!root) return; root.replaceChildren();
         if (tab === 'map') {
-            const title = document.createElement('h3'); title.textContent = '순찰 경로 / 現 위치'; root.append(title);
+            const title = document.createElement('h3'); title.textContent = '순찰 경로 / 현재 위치'; root.append(title);
             for (const [id, label] of Object.entries(mission().data.locations)) root.append(button(label, 'move', id, 'field-move-' + id));
             root.append(button('파고 / 기상 확인', 'weather', null, 'field-check-weather'), button('선박 출현 여부 관측', 'patrol', null, 'field-patrol'));
         } else if (tab === 'equipment') {

@@ -85,3 +85,11 @@
 - 사건 순서/시각 유지: A 00:15(135분) → 현실 202.5초, B 01:40(220분) → 330초, D 03:10(310분) → 465초, F 04:55(415분) → 622.5초. 22:00→06:00 표시와 기존 게임 내 파고/매시각 순찰 시각도 변경하지 않았다.
 - 검증: `python3 tests/field_browser_smoke.py` 전체 통과. 공용 설정 1.25/1.5/2초의 시간 변환, 사건 스케줄 불변, 수칙 읽기 중 자연 시계, A/B/D/F 정상·실패/재시도/06:00 생환, B/D/F의 현실 초 제한, EP02 Field 해금/persistence, 기존 CCTV, old save 및 v4 왕복, Field 미클리어 Story→J→BSOD/LOOP 경계, 모바일, 정적 자산 응답을 확인했다. 시계는 production step으로 가속했으며 12분 전체 수동 플레이를 새로 수행하지는 않았다. JS syntax 및 `git diff --check` 통과.
 - 보존: 기존 Story/CCTV/Save 파일과 transcript는 HEAD 대비 바이트 불변이다. `PROJECT_CONTEXT.md`의 현재 시간 설정만 보강했다. 이번 변경은 unstaged로 유지하며 commit/push하지 않는다.
+
+## 2026-10-04 — 실플레이 피드백: 첫 사건·A hold·Field 용어 조정
+
+- 사용자 실플레이 피드백에 따라 첫 사건 진입 시점을 A minute 135(00:15) → 60(23:00)으로 단축했다. 1분=1.5초를 그대로 유지하므로 시작 후 약 90초에 A를 만난다. B/D/F는 220/310/415분(01:40/03:10/04:55) 그대로다. 발생 시각 간 현실 간격은 A→B 240초, B→D 135초, D→F 157.5초로 첫 간격이 더 길지만 이번에는 재배치하지 않았다. 전체 근무 720초/12분은 유지한다. A와 기존 23:00 정각 순찰·파고 상승이 겹치는 것도 확인했으며 해당 환경 시각은 변경하지 않았다.
+- A 보호 성공 hold를 현실 20초 → 10초로 단축하고 `FieldEP01Data.aProtectionSeconds`로 분리해 8/10/12초 조정을 쉽게 했다. canonical은 소등·행동 중지·악취 종료까지 눈 감기이며 특정 현실 hold 길이를 정하지 않는다. 8초 대응 grace, 조기 눈 뜨기/이동/조명 재점등 사망은 그대로다. B 분기, D 요구, F 시선/깜빡임/TV 처리 등은 바꾸지 않았다.
+- 기존 UI 조사: 사건수사노트.exe/기밀터미널.exe, 본부 실시간 메신저 - 상황실, [사건 파일] - 탐색기, 노트의 사건 보드/단서/추리/업적/기록, 기존 문서의 특별재난 관리본부 표기를 확인했다. Field 창만 `현장 관측 시스템.exe - 특별재난 관리본부`로 맞췄다. 목록 [EP.nn], LOCKED→연결 제한, 해금→연결 준비 중, 손에 든 장비→손에 든 물건, 現 위치→현재 위치로 정리했다. 사건수사노트 [기록] 탭의 세이브 코드에는 별도 근무 기록이 포함되지 않는다고 명시했다. 기존 창/노트/레이아웃은 변경하지 않았다.
+- 검증: `python3 tests/field_browser_smoke.py` 통과. production 시계 89.75초에는 사건 없음/90초에는 23:00 A 진입, 실제 UI의 10.5초 hold 성공, 대응 지연/조기 눈 뜨기/이동/재점등 실패, 재시도, B/D/F 정상·실패/현실 반응 시간, 06:00 생환/EP02 해금, Field persistence, 기존 CCTV, old save/Save v4 왕복, Field 미클리어 Story→J→BSOD/LOOP 경계, 제목/목록/기록 문구와 모바일/정적 자산 응답을 확인했다. 격리 브라우저와 가속 step 검증이며 전체 12분 수동 플레이는 새로 수행하지 않았다.
+- JS 문법 및 `git diff --check` 통과. 기존 Story/Save/노트/터미널/원고/transcript, 공용 시계와 Field 저장 코드가 HEAD 대비 그대로인지 확인했다. 수정 파일: `field/ep01/ep01-data.js`, `field/ep01/ep01.js`, `field/field-ui.js`, `index.html`(Field 제목만), `tests/field_browser_smoke.py`, `PROJECT_CONTEXT.md`, `CHANGELOG_AI.md`. commit/push는 수행하지 않는다.
