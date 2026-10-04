@@ -93,3 +93,36 @@
 - 기존 UI 조사: 사건수사노트.exe/기밀터미널.exe, 본부 실시간 메신저 - 상황실, [사건 파일] - 탐색기, 노트의 사건 보드/단서/추리/업적/기록, 기존 문서의 특별재난 관리본부 표기를 확인했다. Field 창만 `현장 관측 시스템.exe - 특별재난 관리본부`로 맞췄다. 목록 [EP.nn], LOCKED→연결 제한, 해금→연결 준비 중, 손에 든 장비→손에 든 물건, 現 위치→현재 위치로 정리했다. 사건수사노트 [기록] 탭의 세이브 코드에는 별도 근무 기록이 포함되지 않는다고 명시했다. 기존 창/노트/레이아웃은 변경하지 않았다.
 - 검증: `python3 tests/field_browser_smoke.py` 통과. production 시계 89.75초에는 사건 없음/90초에는 23:00 A 진입, 실제 UI의 10.5초 hold 성공, 대응 지연/조기 눈 뜨기/이동/재점등 실패, 재시도, B/D/F 정상·실패/현실 반응 시간, 06:00 생환/EP02 해금, Field persistence, 기존 CCTV, old save/Save v4 왕복, Field 미클리어 Story→J→BSOD/LOOP 경계, 제목/목록/기록 문구와 모바일/정적 자산 응답을 확인했다. 격리 브라우저와 가속 step 검증이며 전체 12분 수동 플레이는 새로 수행하지 않았다.
 - JS 문법 및 `git diff --check` 통과. 기존 Story/Save/노트/터미널/원고/transcript, 공용 시계와 Field 저장 코드가 HEAD 대비 그대로인지 확인했다. 수정 파일: `field/ep01/ep01-data.js`, `field/ep01/ep01.js`, `field/field-ui.js`, `index.html`(Field 제목만), `tests/field_browser_smoke.py`, `PROJECT_CONTEXT.md`, `CHANGELOG_AI.md`. commit/push는 수행하지 않는다.
+
+## 2026-10-04 — AUTHOR frontend easter egg 기반
+
+- 먼저 최신 프로젝트 문서/이력, save.js의 v1 state 및 v2/v3/v4 decoder/export, 노트의 불러오기·덮어쓰기·새로고침/초기화 UI와 Darkweb 창/작업표시줄/드래그 구조를 확인했다. 기존 v4 importer는 state를 교체하므로 AUTHOR 정보를 기존 state에 덧붙이지 않았다.
+- 인식: 기존 사건수사노트 [기록]의 세이브 코드 불러오기에서 `AuthorRoute.tryImport()`로 먼저 검사한다. normalize는 Unicode NFKC 후 trim, 대소문자·내부 공백 구분. UTF-8 입력을 Web Crypto `crypto.subtle.digest('SHA-256', ...)`로 처리해 hex hash와 비교한다. 불일치/미설정/crypto 실패 시 입력 원문을 기존 parser로 넘겨 일반 save 호환을 유지한다. 입력 처리 중 버튼을 비활성화하고 AUTHOR 성공 입력은 UI에서 비운다.
+- 실제 AUTHOR secret/hash는 아직 제공되지 않았다. `AUTHOR_SAVE_HASH = ''`는 명시적인 UNCONFIGURED placeholder이고 아무 secret도 임의 확정하지 않았다. 로컬 `AuthorRoute.setHashOverride()`는 hash만 세션 메모리에 받는다. 실제 secret 평문이 저장소에 없으며 테스트도 매번 격리 브라우저에서 임시 입력/hash를 생성한다. HTTPS/localhost 등 Web Crypto 지원 origin이 필요하다.
+- 저장: 별도 `yuyeon98.author.v1`에 `{v:1, unlocked, authorAccessLevel, authorTraces}`. 기본 false/0/[]이며 현재 unlock은 level 1이다. Save v4 byte 포맷·eps/J/엔딩 플래그·기존 배열 ID/순서는 변경하지 않는다. 기존 save import/reset은 AUTHOR와 Field 기록을 옮기거나 지우지 않는다. 저장 불가 시 UI에 경고한다. 이 기능은 frontend easter egg이며 로그인/관리자 인증·보안 기능이 아니다.
+- 최소 연출: `[UNKNOWN SAVE FORMAT] → [IDENTITY RECORD FOUND] → [RECORD RESTORED]` 단계 메시지. 독립 meta 개인 메모 `[제작자에게.txt]` 열람 시 `creator-note`, AUTHOR 상태에서 EP01 최초 연결 시 한 줄의 `[수신 여백]` 로그와 `ep01-observation`. allowlist와 중복 검사로 trace는 한 번만 기록한다. Story/J/LOOP·Field unlock/성공 조건에 사용하지 않는다. 메모 창은 기존 드래그/작업표시줄을 사용하며 본부 연결 종료/셧다운 시 닫힌다.
+- 테스트: `python3 tests/author_browser_smoke.py` 통과. 일반 Save UI 불러오기/새로고침과 v2/v3/v4 legacy fixture, export round-trip, 잘못된 입력/대소문자/전각 NFKC·trim, 미설정 hash/crypto 실패 후 정상 parser, 올바른 hash 및 단계 메시지/입력 지움, 저장 복원/신규 브라우저 false, 두 trace 중복 방지, Story·Field 데이터 및 v4 byte 불변, AUTHOR 활성 상태의 EP09→J→BSOD/LOOP 경계를 확인했다. `python3 tests/field_browser_smoke.py`도 전부 통과해 AUTHOR 기본 false에서 EP01 A/B/D/F·기존 CCTV·Story·Save v4·Field persistence 회귀를 확인했다. JS syntax와 `git diff --check` 통과. 실제 AUTHOR secret으로 플레이하거나 실배포하지 않았다.
+- 변경: 신규 `field/field-author.js`, `tests/author_browser_smoke.py`; `notebook.js` import UI, `index.html` script 한 줄, 두 프로젝트 문서. 기존 save.js/app.js/story-data.js/terminal.js/Field 미션·시계·저장/원고/transcript는 HEAD 대비 불변이다. 기존 `field/**` Vercel static 설정이 새 파일을 포함하므로 배포 설정 수정은 불필요하다. EP11/11/10/CLASSIFIED/전용 엔딩/J 교체는 구현하지 않았다. commit/push하지 않는다.
+
+## 2026-10-04 — 사용자 제공 AUTHOR hash 적용 / normalize 순서 확정
+
+- 사용자 제공 SHA-256 hex 값만 `AUTHOR_SAVE_HASH` 상수에 적용했다. 실제 secret 평문은 제공받거나 저장소에 기록하지 않았으며, AUTHOR 인식은 hash 비교만 한다. 임의 secret 생성/확정은 하지 않았다. 로그인/보안 인증이 아닌 frontend easter egg라는 기존 원칙을 유지한다.
+- 사용자가 지정한 정확한 순서인 trim → Unicode NFKC → UTF-8(TextEncoder) → Web Crypto SHA-256로 normalize를 변경했다. 대소문자와 내부 공백은 구분하며 NFKC 후 추가 trim은 하지 않는다. NFKC가 새로 만든 공백을 보존하는 테스트로 순서를 검증했다.
+- 단계 연출 `[UNKNOWN SAVE FORMAT] → [IDENTITY RECORD FOUND] → [RECORD RESTORED]`, Darkweb `[제작자에게.txt]`, 별도 AUTHOR persistence/trace 중복 방지는 그대로 유지했다. 기존 Story/J/LOOP 02/Field 진입·해금 조건, Save 포맷/기존 배열은 변경하지 않았다.
+- 테스트: `python3 tests/author_browser_smoke.py` 통과. 제공 hash 상수 적용 확인, 실제 Web Crypto의 정상 hash match(매 실행 브라우저 메모리에서 만든 임시 입력/hash override), 오입력/대소문자·전각·정확한 normalize 순서, persistence/신규 브라우저 기본 false, 단계 UI, 중복 trace, v2/v3/v4 일반 import 및 export 회귀, crypto 실패 fallback, AUTHOR 활성 상태의 Story→J→LOOP 경계와 Field 상태 불변을 확인했다. 실제 secret을 모르므로 해당 secret 자체를 입력한 검증은 수행하지 않았다.
+- JS syntax 및 `git diff --check` 통과. 기존 AUTHOR 구현과 함께 아직 unstaged 상태이며 commit/push하지 않는다.
+
+## 2026-10-04 — Darkweb UI consistency 개선
+
+- 기존 사건수사노트.exe의 실제 DOM/inline CSS, styles.css의 .window-header/.window-buttons/.win-btn과 노트 탭·버튼 typography를 먼저 조사하고 Chromium computed style을 비교했다. 노트 title bar 26px, 상하 3px/좌우 6px padding, monospace 12px/700, letter-spacing normal/line-height normal, flex space-between/align-items center였다. 제목 span 높이 17px/상단 offset 3.5px, baseline 17.5px, 닫기 28×18px/상단 offset 3px/10px bold line-height 10px였다. 아이콘과 제목은 하나의 span에서 공백 한 칸이며 window-buttons gap은 기존 2px다.
+- Field의 기존 title bar는 49px/5px 8px/13px이고 큰 닫기 버튼은 37px 높이라 이질적이었다. Field에만 노트 padding/font-size를 적용하고 .window-header/.window-buttons의 기존 정렬과 .win-btn의 크기/굵기를 재사용했다. 닫기는 같은 ✕ 표시의 semantic button이며 aria-label/title은 연결 종료다. Field 공통 버튼의 큰 padding과 native button의 border-box를 title bar에 한정해 노트의 0px 4px/content-box/1px border/10px line-height 1로 보정했다.
+- 기존 노트가 monospace를 선언한 사실을 기준으로 Field/제목·특별재난 관리본부 표시의 동일 font-family를 유지했다. Field 일반 버튼/select는 노트 버튼의 11px, Field 탭은 노트 탭의 11px bold, 상태는 기존 기록 요약의 11px normal로 맞췄다. 로그 11px/1.5 monospace, 수칙 12px/1.65 monospace는 그대로다. 노트 DOM/전역 styles.css·동작, 창 크기/위치 구조, 기존 색상 테마와 Field 게임 로직은 변경하지 않았다.
+- 검증: `UI_SCREENSHOT_DIR=/tmp/windows98-ui-check python3 tests/darkweb_ui_smoke.py` 통과. 두 title bar의 높이/모든 font·padding·정렬 값/제목 baseline/아이콘 뒤 공백폭/닫기 위치 일치를 assertion으로 확인했고 동시에 표시한 스크린샷도 육안으로 비교했다. 320px/390px 모바일에서 제목/내용 overflow 없음·종료/수칙 접근, 기존 노트 5개 탭/종료도 확인했다. 스크린샷/측정 보조 스크립트는 /tmp에만 둔다.
+- `python3 tests/field_browser_smoke.py`, `python3 tests/author_browser_smoke.py` 모두 통과. Field A/B/D/F·06:00·저장/기존 CCTV/Story/J/LOOP·Save v4 및 AUTHOR hash/trace·Save import 회귀를 확인했다. `git diff --check` 통과.
+- 이번 UI 변경 파일: field/field.css, index.html의 Field 닫기 버튼만, tests/darkweb_ui_smoke.py, PROJECT_CONTEXT.md, CHANGELOG_AI.md. 앞선 미커밋 AUTHOR 구현을 보존하며 staging/commit/push하지 않는다.
+
+## 2026-10-04 — AUTHOR/UI checkpoint 검증 및 work 반영
+
+- 로컬과 origin/work는 모두 이전 checkpoint 2dc2bc9였고 AUTHOR 기반/hash/UI 일관화는 작업 트리에만 있었음을 확인했다. 사용자 지시로 해당 구현, 관련 문서와 두 브라우저 테스트를 단일 work checkpoint에 포함한다. commit message: `feat: add AUTHOR easter egg and align Darkweb field UI`. force 없이 work → origin/work만 push하며 main merge/push와 production 작업은 수행하지 않는다.
+- AUTHOR·Darkweb UI·Field browser smoke test를 모두 재실행해 통과했다. UI 비교에서는 기존 노트와 동일한 monospace/12px/700, title bar 26px, padding 3px 6px, center 정렬, baseline 17.5px, 닫기 버튼 28×18px 위치 및 320px/390px 모바일을 확인했다. Save v2/v3/v4와 Story/J/LOOP·Field persistence 회귀도 통과했다. JS syntax 및 unstaged/staged `git diff --check`로 확인한다.
+- 파일 범위를 프로젝트 문서 2개, field/field-author.js, field/field.css, index.html, notebook.js, tests/author_browser_smoke.py, tests/darkweb_ui_smoke.py로 제한했다. 테스트 산출물/로그/캐시/사용자 영상은 포함하지 않는다. 실제 secret 평문은 제공받거나 저장하지 않았으며 AUTHOR는 제공 hash 비교만 하는 frontend easter egg다.

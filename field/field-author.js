@@ -1,0 +1,91 @@
+// Frontend easter egg, not authentication or a permission boundary.
+window.AuthorRoute = (() => {
+    // Author-supplied SHA-256 hex digest. This is a frontend easter egg only.
+    // Never put the original code here. The local override accepts a hash, not a secret.
+    const AUTHOR_SAVE_HASH = 'f7dda4fd1a2aaaae283a1382d8e0f5f39abe70d410d9cf1a438e58c0aaa220ae';
+    const KEY = 'yuyeon98.author.v1';
+    const TRACE_IDS = ['creator-note', 'ep01-observation'];
+    const listeners = new Set();
+    const blank = () => ({ v: 1, unlocked: false, authorAccessLevel: 0, authorTraces: [] });
+    let state = blank(), hashOverride = '', storageError = false;
+    try {
+        const saved = JSON.parse(localStorage.getItem(KEY));
+        if (saved?.v === 1 && saved.unlocked === true) {
+            state.unlocked = true; state.authorAccessLevel = 1;
+            state.authorTraces = Array.isArray(saved.authorTraces)
+                ? [...new Set(saved.authorTraces.filter(id => TRACE_IDS.includes(id)))] : [];
+        }
+    } catch (error) { storageError = true; }
+    function persist() {
+        try { localStorage.setItem(KEY, JSON.stringify(state)); storageError = false; }
+        catch (error) { storageError = true; }
+        listeners.forEach(fn => fn());
+    }
+    function normalize(input) {
+        // Case-sensitive; preserve internal spaces. Exact order: trim → NFKC → UTF-8 → SHA-256.
+        return typeof input === 'string' ? input.trim().normalize('NFKC') : '';
+    }
+    async function matches(input) {
+        const expected = hashOverride || AUTHOR_SAVE_HASH;
+        const normalized = normalize(input);
+        if (!/^[a-f0-9]{64}$/i.test(expected) || !normalized || !window.crypto?.subtle) return false;
+        try {
+            const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalized));
+            const actual = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+            return actual === expected.toLowerCase();
+        } catch (error) { return false; } // Normal Save import still works on unsupported origins.
+    }
+    return {
+        normalize, matches,
+        // Session-only local override for author configuration/playtesting. Never stores input.
+        setHashOverride(hash) {
+            if (hash !== '' && (typeof hash !== 'string' || !/^[a-f0-9]{64}$/i.test(hash))) return false;
+            hashOverride = hash; return true;
+        },
+        async tryImport(input) {
+            if (!await matches(input)) return false;
+            if (!state.unlocked) { state.unlocked = true; state.authorAccessLevel = 1; persist(); }
+            return true;
+        },
+        get: () => JSON.parse(JSON.stringify(state)),
+        storageError: () => storageError,
+        onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+        addTrace(id) {
+            if (!state.unlocked || !TRACE_IDS.includes(id) || state.authorTraces.includes(id)) return false;
+            state.authorTraces.push(id); persist(); return true;
+        }
+    };
+})();
+
+// Two alternate presentation traces. No Story, J, LOOP or Field completion hooks.
+window.addEventListener('load', () => {
+    const desktop = document.getElementById('darkweb-desktop');
+    const icon = document.createElement('div'); icon.className = 'icon'; icon.id = 'author-note-icon';
+    icon.tabIndex = 0; icon.setAttribute('role', 'button'); icon.setAttribute('aria-label', '제작자에게.txt');
+    icon.innerHTML = '<div style="font-size:26px">📄</div><span style="font-size:11px;color:#ff4444;font-family:monospace">[제작자에게.txt]</span>';
+    desktop.querySelector('.darkweb-icons-container').append(icon);
+    const win = document.createElement('div'); win.id = 'authorNoteWindow'; win.className = 'window';
+    win.style.cssText = 'display:none;position:absolute;top:90px;left:100px;width:min(380px,90%);max-height:70%;background:#111;color:#aaa;font-family:monospace;flex-direction:column;z-index:1008';
+    win.innerHTML = '<div class="window-header"><span>📄 [제작자에게.txt] - 메모장</span><div class="window-buttons"><button type="button" id="author-note-close">닫기</button></div></div><pre style="padding:12px;white-space:pre-wrap;overflow:auto">[별도 기록 / 개인 메모]\n\n누군가 이 창을 다시 열어 주었다.\n남겨 둔 문장 하나는, 여기까지 읽어 준 사람에게.\n\n— 화면 바깥의 여백</pre>';
+    desktop.append(win); makeDraggable(win);
+    darkWebWindowsList.push({ id: win.id, title: '📄 제작자에게.txt' });
+    const close = () => { if (win.style.display === 'none') return; win.style.display = 'none'; updateDarkWebTaskbar(); };
+    const update = () => { icon.style.display = AuthorRoute.get().unlocked ? 'flex' : 'none'; };
+    const open = () => {
+        if (!AuthorRoute.get().unlocked) return;
+        AuthorRoute.addTrace('creator-note'); win.style.display = 'flex';
+        win.style.zIndex = ++highestZIndex; updateDarkWebTaskbar();
+    };
+    icon.onclick = open;
+    icon.onkeydown = event => { if (['Enter', ' '].includes(event.key)) { event.preventDefault(); open(); } };
+    document.getElementById('author-note-close').onclick = close;
+    AuthorRoute.onChange(update); update();
+    new MutationObserver(() => {
+        if (document.getElementById('darkweb-overlay').style.display === 'none' || desktop.style.display === 'none') close();
+    }).observe(document.getElementById('darkweb-overlay'), { attributes: true, subtree: true, attributeFilter: ['style'] });
+    FieldCore.onChange(s => {
+        if (s?.id === 'EP01' && s.status === 'active' && s.elapsed === 0 && AuthorRoute.addTrace('ep01-observation')) {
+            FieldCore.log('[수신 여백] 이 화면을 다시 열어 준 사람에게.');
+        }
+    });
+});

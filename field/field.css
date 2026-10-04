@@ -1,7 +1,12 @@
 #fieldWindow { position:absolute; top:55px; left:90px; width:min(980px, calc(100vw - 30px)); height:min(760px, calc(100dvh - 100px)); max-height:calc(100dvh - 100px); display:none; flex-direction:column; color:#a7b6a1; background:#0b0d0b; border:2px solid; border-color:#777 #111 #111 #777; box-shadow:6px 6px 0 #000; font:12px monospace; overflow:hidden; }
-#fieldWindow .window-header { display:flex; justify-content:space-between; align-items:center; background:#333; color:#ff5555; padding:5px 8px; border-bottom:2px solid #000; flex-shrink:0; }
+#fieldWindow .window-header { display:flex; justify-content:space-between; align-items:center; background:#333; color:#ff5555; padding:3px 6px; font-size:12px; border-bottom:2px solid #000; flex-shrink:0; }
 #field-content { padding:10px; overflow:auto; flex:1; min-height:0; }
-#fieldWindow button, #fieldWindow select { font:inherit; color:#b6cbaa; background:#171a17; border:2px solid; border-color:#666 #030503 #030503 #666; padding:7px 9px; cursor:pointer; }
+#fieldWindow button, #fieldWindow select { font:inherit; font-size:11px; color:#b6cbaa; background:#171a17; border:2px solid; border-color:#666 #030503 #030503 #666; padding:7px 9px; cursor:pointer; }
+/* Notebook title-bar metrics: reuse .window-header/.window-buttons/.win-btn.
+   Only override Field's larger control padding and the native button box model. */
+#fieldWindow .window-header .win-btn { box-sizing:content-box; border-width:1px; padding:0 4px; font-size:10px; line-height:1; }
+#fieldWindow .field-tabs button { font-weight:bold; }
+#field-status { font-size:11px; font-weight:normal; }
 #fieldWindow button:active, #fieldWindow button[aria-pressed=true] { border-color:#030503 #666 #666 #030503; background:#293029; }
 #fieldWindow button:focus-visible, #fieldWindow select:focus-visible { outline:2px solid #ffff99; }
 #fieldWindow button:disabled { color:#666; cursor:default; }

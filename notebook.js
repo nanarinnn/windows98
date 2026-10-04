@@ -420,19 +420,38 @@ function renderRecord(root) {
     root.appendChild(h('div', `color: ${NB_RED}; font-size: 12px; font-weight: bold; margin: 14px 0 4px;`, '세이브 코드 불러오기'));
     const inp = h('textarea', 'width: 100%; height: 56px; background: #000; color: #00ff00; border: 1px solid #333; font-family: monospace; font-size: 10px; box-sizing: border-box;');
     inp.placeholder = '세이브 코드를 붙여넣으십시오...';
+    inp.id = 'save-code-input';
     root.appendChild(inp);
     const msg2 = h('span', `margin-left: 8px; color: #ffff00; font-size: 11px;`, '');
-    root.appendChild(h('button', 'background: #111; color: #ff0000; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 3px 12px; cursor: pointer; margin-top: 4px;',
-        '불러오기', () => {
-            if (!inp.value.trim()) { msg2.textContent = '코드를 입력하십시오.'; return; }
-            if (!confirm('현재 진행 기록을 덮어씁니다. 계속할까요?')) return;
-            if (GameSave.importCode(inp.value)) {
-                msg2.textContent = '불러왔습니다. 화면을 새로고침합니다...';
-                setTimeout(() => location.reload(), 800); // 엔딩/루프 상태 등 화면 상태를 저장 데이터와 맞추기 위해
-            } else {
-                msg2.textContent = '올바르지 않은 코드입니다.';
+    msg2.id = 'save-code-status'; msg2.setAttribute('role', 'status');
+    const importBtn = h('button', 'background: #111; color: #ff0000; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 3px 12px; cursor: pointer; margin-top: 4px;',
+        '불러오기', async () => {
+            const code = inp.value;
+            if (!code.trim()) { msg2.textContent = '코드를 입력하십시오.'; return; }
+            importBtn.disabled = true; inp.readOnly = true;
+            try {
+                // AUTHOR is separate browser metadata; it never replaces a Story save.
+                if (window.AuthorRoute && await AuthorRoute.tryImport(code)) {
+                    inp.value = ''; // Do not retain the author input in the UI.
+                    for (const message of ['[UNKNOWN SAVE FORMAT]', '[IDENTITY RECORD FOUND]', '[RECORD RESTORED]']) {
+                        msg2.textContent = message;
+                        await new Promise(resolve => setTimeout(resolve, 350));
+                    }
+                    if (AuthorRoute.storageError()) msg2.textContent += ' · 기록 저장 실패';
+                    return;
+                }
+                if (!confirm('현재 진행 기록을 덮어씁니다. 계속할까요?')) return;
+                if (GameSave.importCode(code)) {
+                    msg2.textContent = '불러왔습니다. 화면을 새로고침합니다...';
+                    setTimeout(() => location.reload(), 800); // Keep existing Story restore behavior.
+                } else {
+                    msg2.textContent = '올바르지 않은 코드입니다.';
+                }
+            } finally {
+                importBtn.disabled = false; inp.readOnly = false;
             }
-        }));
+        });
+    importBtn.id = 'save-code-import'; root.appendChild(importBtn);
     root.appendChild(msg2);
 
     root.appendChild(h('div', `color: ${NB_RED}; font-size: 12px; font-weight: bold; margin: 14px 0 4px;`, '기록 초기화'));

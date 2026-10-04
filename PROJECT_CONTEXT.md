@@ -6,7 +6,7 @@
 
 유일한 작업 저장소는 `nanarinnn/windows98`이며 앞으로 기준 작업환경은 현재 Cloud checkout `/workspace/windows98`이다. Windows `D:\YUYEON\windows98`은 동일 프로젝트의 로컬 경로일 뿐 이번 작업 대상이 아니다. 로컬 임시 문서나 영상을 Cloud 프로젝트에 가져오지 않고 다른 저장소를 작업 대상으로 삼지 않는다.
 
-`play.mp4`는 사용자 파일이다. 수정·삭제·스테이징하지 않는다. 무차별 `git add .`를 사용하지 않는다. `CODEX_WRITE_TEST.txt`는 테스트용이다. 현재 Cloud에는 없으며 로컬 파일은 가져오지 않는다. 향후 기준 체크아웃에 존재하면 삭제 대상으로 취급한다. commit/push는 사용자의 명시적 지시에 따른다. 현재 checkpoint commit은 승인되었으며 remote push 및 main merge는 금지한다.
+`play.mp4`는 사용자 파일이다. 수정·삭제·스테이징하지 않는다. 무차별 `git add .`를 사용하지 않는다. `CODEX_WRITE_TEST.txt`는 테스트용이다. 현재 Cloud에는 없으며 로컬 파일은 가져오지 않는다. 향후 기준 체크아웃에 존재하면 삭제 대상으로 취급한다. commit/push는 사용자의 명시적 지시에 따른다. 현재 AUTHOR/UI checkpoint는 `work` commit 및 `origin/work` push만 승인되었으며 main merge/push와 production 작업은 금지한다.
 
 ## 문서 기준과 인수인계 상태
 
@@ -15,7 +15,7 @@
 - 작업 시작 시 tracked 변경과 미추적 파일은 없었다. `node_modules/`는 설치된 ignored 의존성이다.
 - 사용자 확인: Windows의 기존 `PROJECT_CONTEXT.md`는 Git 미추적 임시 문서이며 전달·통합할 필요가 없다. 사용자 전달 기획과 불변 조건 및 실제 Cloud 분석을 기준으로 두 Markdown을 신규 작성한다.
 - `CHANGELOG_AI.md`, `CODEX_WRITE_TEST.txt`, `play.mp4`, `AGENTS.md`도 시작 시 현재 체크아웃에서 발견되지 않았다. 로컬 `CODEX_WRITE_TEST.txt`와 `play.mp4`는 Cloud에 가져오지 않는다. 실제 테스트 파일 삭제는 발생하지 않았고 사용자 영상에 대한 작업도 수행하지 않았다.
-- 초기 문서 정착 이후 EP01 Canonical Sync와 중앙 현장 관측 시스템/EP01 Field Vertical Slice를 구현했다. Story 및 기존 Save 포맷은 보존하며, Field 이후 에피소드와 CLASSIFIED/AUTHOR는 아직 구현하지 않았다.
+- 초기 문서 정착 이후 EP01 Canonical Sync와 중앙 현장 관측 시스템/EP01 Field Vertical Slice를 구현했다. Story 및 기존 Save 포맷은 보존하며, Field 이후 에피소드와 CLASSIFIED는 아직 구현하지 않았으며 AUTHOR는 기반과 두 개의 meta trace만 추가했다.
 
 ## Git 기준 버전 확인
 
@@ -105,7 +105,7 @@ Field EP01을 첫 Vertical Slice로 제작했다. 기존 EP01 CCTV 미니게임�
 
 주요 인터랙션은 지속적으로 돌아가는 CCTV, 22:00~06:00 근무 시간, 내선 전화, 수칙집, 조명, 장비함, 순찰 지도, 인벤토리, 시간대별 순찰, 파고/환경 확인, 직접 조작, 시선/눈 감기/한쪽 눈씩 깜빡이기, 아이템 선택 및 사용, 시간 관리다. 수칙을 읽는 동안에도 시간이 진행되는 구조를 기본 방향으로 한다. 현재 공용 `FieldCore.config.realSecondsPerGameMinute = 1.5`를 사용한다. 파견 시 480분 × 설정값으로 근무 길이를 계산하며, 1.25/1.5/2초 등으로 다음 파견의 pacing을 조정할 수 있다. 사건 판정용 `dt`/`elapsed`는 현실 초를 유지한다.
 
-공통 시스템은 기존 `app.js`에 몰아넣지 않고 호환되는 별도 모듈로 분리하는 방향이다. 아래 제안에서 실제로 core/save/ui/css와 ep01 파일을 생성했으며 hidden/author 모듈은 아직 생성하지 않았다.
+공통 시스템은 기존 `app.js`에 몰아넣지 않고 호환되는 별도 모듈로 분리하는 방향이다. 아래 제안에서 실제로 core/save/ui/css와 ep01 파일을 생성했고 `field-author.js`에 독립 AUTHOR 기반을 추가했다. hidden 모듈은 아직 생성하지 않았다.
 
 ```text
 field/
@@ -130,13 +130,19 @@ field/
 - `11/10`은 진엔딩이 아니다. 현재 11번째 사건의 정체를 확정하지 않고 단서와 떡밥만 허용한다.
 - Hidden/CLASSIFIED 발견은 기본 엔딩이나 Story/LOOP 02 진입의 필수 조건이 아니다.
 
-## AUTHOR Easter Egg — 향후 구현
+## AUTHOR Easter Egg — 기반 구현 및 향후 확장
 
 기존 Save Code 입력 UI를 이용한 제작자 전용 프론트엔드 Easter Egg다. 로그인/관리자 기능이나 보안 권한 시스템이 아니다. 실제 비밀 코드를 JS 또는 GitHub에 평문으로 넣지 않는다.
 
 `입력 normalize → Web Crypto SHA-256 → AUTHOR_SAVE_HASH 비교`
 
-별도 상태 예는 `authorAccessLevel`, `authorTraces`다. NORMAL / CLASSIFIED / AUTHOR 진행을 서로 구분한다. AUTHOR 콘텐츠는 정식 세계관이나 일반 엔딩을 대체하지 않는다. normalize 상세 규칙, 실제 해시와 코드는 미정이며 이번 문서에 값을 만들거나 넣지 않는다. 기존 Save Code 입력/정상 가져오기 경로는 보존한다. 브라우저 해시 비교는 프론트엔드 Easter Egg로만 취급한다.
+별도 상태 예는 `authorAccessLevel`, `authorTraces`다. NORMAL / CLASSIFIED / AUTHOR 진행을 서로 구분한다. AUTHOR 콘텐츠는 정식 세계관이나 일반 엔딩을 대체하지 않는다. normalize는 trim → NFKC → UTF-8 → SHA-256이며 대소문자와 내부 공백을 구분한다. 사용자가 제공한 SHA-256 hash를 `AUTHOR_SAVE_HASH`에 적용했다. 실제 secret 평문은 제공받거나 저장하지 않았으며 비교에는 hash만 사용한다. `AuthorRoute.setHashOverride(hash)`는 개발/로컬 검수용 64자리 SHA-256 hex만 세션 메모리에 받으며 새로고침하면 사라진다. 평문 secret을 인수인계 문서나 JS/Git에 기록하지 않는다. 기존 Save Code 입력/정상 가져오기 경로는 보존한다. 브라우저 해시 비교는 프론트엔드 Easter Egg로만 취급한다.
+
+현재 `field/field-author.js`는 일반 script이며 Field 완료 상태를 읽지 않고 `AuthorRoute`를 제공한다. 기존 세이브 코드 [불러오기] UI에서 먼저 비동기 AUTHOR hash 검사를 하고, 불일치/미설정/Web Crypto 실패 시 입력 원문을 기존 GameSave parser에 전달한다. 일반 Save의 덮어쓰기 확인/새로고침/export 동작은 유지한다. AUTHOR 성공은 Story save를 교체하지 않고 `[UNKNOWN SAVE FORMAT] → [IDENTITY RECORD FOUND] → [RECORD RESTORED]`를 표시하며 입력 UI를 비운다. HTTPS 또는 localhost의 Web Crypto 사용이 필요하다.
+
+AUTHOR 상태는 독립 localStorage 키 `yuyeon98.author.v1`의 `{v:1, unlocked:false, authorAccessLevel:0, authorTraces:[]}`다. 현재 활성 단계는 1이며 trace ID는 `creator-note`, `ep01-observation` 두 개뿐이다. 신규 브라우저/기존 save에 AUTHOR 기록이 없으면 기본 false이며 일반 Story import/reset은 기존 AUTHOR·Field 기록을 이동/삭제하지 않는다. Save v4에 AUTHOR 내용을 추가하지 않는다. 이 상태와 hash 비교는 사용자 수정이 가능한 frontend easter egg로서 인증/권한 기능이 아니다.
+
+최소 meta 연출은 Darkweb의 `[제작자에게.txt]` 개인 메모(열람 시 첫 trace), AUTHOR 활성 상태에서 EP01 최초 파견의 `[수신 여백]` 한 줄(두 번째 trace)이다. trace는 중복 지급하지 않으며 AUTHOR 없이 모든 기존 콘텐츠를 이용할 수 있다. 기존 J 원문/문서/엔딩을 바꾸지 않고 EP11·11/10·CLASSIFIED·AUTHOR 엔딩은 구현하지 않았다. 메모 창은 본부 창/작업표시줄에 연결하고 본부 연결 종료/셧다운 때 닫는다. 저장 권한 실패는 성공 메시지에 표시하며 그 경우 새로고침 후 보존을 보장하지 않는다.
 
 ## Save 호환성: 기존 데이터 의미 보존
 
@@ -186,10 +192,11 @@ Transcript 배치 시에는 루트 원고/게임 콘텐츠를 변경하지 않�
 
 ## 현재 Field 계층 인수인계 (2026-10-05)
 
-- 기존 일반 script 순서를 유지하고 끝에 `field-save.js → field-core.js → ep01-data.js → ep01.js → field-ui.js`를 추가했다. ES module, bundler, 프레임워크를 도입하지 않았다.
+- 기존 일반 script 순서를 유지하고 끝에 `field-save.js → field-core.js → ep01-data.js → ep01.js → field-author.js → field-ui.js`를 추가했다. ES module, bundler, 프레임워크를 도입하지 않았다.
 - `field/field-core.js`: 미션 register/dispatch, 250ms wall-clock pulse, substep 기반 시간 처리, 상태/인벤토리/로그, 종료·사망·생환. `step(seconds)`는 같은 런타임 시계 진입점이며 브라우저 검증에 사용한다. 사용자용 시간 가속 UI는 없다.
+- `field/field-author.js`: 독립 AUTHOR hash 인식/저장/두 trace. 일반 save UI에만 연결하고 Story/Field 진입 조건으로 사용하지 않는다.
 - `field/field-save.js`: 독립 키 `yuyeon98.field.v1`에 `{v:1, cleared, unlocked, deaths, records}` 저장. 기본 해금은 EP01, 생환하면 다음 Field EP 해금. 기존 `GameSave`/`GameProgress`를 호출하지 않고 `yuyeon98.save.v1`, Save Code v4, Story eps/flags/배열을 읽거나 바꾸지 않는다. Field 기록은 기존 Save Code로 이동하지 않으며 Story import/reset으로 초기화되지 않는다.
-- `field/field-ui.js`, `field/field.css`: 본부 목록/창/작업표시줄, 이동/장비/통신/수칙 탭, 관측 영상, 지속 인벤토리/눈감기/이동 controls, 데스크톱·모바일 레이아웃. 기존 `.window` 드래그와 작업표시줄 배열을 사용한다. 창 제목은 `현장 관측 시스템.exe - 특별재난 관리본부`, 목록은 기존 사건 파일의 `[EP.01]` 형식이며 상태는 파견 가능/연결 제한/연결 준비 중이다. 사건수사노트의 [기록] 탭과 근무 기록의 저장 범위를 구분한다. 중앙 창 종료/본부 연결 종료/블루스크린 시 자기 세션만 정리한다. 작업표시줄로 숨겨도 근무 시계는 계속 흐른다. blur/visibilitychange는 held controls를 해제한다.
+- `field/field-ui.js`, `field/field.css`: 본부 목록/창/작업표시줄, 이동/장비/통신/수칙 탭, 관측 영상, 지속 인벤토리/눈감기/이동 controls, 데스크톱·모바일 레이아웃. 기존 `.window` 드래그와 작업표시줄 배열을 사용한다. 창 제목은 `현장 관측 시스템.exe - 특별재난 관리본부`, 목록은 기존 사건 파일의 `[EP.01]` 형식이며 상태는 파견 가능/연결 제한/연결 준비 중이다. 사건수사노트의 [기록] 탭과 근무 기록의 저장 범위를 구분한다. 중앙 창 종료/본부 연결 종료/블루스크린 시 자기 세션만 정리한다. 작업표시줄로 숨겨도 근무 시계는 계속 흐른다. blur/visibilitychange는 held controls를 해제한다. title bar는 기존 사건수사노트 DOM 기준의 padding 3px 6px/12px bold/center alignment와 공통 .win-btn을 적용한다. 기준 창의 실제 font-family가 monospace이므로 이를 유지하며 일반 탭·버튼/상태는 노트의 11px 기준을 따른다. 로그·수칙의 기존 font/line-height는 보존한다.
 - `field/ep01/ep01-data.js`: canonical 출처, 장소/아이템/낚시 요구 6종/관측 데이터와 게임 내 사건 발생 시각. 근무 배율은 공용 FieldCore 설정에 둔다.
 - `field/ep01/ep01.js`: 미션 tick/action, A/B/D/F 상태 전이, 미션별 contact 버튼과 scene descriptor. 다음 미션은 별도 data/logic을 register해 공용 시계/저장/UI를 재사용한다. 사이드바의 현재 지도·통신·장비 controls는 첫 해안 미션 기준이며 EP02에서 필요하면 descriptor/action을 확장한다.
 - A: 조명 소등, 행동 중지, 두 눈 hold. 보호 상태 현실 10초 유지 후 악취 종료(`FieldEP01Data.aProtectionSeconds` 조정값). 이른 release/조명 재점등/행동 또는 보호 지연은 연결 소실.
@@ -198,7 +205,7 @@ Transcript 배치 시에는 루트 원고/게임 콘텐츠를 변경하지 않�
 - F: 응시 유지, 좌/우 번갈아 깜빡이기, 뒤로 이동 hold→TV 발견→TV 뒤 이동→웅크림→앞쪽 파손음→앞으로 이동→선택한 순찰봉으로 3회 타격. 파손음은 텍스트와 짧은 합성 소리로 전달한다. 시선 이탈·양안 감기·지연 실패를 처리한다.
 - 정각 순찰 알림/지도 관측/내선 1번 보고, 파고 1.5m 이상 해안 접근 제한, 장비·조명 점검/수령, 1번 연결 불가·0번 성명 반응·통화 종료 후 게임 시간 1분 대기 경로가 있다. 순찰 누락은 기록으로만 남기며 기본 Story나 Field 생환을 새 수집 조건으로 막지 않는다.
 - 현재 조정값: 22:00~06:00=720초(게임 내 1분당 현실 1.5초), 사건 A/B/D/F는 각각 23:00/01:40/03:10/04:55. 첫 사건 A는 시작 후 현실 90초, A→B 간격은 240초다. 사건 위치는 관측 채널과 함께 전환한다. 대응 grace/deadline, 눈 피로 25초, TV 발견 거리 12보/3회 타격, 파고 변동 시간대는 gameplay tuning이며 원문 설정을 추가로 확정한 것이 아니다.
-- 미구현/한계: EP02~EP10 미션, CLASSIFIED/Hidden/11번째 사건/AUTHOR, Field Save Code 이동, 중간 근무 저장·복원, 실제 부상에 따른 신체 조작 변경, 자유 3D 이동, 신규 전용 영상. 기존 영상 재사용과 버튼/hold 기반 공간 조작의 Vertical Slice이며 사용자가 checkpoint를 직접 플레이한 뒤 난이도 유지와 근무 시간 단축을 요청했다. 현재 12분 배율의 전체 근무 수동 플레이는 아직 검증하지 않았다. 연결 종료/새로고침 후 현재 근무는 처음부터 다시 파견하며 완료·사망 기록만 보존된다.
+- 미구현/한계: EP02~EP10 미션, CLASSIFIED/Hidden/11번째 사건/AUTHOR 본편·엔딩, Field Save Code 이동, 중간 근무 저장·복원, 실제 부상에 따른 신체 조작 변경, 자유 3D 이동, 신규 전용 영상. 기존 영상 재사용과 버튼/hold 기반 공간 조작의 Vertical Slice이며 사용자가 checkpoint를 직접 플레이한 뒤 난이도 유지와 근무 시간 단축을 요청했다. 현재 12분 배율의 전체 근무 수동 플레이는 아직 검증하지 않았다. 연결 종료/새로고침 후 현재 근무는 처음부터 다시 파견하며 완료·사망 기록만 보존된다.
 - 회귀 검증: `tests/field_browser_smoke.py`를 로컬 서버 실행 후 Python Playwright/Chromium 환경에서 실행한다. 격리 저장소와 production step으로 시계를 가속해 A/B/D/F 정상·실패/재시도/06:00/해금/저장 복원/Save v4/기존 CCTV/Field 미클리어 Story 경계를 검증한다. 부트/EP09 마지막 단계 등 일부 Story 진입점을 직접 호출하므로 전체 Story 수동 플레이 검증이라고 보고하지 않는다.
 
 ## 개발 및 작업 종료 절차
@@ -307,3 +314,7 @@ vercel.json
 ## Checkpoint 관리
 
 사용자가 EP01 Field Vertical Slice checkpoint commit을 승인했다. 기준 구현의 부모 commit은 `619525d269a85896fb74624fafa8137de0ec1cf4`이며, 문서·전사 자료·Canonical Sync·Field 구현과 회귀 테스트 소스를 하나의 로컬 commit에 포함한다. 테스트 산출물과 캐시는 포함하지 않는다. `docs/transcripts/**/*.txt`는 `.gitattributes`의 `-text`로 줄바꿈 자동 변환을 방지하며, 원본에 포함된 줄 끝 공백만 검사 예외로 보존한다. 검수 상태나 원문 내용은 변경하지 않는다.
+
+## Darkweb UI 비교 검증
+
+`tests/darkweb_ui_smoke.py`는 노트와 Field를 동시에 열어 title bar의 계산 스타일, 높이, 제목 baseline, 아이콘 뒤 공백, 닫기 버튼 위치를 비교한다. 320px/390px 모바일 overflow와 기존 노트 탭 동작도 확인한다. 선택적 `UI_SCREENSHOT_DIR`은 체크아웃 밖의 경로를 지정한다. 기존 노트와 전역 styles.css를 바꾸지 않고 Field에만 같은 값을 적용한다.
