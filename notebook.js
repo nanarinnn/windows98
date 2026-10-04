@@ -404,7 +404,7 @@ function renderRecord(root) {
     root.appendChild(h('div', `color: ${NB_DIM}; font-size: 11px; margin-bottom: 4px;`,
         `기밀 터미널 발견 ${termDone}/6 · 본부 메신저 반응 ${msgDone}/9${GameSave.workerNo() ? ` · 작업자 번호 ${GameSave.workerNo()}` : ''}`));
     root.appendChild(h('div', `color: ${NB_DIM}; font-size: 11px; margin-bottom: 12px;`,
-        '진행 기록은 이 브라우저에만 저장됩니다. 다른 기기에서 이어하려면 아래 세이브 코드를 복사해 옮기십시오.'));
+        '사건·현장 근무·별도 기록은 이 브라우저에 각각 저장됩니다. 아래 세이브 코드로 함께 옮길 수 있습니다. 구 코드에 없는 기록은 현재 상태를 유지합니다.'));
 
     root.appendChild(h('div', `color: ${NB_RED}; font-size: 12px; font-weight: bold; margin-bottom: 4px;`, '세이브 코드 내보내기'));
     const out = h('textarea', 'width: 100%; height: 56px; background: #000; color: #00ff00; border: 1px solid #333; font-family: monospace; font-size: 10px; box-sizing: border-box;');
@@ -413,7 +413,7 @@ function renderRecord(root) {
     root.appendChild(out);
     const msg = h('span', `margin-left: 8px; color: #ffff00; font-size: 11px;`, '');
     const copyBtn = h('button', 'background: #111; color: #ff0000; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 3px 12px; cursor: pointer; margin-top: 4px;',
-        '복사', () => copyText(out.value, () => { msg.textContent = '복사했습니다.'; }));
+        '복사', () => { out.value = GameSave.exportCode(); copyText(out.value, () => { msg.textContent = '복사했습니다.'; }); });
     root.appendChild(copyBtn);
     root.appendChild(msg);
 

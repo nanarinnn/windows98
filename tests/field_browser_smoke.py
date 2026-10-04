@@ -109,7 +109,7 @@ def run():
         click('field-hangup'); click('field-phone-0'); assert state()['data']['phone'] is None
         advance(3); click('field-phone-0'); assert not state()['data']['phoneNamesYou']; click('field-hangup')
         story_before = page.evaluate('JSON.stringify(GameSave.get())')
-        code_before = page.evaluate('GameSave.exportCode()')
+        code_before = page.evaluate('GameSave.exportStoryCode()')
         b_contact(); b_buy(); assert state()['inventory']['bait'] == 1
         until(310); page.locator('#field-item').select_option('bait'); click('field-use')
         assert 'bait' not in state()['inventory'] and state()['inventory']['catch'] == 1
@@ -117,13 +117,34 @@ def run():
         assert state()['status'] == 'cleared'
         assert page.evaluate("FieldSave.unlocked('EP02') && FieldSave.get().cleared.includes('EP01')")
         assert page.evaluate('JSON.stringify(GameSave.get())') == story_before
-        assert page.evaluate('GameSave.exportCode()') == code_before
+        assert page.evaluate('GameSave.exportStoryCode()') == code_before
+        # Transfer a genuinely completed shift + AUTHOR progress into a fresh browser.
+        page.evaluate("FieldSave.death('EP01')")
+        page.evaluate("AuthorRoute.importProgress({v:1,unlocked:true,authorAccessLevel:1,authorTraces:['creator-note']})")
+        bundle = page.evaluate('GameSave.exportCode()')
+        expected_field = page.evaluate('FieldSave.get()')
+        expected_author = page.evaluate('AuthorRoute.get()')
+        target = browser.new_context(); target_page = target.new_page()
+        target_page.on('dialog', lambda dialog: dialog.accept())
+        target_page.goto(BASE, wait_until='load')
+        assert not target_page.evaluate('FieldSave.get().cleared.length || AuthorRoute.get().unlocked')
+        target_page.evaluate("document.getElementById('darkweb-terminal').style.display='none'; document.getElementById('darkweb-overlay').style.display='block'; confirmDarkWebWarning(); closeDarkWebReadme(); openNotebook('record');")
+        target_page.locator('#save-code-input').fill(bundle)
+        with target_page.expect_navigation(wait_until='load'):
+            target_page.locator('#save-code-import').click()
+        assert target_page.evaluate('GameSave.exportStoryCode()') == code_before
+        assert target_page.evaluate('FieldSave.get()') == expected_field
+        assert target_page.evaluate('AuthorRoute.get()') == expected_author
+        assert target_page.evaluate('FieldCore.get()') is None
+        assert target_page.evaluate('GameSave.exportCode()') == bundle
+        target.close()
+        print('PASS v5 fresh-browser UI round-trip: actual 06:00 clear, EP02 unlock, death, duty summary, Story and AUTHOR trace')
         click('field-list'); assert '연결 준비 중' in page.locator('#field-dispatch-EP02').inner_text()
         assert page.locator('#field-dispatch-EP02').is_disabled()
         page.reload(wait_until='load')
         assert page.evaluate("FieldSave.get().cleared.includes('EP01') && FieldSave.unlocked('EP02')")
         assert page.evaluate('(code) => GameSave.importCode(code)', code_before)
-        assert page.evaluate('GameSave.exportCode()') == code_before
+        assert page.evaluate('GameSave.exportStoryCode()') == code_before
         assert page.evaluate("FieldSave.unlocked('EP02')")
         page.evaluate("document.getElementById('darkweb-terminal').style.display='none'; document.getElementById('darkweb-overlay').style.display='block'; confirmDarkWebWarning(); closeDarkWebReadme();")
         click('field-open')

@@ -8,13 +8,20 @@ window.AuthorRoute = (() => {
     const listeners = new Set();
     const blank = () => ({ v: 1, unlocked: false, authorAccessLevel: 0, authorTraces: [] });
     let state = blank(), hashOverride = '', storageError = false;
-    try {
-        const saved = JSON.parse(localStorage.getItem(KEY));
-        if (saved?.v === 1 && saved.unlocked === true) {
-            state.unlocked = true; state.authorAccessLevel = 1;
-            state.authorTraces = Array.isArray(saved.authorTraces)
+    function sanitize(saved) {
+        if (!saved || typeof saved !== 'object' || Array.isArray(saved) || saved.v !== 1 || typeof saved.unlocked !== 'boolean') return null;
+        const result = blank();
+        if (saved.unlocked) {
+            result.unlocked = true;
+            // Only access level 1 exists today, matching the existing local load policy.
+            result.authorAccessLevel = 1;
+            result.authorTraces = Array.isArray(saved.authorTraces)
                 ? [...new Set(saved.authorTraces.filter(id => TRACE_IDS.includes(id)))] : [];
         }
+        return result;
+    }
+    try {
+        state = sanitize(JSON.parse(localStorage.getItem(KEY))) || blank();
     } catch (error) { storageError = true; }
     function persist() {
         try { localStorage.setItem(KEY, JSON.stringify(state)); storageError = false; }
@@ -48,6 +55,13 @@ window.AuthorRoute = (() => {
             return true;
         },
         get: () => JSON.parse(JSON.stringify(state)),
+        // Whitelist progress only: the configured/override hashes and input never travel.
+        exportProgress: () => sanitize(state),
+        importProgress(saved) {
+            const clean = sanitize(saved);
+            if (!clean) return false;
+            state = clean; persist(); return true;
+        },
         storageError: () => storageError,
         onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
         addTrace(id) {

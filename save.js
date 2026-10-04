@@ -2,7 +2,8 @@
 // Save Data (localStorage)
 // 진행 기록만 브라우저에 저장한다. 서버/계정 없음. 다른 기기로는 세이브 코드로 옮긴다.
 //
-// 세이브 코드(v4): 진행 상황을 비트로 압축한 약 50자. 형식(바이트):
+// 새 세이브 코드(v5): v4 Story 코드 + Field/AUTHOR의 검증된 지속 기록을 UTF-8 JSON으로 묶는다.
+// 아래 기존 Story 코드(v4): 진행 상황을 비트로 압축한 약 50자. 형식(바이트):
 //   [버전=4, 에피소드 수, 단서 수, 추리 수, 업적 수, 비밀 발견 수]
 //   + 에피소드별 [클리어 횟수, 사망 횟수] (각 0~255)
 //   + 단서 비트 + 추리 비트 + 업적 비트 + 플래그 비트(제이 해금, 엔딩 확인) + 비밀 발견 비트
@@ -131,6 +132,31 @@ const GameSave = (() => {
         }
     }
 
+    // v5 transport wraps the unchanged v4 Story code and optional independent layers.
+    // Local storage keys/schemas remain separate. This checksum detects damage, not tampering.
+    function encodeProgress() {
+        const payload = { v: 5, story: encodeCompact() };
+        if (window.FieldSave) payload.field = FieldSave.exportProgress();
+        if (window.AuthorRoute) payload.author = AuthorRoute.exportProgress();
+        const bytes = [5, ...new TextEncoder().encode(JSON.stringify(payload))];
+        bytes.push(checksum(bytes));
+        let bin = '';
+        for (const byte of bytes) bin += String.fromCharCode(byte);
+        return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '').match(/.{1,6}/g).join(' ');
+    }
+    function decodeProgress(code) {
+        try {
+            const clean = code.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
+            if (clean.length > 100000 || !/^[A-Za-z0-9+/]+$/.test(clean)) return null;
+            const bytes = Uint8Array.from(atob(clean + '='.repeat((4 - clean.length % 4) % 4)), ch => ch.charCodeAt(0));
+            if (bytes.length < 3 || bytes[0] !== 5 || checksum(bytes.slice(0, -1)) !== bytes[bytes.length - 1]) return null;
+            const payload = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes.slice(1, -1)));
+            if (!payload || payload.v !== 5 || typeof payload.story !== 'string') return null;
+            const story = decodeCompact(payload.story);
+            return story ? { story, payload } : null;
+        } catch (error) { return null; }
+    }
+
     load();
 
     return {
@@ -189,10 +215,21 @@ const GameSave = (() => {
         },
         flag: (name) => !!state.flags[name],
         onChange: (fn) => listeners.push(fn),
-        exportCode: encodeCompact,
+        exportCode: encodeProgress,
+        exportStoryCode: encodeCompact, // Exact v4 transport for legacy compatibility/testing.
         importCode(code) {
-            const s = decodeCompact(code) || decodeLegacy(code);
+            if (typeof code !== 'string' || code.length > 150000) return false;
+            const bundle = decodeProgress(code);
+            const s = bundle ? bundle.story : decodeCompact(code) || decodeLegacy(code);
             if (!s) return false;
+            // Validate Story before any writes; missing/invalid layers preserve current state.
+            if (bundle) {
+                if (window.FieldSave && Object.hasOwn(bundle.payload, 'field') && FieldSave.importProgress(bundle.payload.field)) {
+                    // An old live shift must not overwrite restored records before the UI reload.
+                    window.FieldCore?.disconnect();
+                }
+                if (window.AuthorRoute && Object.hasOwn(bundle.payload, 'author')) AuthorRoute.importProgress(bundle.payload.author);
+            }
             state = s;
             persist();
             return true;

@@ -54,9 +54,9 @@ def run():
             assert page.evaluate('GameSave.hasClue(CLUES[0].id)')
             assert not page.evaluate('AuthorRoute.get().unlocked')
             enter()
-        exported = page.evaluate('GameSave.exportCode()')
+        exported = page.evaluate('GameSave.exportStoryCode()')
         with page.expect_navigation(wait_until='load'): import_ui(exported)
-        assert page.evaluate('GameSave.exportCode()') == exported
+        assert page.evaluate('GameSave.exportStoryCode()') == exported
         enter()
         story_before = page.evaluate('JSON.stringify(GameSave.get())')
         field_before = page.evaluate('JSON.stringify(FieldSave.get())')
@@ -94,7 +94,7 @@ def run():
         assert page.evaluate('AuthorRoute.get().unlocked && AuthorRoute.get().authorAccessLevel === 1')
         assert page.evaluate('JSON.stringify(GameSave.get())') == story_before
         assert page.evaluate('JSON.stringify(FieldSave.get())') == field_before
-        assert page.evaluate('GameSave.exportCode()') == exported
+        assert page.evaluate('GameSave.exportStoryCode()') == exported
         assert page.locator('#author-note-icon').is_visible()
         page.evaluate('closeNotebook()')
         for _ in range(2):
