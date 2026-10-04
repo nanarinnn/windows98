@@ -50,6 +50,11 @@ window.FieldSave = (() => {
             if (!clean) return false;
             state = clean; persist(); return true;
         },
+        reset() {
+            // Stop timers before clearing progress so the old run cannot write it back.
+            window.FieldCore?.disconnect();
+            state = blank(); persist();
+        },
         storageError: () => storageError,
         unlocked: id => state.unlocked.includes(id),
         death(id) { state.deaths[id] = (state.deaths[id] || 0) + 1; persist(); },

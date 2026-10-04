@@ -148,3 +148,14 @@
 - 회귀: Field/ AUTHOR/Darkweb UI browser smoke 모두 통과. A/B/D/F 정상·실패·재파견, 기존 CCTV, Field 0 clear에서도 EP09→J→BSOD/LOOP 경계, AUTHOR Web Crypto match/오입력/persistence/trace 중복, 구 save UI import 및 모바일 titlebar 비교를 확인했다. JS 12개 문법 검사와 git diff --check 통과. 격리 headless Chromium/production step 가속 검증이며 실제 secret 입력이나 전체 수동 Story/12분 Field 재플레이는 하지 않았다.
 - 변경 범위: 프로젝트 문서 2개, save.js, Field save/author/UI, notebook.js, tests 3개(새 통합 suite 포함). app.js/story-data.js/index.html/Field core·EP01 data·logic/CSS/전사·원고·미디어/의존성은 변경하지 않았다. Story/J/블루스크린/LOOP 02 조건, eps/finaleSeen/jayUnlocked 의미, 조사 배열 순서/ID, EP01 gameplay와 AUTHOR 진입은 불변이다.
 - Commit: `feat: include field and author progress in save codes`. 사용자 승인에 따라 main → origin/main normal push하며 force push/history rewrite는 하지 않는다. 산출물·캐시·로그·사용자 파일은 제외한다.
+
+## 2026-10-04 — 전체 기록 초기화 및 AUTHOR 노출 방지
+
+- 실제 플레이 버그: 기록 초기화가 Story만 지우고 Field/AUTHOR localStorage를 남겨 AUTHOR 파일이 계속 표시됐다. **기록 초기화의 범위를 Story + Field + AUTHOR 전체 진행으로 통일**했다. legacy Save import에서 없는 계층을 보존하는 정책은 그대로 유지한다.
+- `save.js`: `GameSave.reset()`에서 Field/ AUTHOR reset API를 호출한 후 Story 기본 상태를 저장한다. `field/field-save.js`: reset은 기존 live session/timer를 먼저 disconnect하고 clear/unlock/deaths/records를 기본값(EP01만 해금)으로 저장한다. `field/field-author.js`: reset은 unlock false/access level 0/trace empty를 기존 키에 저장하고 listeners를 notify한다. AUTHOR hash 및 세션 override 설정은 건드리지 않는다.
+- AUTHOR 아이콘은 DOM 삽입 전에 `display:none`을 적용해 로딩 중 노출을 막는다. unlocked 상태일 때만 표시하고 reset/locked 상태 변경 시 열린 메모 창도 즉시 닫아 작업표시줄을 갱신한다. reload 없이 즉시 반영한다.
+- `notebook.js`: 전체 삭제 확인 문구에 사건/현장 근무/별도 기록 범위를 반영했다. 기존 확인 후 새로고침 흐름은 유지했다. `PROJECT_CONTEXT.md`에서 reset과 import 보존 정책을 구분해 인수인계했다.
+- 검증: 새 `tests/record_reset_smoke.py`에서 fresh 상태/아이콘 삽입 시 숨김, Web Crypto AUTHOR 입력→파일·메모 표시, standalone reset의 즉시 숨김/메모 닫기 및 hash override 유지, 실제 UI 전체 삭제 직후와 reload 이후 세 계층 기본값·live session 종료, AUTHOR 재입력·trace 재획득과 persistence를 통과했다. 임시 입력/hash는 격리 브라우저 메모리에서 생성했으며 실제 secret은 사용하지 않았다.
+- 기존 Field smoke에 실제 A/B/D/F→06:00 생환·사망·CCTV Story 기록 이후 전체 reset/reload 검증을 추가해 통과했다. browser smoke 총 5종(reset/통합 Save/Field/AUTHOR/Darkweb UI), v1/v2/v3/v4 import 및 v5 왕복/missing 계층 보존, Story/J/LOOP 02·CCTV·EP01 정상/실패 흐름 회귀를 통과했다. JS 12개 syntax 및 git diff --check 통과. 전체 근무는 production step을 가속한 격리 browser 검증이다.
+- 변경 범위는 save.js, Field save/author, notebook.js, 프로젝트 문서 2개, Field/reset tests다. import codec/정책, AUTHOR 진입, Story 진행 조건·배열 ID·EP01 gameplay·원고/미디어/의존성은 변경하지 않았다.
+- 사용자 승인에 따라 main에 `fix: reset field and author progress with game records`로 commit하고 origin/main normal push한다. force push/history rewrite는 하지 않으며 테스트 캐시·로그·사용자 파일은 포함하지 않는다.

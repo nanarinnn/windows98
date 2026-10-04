@@ -457,7 +457,7 @@ function renderRecord(root) {
     root.appendChild(h('div', `color: ${NB_RED}; font-size: 12px; font-weight: bold; margin: 14px 0 4px;`, '기록 초기화'));
     root.appendChild(h('button', 'background: #2b0a0a; color: #ff3333; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 3px 12px; cursor: pointer;',
         '모든 진행 기록 삭제', () => {
-            if (!confirm('모든 진행 기록(클리어, 단서, 추리)이 삭제됩니다. 되돌릴 수 없습니다. 계속할까요?')) return;
+            if (!confirm('모든 진행 기록(사건, 현장 근무, 별도 기록)이 삭제됩니다. 되돌릴 수 없습니다. 계속할까요?')) return;
             GameSave.reset();
             notebookState.selected = [];
             notebookState.message = '';

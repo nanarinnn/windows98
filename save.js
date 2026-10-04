@@ -235,6 +235,9 @@ const GameSave = (() => {
             return true;
         },
         reset() {
+            // Explicit record deletion resets every layer. Legacy import preserves absent layers.
+            window.FieldSave?.reset();
+            window.AuthorRoute?.reset();
             state = blank();
             persist();
         }

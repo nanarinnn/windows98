@@ -238,6 +238,16 @@ def run():
         assert m.locator('#field-content').evaluate('e => e.scrollWidth <= e.clientWidth + 1')
         m.locator('#field-close').click(); mobile.close()
         print('PASS mobile layout and accessible document/exit')
+        # Reset the actual completed shift/death/Story records from this integration run.
+        assert page.evaluate("FieldSave.get().cleared.includes('EP01') && GameSave.ep(1).clears > 0")
+        page.evaluate("FieldCore.dispatch('EP01'); GameSave.reset();")
+        assert page.evaluate('FieldCore.get()') is None
+        assert page.evaluate('FieldSave.get()') == {'v':1,'cleared':[],'unlocked':['EP01'],'deaths':{},'records':{}}
+        assert page.evaluate('AuthorRoute.get()') == {'v':1,'unlocked':False,'authorAccessLevel':0,'authorTraces':[]}
+        assert page.evaluate('GameSave.ep(1).clears === 0 && Object.keys(GameSave.get().eps).length === 0')
+        page.reload(wait_until='load')
+        assert not page.evaluate("FieldSave.get().cleared.length || AuthorRoute.get().unlocked || GameSave.ep(1).clears")
+        print('PASS full reset after actual Field/CCTV clears: blank Story/Field/AUTHOR, live disconnect and reload')
         context.close(); browser.close()
     config = json.loads((ROOT/'vercel.json').read_text())
     assert any(b['src']=='field/**' and b['use']=='@vercel/static' for b in config['builds'])

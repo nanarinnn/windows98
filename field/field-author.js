@@ -62,6 +62,9 @@ window.AuthorRoute = (() => {
             if (!clean) return false;
             state = clean; persist(); return true;
         },
+        reset() {
+            state = blank(); persist(); // Notify UI; retain configured/override hashes.
+        },
         storageError: () => storageError,
         onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
         addTrace(id) {
@@ -75,6 +78,7 @@ window.AuthorRoute = (() => {
 window.addEventListener('load', () => {
     const desktop = document.getElementById('darkweb-desktop');
     const icon = document.createElement('div'); icon.className = 'icon'; icon.id = 'author-note-icon';
+    icon.style.display = 'none'; // Hide before insertion; only restored unlock may reveal it.
     icon.tabIndex = 0; icon.setAttribute('role', 'button'); icon.setAttribute('aria-label', '제작자에게.txt');
     icon.innerHTML = '<div style="font-size:26px">📄</div><span style="font-size:11px;color:#ff4444;font-family:monospace">[제작자에게.txt]</span>';
     desktop.querySelector('.darkweb-icons-container').append(icon);
@@ -92,7 +96,11 @@ window.addEventListener('load', () => {
     desktop.append(win); makeDraggable(win);
     darkWebWindowsList.push({ id: win.id, title: '📄 제작자에게.txt' });
     const close = () => { if (win.style.display === 'none') return; win.style.display = 'none'; updateDarkWebTaskbar(); };
-    const update = () => { icon.style.display = AuthorRoute.get().unlocked ? 'flex' : 'none'; };
+    const update = () => {
+        const unlocked = AuthorRoute.get().unlocked;
+        icon.style.display = unlocked ? 'flex' : 'none';
+        if (!unlocked) close();
+    };
     const open = () => {
         if (!AuthorRoute.get().unlocked) return;
         AuthorRoute.addTrace('creator-note'); win.style.display = 'flex';
