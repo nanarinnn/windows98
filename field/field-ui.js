@@ -43,10 +43,17 @@ window.FieldUI = (() => {
             row.append(label);
             const btn = document.createElement('button'); btn.id = `field-dispatch-${id}`;
             const available = FieldCore.available(id); const unlocked = FieldSave.unlocked(id);
-            btn.textContent = !unlocked ? '연결 제한' : available ? '파견 가능' : '연결 준비 중';
+            const resumable = unlocked && available && FieldSave.progress(id);
+            btn.textContent = !unlocked ? '연결 제한' : resumable ? '이어서 파견' : available ? '파견 가능' : '연결 준비 중';
             btn.disabled = !unlocked || !available;
             btn.onclick = () => { armAudio(); shell(id); FieldCore.dispatch(id); };
-            row.append(btn); content.append(row);
+            row.append(btn);
+            if (resumable) {
+                const fresh = document.createElement('button'); fresh.id = `field-dispatch-new-${id}`; fresh.textContent = '처음부터';
+                fresh.onclick = () => { FieldSave.clearProgress(id); armAudio(); shell(id); FieldCore.dispatch(id); };
+                row.append(fresh);
+            }
+            content.append(row);
             const record = document.createElement('small'); record.textContent = `${save.cleared.includes(id) ? '생환 기록 있음' : '생환 기록 없음'} / 연결 소실 ${save.deaths[id] || 0}회`; content.append(record);
         }
         if (FieldSave.devUnlock) { const dev = document.createElement('p'); dev.textContent = '[개발 모드] localhost에서는 모든 에피소드가 개방됩니다. 저장 기록에는 영향이 없습니다.'; content.append(dev); }

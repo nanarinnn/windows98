@@ -14,10 +14,17 @@ window.FieldCore = (() => {
     const notify = () => listeners.forEach(fn => fn(run));
     function log(message) {
         if (!run) return;
-        run.logs.push({ minute: run.minute, t: run.elapsed, message });
+        run.logs.push({ minute: run.minute, t: run.elapsed, tag: missions.get(run.id)?.logTag?.(run), message });
         if (run.logs.length > 80) run.logs.shift();
     }
     function stop() { clearInterval(timer); timer = null; }
+    // Missions that opt in (persist) keep a bounded in-progress snapshot in FieldSave (resume after reload).
+    let lastPersist = 0;
+    function persistNow() {
+        if (!run || run.status !== 'active') return;
+        const mission = missions.get(run.id);
+        if (mission.persist) { FieldSave.saveProgress(run.id, mission.snapshot(run)); lastPersist = performance.now(); }
+    }
     function die(reason, code) {
         if (!run || run.status !== 'active') return;
         run.status = 'dead'; run.reason = reason; run.code = code || '';
@@ -50,6 +57,7 @@ window.FieldCore = (() => {
             if (run.minute >= 480 && run.status === 'active') clear();
             remaining -= dt;
         }
+        if (performance.now() - lastPersist > 1500) persistNow();
         notify();
     }
     function pulse() { const now = performance.now(); step((now - last) / 1000); last = now; }
@@ -60,7 +68,10 @@ window.FieldCore = (() => {
         // manualClock missions are not bound to the 22:00-06:00 shift; they end via win()/die().
         run = { id, status: 'active', duration: mission.manualClock ? Infinity : 480 * config.realSecondsPerGameMinute, elapsed: 0, minute: 0,
             inventory: {}, selected: '', logs: [], patrols: {}, controls: {}, data: {} };
-        mission.init(run, api); log(mission.startLog || '22:00 — 현장 연결. 장비와 근무 수칙을 확인하십시오.');
+        mission.init(run, api);
+        const saved = mission.persist ? FieldSave.progress(id) : null;
+        if (saved && mission.restore && mission.restore(run, saved, api)) log(mission.restoredLog || '[복원] 진행 중이던 기록을 복원했습니다.');
+        else log(mission.startLog || '22:00 — 현장 연결. 장비와 근무 수칙을 확인하십시오.');
         emit('onEpisodeStart', id);
         last = performance.now(); timer = setInterval(pulse, 250); notify(); return true;
     }
@@ -68,7 +79,7 @@ window.FieldCore = (() => {
         if (!run || run.status !== 'active') return;
         pulse();
         if (run.status !== 'active') return;
-        missions.get(run.id).action(run, name, value, api); notify();
+        missions.get(run.id).action(run, name, value, api); persistNow(); notify();
     }
     const api = {
         config,
@@ -78,7 +89,7 @@ window.FieldCore = (() => {
         hooks: { add(name, fn) { if (!hooks[name] || typeof fn !== 'function') return () => {}; hooks[name].add(fn); return () => hooks[name].delete(fn); } },
         get: () => run,
         onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
-        disconnect() { stop(); run = null; notify(); },
+        disconnect() { persistNow(); stop(); run = null; notify(); },
         release() {
             if (!run || run.status !== 'active') return;
             const mission = missions.get(run.id);

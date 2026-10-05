@@ -6,7 +6,7 @@ window.FieldEP02UI = (() => {
     const data = FieldEP02Data;
     const T = data.tuning;
     const $ = id => document.getElementById(id);
-    let tab = 'status', sig = '', lastVideo = '';
+    let tab = 'status', sig = '', lastVideo = '', last = null;
 
     function mount(root) {
         sig = ''; tab = 'status'; lastVideo = '';
@@ -25,7 +25,7 @@ window.FieldEP02UI = (() => {
             const cell = document.createElement('span'); cell.id = `f2-car-${n}`; cell.textContent = n === 0 ? '기관실' : String(n);
             strip.append(cell);
         }
-        for (const name of ['status', 'map', 'rules']) $('f2-tab-' + name).onclick = () => { tab = name; panel(null, true); };
+        for (const name of ['status', 'map', 'rules']) $('f2-tab-' + name).onclick = () => { tab = name; panel(last, true); };
         panel(null, true);
     }
 
@@ -141,6 +141,7 @@ window.FieldEP02UI = (() => {
 
     function render(s) {
         if (!s || !$('f2-car')) return;
+        last = s;
         const d = s.data, x = d.sys;
         $('f2-car').textContent = d.carIndex === 0 ? '기관실' : `${d.carIndex}번 객차`;
         $('f2-station').textContent = d.voidStationActive ? '현재 역: ■■■' : d.currentStation ? `현재 역: ${d.currentStation}` : `다음 역: ${d.nextStation}`;

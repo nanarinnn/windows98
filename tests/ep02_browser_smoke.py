@@ -222,7 +222,7 @@ def run():
         # --- 18-20. Progression, Story isolation and persistence -------------------------------------------------------
         assert page.evaluate("FieldSave.get().cleared.includes('EP02') && FieldSave.unlocked('EP03')")
         assert page.evaluate("FieldSave.get().records.EP02.elapsed") > 0
-        click('field-list'); assert page.locator('#field-dispatch-EP03').inner_text() == '연결 준비 중' and page.locator('#field-dispatch-EP03').is_disabled()
+        click('field-list'); assert page.locator('#field-dispatch-EP03').inner_text() == '파견 가능' and not page.locator('#field-dispatch-EP03').is_disabled()   # EP03 is implemented; the unlock is Field-only
         assert page.evaluate(f"localStorage.getItem('{STORY_KEY}')") == story_before, 'Story save must be untouched'
         assert page.evaluate("!FieldSave.get().cleared.includes('EP03') && AuthorRoute.get().unlocked === false")
         deaths = page.evaluate("FieldSave.get().deaths.EP02")

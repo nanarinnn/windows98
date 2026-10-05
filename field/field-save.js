@@ -6,6 +6,25 @@ window.FieldSave = (() => {
     // View-only override: nothing is written to progress/Save Code, and production hosts never enable it.
     // Add ?devunlock=0 to the URL to test the real locks (the smoke tests do).
     const devUnlock = ['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).get('devunlock') !== '0';
+    // Optional in-progress snapshots (EP03 only). Bounded plain JSON; absent unless a run is mid-way, so older saves/Save Codes stay valid.
+    const PROGRESS_IDS = ['EP03'];
+    function cleanJSON(value, depth) {
+        if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') return value.slice(0, 120);
+        if (depth >= 4) return null;
+        if (Array.isArray(value)) return value.slice(0, 64).map(v => cleanJSON(v, depth + 1)).filter(v => v !== null && v !== undefined);
+        if (value && typeof value === 'object') {
+            const out = {};
+            for (const key of Object.keys(value).slice(0, 64)) {
+                if (!/^[A-Za-z0-9_]{1,32}$/.test(key)) continue;
+                const clean = cleanJSON(value[key], depth + 1);
+                if (clean !== null && clean !== undefined) out[key] = clean;
+            }
+            return out;
+        }
+        return null;
+    }
     let state = blank();
     let storageError = false;
     function sanitize(saved) {
@@ -37,6 +56,12 @@ window.FieldSave = (() => {
                 .filter(value => typeof value === 'string').slice(0, 10).map(value => value.slice(0, 100));
             result.records[id] = clean;
         }
+        const progress = {};
+        for (const id of PROGRESS_IDS) {
+            const clean = cleanJSON(saved.progress?.[id], 0);
+            if (clean && typeof clean === 'object' && !Array.isArray(clean) && clean.v === 1) progress[id] = clean;
+        }
+        if (Object.keys(progress).length) result.progress = progress;
         return result;
     }
     try {
@@ -60,16 +85,27 @@ window.FieldSave = (() => {
             state = blank(); persist();
         },
         storageError: () => storageError,
+        progress: id => state.progress?.[id] ? JSON.parse(JSON.stringify(state.progress[id])) : null,
+        saveProgress(id, snapshot) {
+            if (!PROGRESS_IDS.includes(id)) return;
+            const clean = cleanJSON(snapshot, 0);
+            if (!clean || clean.v !== 1) return;
+            state.progress = { ...(state.progress || {}), [id]: clean }; persist();
+        },
+        clearProgress(id) {
+            if (!state.progress?.[id]) return;
+            delete state.progress[id]; if (!Object.keys(state.progress).length) delete state.progress; persist();
+        },
         devUnlock,
         unlocked: id => devUnlock || state.unlocked.includes(id),
-        death(id) { state.deaths[id] = (state.deaths[id] || 0) + 1; persist(); },
+        death(id) { state.deaths[id] = (state.deaths[id] || 0) + 1; this.clearProgress(id); persist(); },
         clear(id, record) {
             if (!state.cleared.includes(id)) state.cleared.push(id);
             const n = Number(id.slice(2));
             const next = `EP${String(n + 1).padStart(2, '0')}`;
             if (n < 10 && !state.unlocked.includes(next)) state.unlocked.push(next);
             state.records[id] = { ...record, at: Date.now() };
-            persist();
+            this.clearProgress(id); persist();
         }
     };
 })();
