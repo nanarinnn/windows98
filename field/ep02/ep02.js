@@ -1,13 +1,16 @@
 // EP02 mission: movement / stopping / hiding / searching on a train. Unlike EP01 it has no shift clock:
 // a train schedule (run / stop / void-station segments) decides what the player may do, and the mission
 // ends through FieldCore.win()/die(). Story, J record, blue screen and LOOP 02 are never touched here.
+// The player must interpret the rule document; the UI only offers situational actions (see ep02-ui.js).
 (() => {
     const data = FieldEP02Data;
     const T = data.tuning;
-    const rnd = () => data.random();
+    const rnd = name => data.random(name);
     // Actions that count as "moving" for the dark-car stop rule and the void-station wait.
-    const PHYSICAL = new Set(['forward', 'shoes', 'crouch', 'search', 'undress', 'oil', 'push', 'card', 'lookaway', 'stepback', 'point', 'rps']);
-    const flashDelay = () => T.flashMin + rnd() * (T.flashMax - T.flashMin);
+    const PHYSICAL = new Set(['forward', 'shoes', 'crouch', 'search', 'grope', 'undress', 'oil', 'push', 'card', 'lookaway', 'stepback', 'point', 'rps']);
+    const flashDelay = () => T.flashMin + rnd('flash') * (T.flashMax - T.flashMin);
+    const pickFrom = (list, name) => list[Math.floor(rnd(name) * list.length) % list.length];
+    const holders = x => [...data.searchTargets, ...data.specialTargets].find(t => t.id === x);
 
     function fail(s, api, code) {
         s.data.failCode = code;
@@ -26,12 +29,14 @@
             undressed: false, oiled: false,
             engineRoomEntered: false, realityButtonPressed: false,
             currentStation: '', nextStation: '', escaped: false, failCode: '',
+            // C-1 / C-2 state.
+            hasPill: true, pillTaken: false, c1Active: false, clownPaid: false, injuries: [],
             // Implementation state (not canon).
             sys: {
                 seg: 0, segAge: 0, drunkGap: 0, chaseAcc: 0, drunkResolved: false,
                 girl: 'idle', girlWatch: 0, lookedAway: false, rps: 0,
                 flash: false, flashT: flashDelay(), flashLeft: 0,
-                cardAt: data.searchTargets[Math.floor(rnd() * data.searchTargets.length) % data.searchTargets.length].id, searched: [],
+                mode: '', cardAt: '', searched: [], c1: null, c1Done: false, pillKnown: false, clownSeen: false,
                 pushes: 0, crowdDone: false,
                 voidAge: 0, voidHolding: false, holdAge: 0, holdMarks: 0,
                 recogLeft: 0, windowReady: false, remaining: null
@@ -51,12 +56,12 @@
             if (i > 0) api.log(`[주행] 열차가 다시 움직인다. 다음 역은 ${seg.to}입니다.`);
             if (seg.arrival) api.log('[안내방송] 다음 역은 신설동입니다.');
         } else if (seg.type === 'stop') {
-            api.log(`[정차] 이번 역은 ${seg.at}입니다. 열차가 멈췄다. 객차 간 문은 열 수 없다.`);
+            api.log(`[정차] 이번 역은 ${seg.at}입니다. 열차가 멈췄다.`);
             if (seg.at === '성수') {
                 x.remaining = data.remainingAfterSeongsu.slice();
                 api.log('[성수 안내] 신설동까지 남은 역은 4개입니다.');
             } else if (x.remaining) x.remaining = x.remaining.filter(name => name !== seg.at);
-            if (d.carIndex === 3) api.log('[정차] 구동음이 멎었다. 움직이지 마십시오.');
+            if (d.carIndex === 3) api.log('[정차] 구동음이 멎었다.');
         } else {
             api.log('[안내방송] 이번 역은 ■■■, ■■■ 역입니다.');
             api.log('[정차] 노선도에 없는 역명이 방송되었다.');
@@ -74,7 +79,7 @@
     function wake(s, api) {
         const d = s.data, x = d.sys;
         d.drunkAwake = true; d.drunkTracking = true; x.drunkGap = T.chaseStart; x.chaseAcc = 0;
-        api.log('[경고] 취객이 눈을 뜬다. 느리지만 꾸준히 따라오기 시작한다.');
+        api.log('[경고] 통로의 남성이 눈을 뜬다. 느리지만 꾸준히 따라오기 시작한다.');
         api.majorEvent('A_DRUNK_WAKE');
     }
 
@@ -85,6 +90,13 @@
         api.majorEvent('B_GIRL_ASKED');
     }
 
+    // C-1: after a seizure or a card in a special position the thin one's entry is certain unless the red pill is taken at once.
+    function startC1(s, api, kind) {
+        const d = s.data, x = d.sys;
+        x.c1 = { kind, left: T.pillDeadline }; d.c1Active = true;
+        api.majorEvent(kind === 'seizure' ? 'C1_SEIZURE' : 'C1_SPECIAL_CARD');
+    }
+
     function enterCar(s, api, n) {
         const d = s.data, x = d.sys;
         d.carIndex = n; api.log(data.carText[n].enter);
@@ -92,11 +104,16 @@
         if (n === 5) { x.girlWatch = 0; x.lookedAway = false; }
         if (n === 3) {
             d.darkCarEntered = true; x.flashT = flashDelay(); api.majorEvent('C_DARK_CAR');
+            if (!x.mode) {
+                const r = rnd('mode');
+                x.mode = r < T.clownChance ? 'clown' : r < T.clownChance + T.specialChance ? 'special' : 'basic';
+                x.cardAt = pickFrom(x.mode === 'special' ? data.specialTargets : data.searchTargets, 'card').id;
+            }
             if (d.artificialLight) return fail(s, api, 'C_ARTIFICIAL_LIGHT');
         }
         if (n === 1) { x.pushes = 0; x.crowdDone = false; api.majorEvent('D_CROWD'); }
         // "Angry parent" encounter: only more likely after the girl cried (reviewed document).
-        if (d.parentRisk > 0 && n < 5 && rnd() < Math.min(T.parentChanceMax, T.parentChancePerRisk * d.parentRisk)) fail(s, api, 'B_PARENT_ENCOUNTER');
+        if (d.parentRisk > 0 && n < 5 && rnd('parent') < Math.min(T.parentChanceMax, T.parentChancePerRisk * d.parentRisk)) fail(s, api, 'B_PARENT_ENCOUNTER');
     }
 
     function forward(s, api) {
@@ -108,7 +125,7 @@
             return api.log('[정차 중] 연결문 잠금 유지');
         }
         if (d.carIndex === 1) return api.log('[1번 객차] 앞쪽은 승객들로 가로막혀 있다. 밀치고 나아가야 한다.');
-        if (d.carIndex === 3 && !d.engineCardFound) return api.log('[3번 객차] 기관실 출입 카드를 찾기 전에는 통과할 수 없다. 수색을 요한다.');
+        if (d.carIndex === 3 && !d.engineCardFound) return api.log('[3번 객차] 기관실 출입 카드를 아직 찾지 못했다. 이 객차는 통과가 아닌 수색을 요한다.');
         if (d.carIndex === 5 && x.girl !== 'done') {
             if (x.girl === 'idle' && x.lookedAway) { x.girl = 'done'; api.log('시선을 거둔 채 아이 곁을 지나쳤다.'); }
             else if (x.girl === 'idle') return askGirl(s, api);
@@ -121,23 +138,53 @@
         if (d.crouching) { d.crouching = false; api.log('일어선다.'); }
         if (d.carIndex === 6 && !x.drunkResolved) {
             x.drunkResolved = true;
-            if (!d.shoesOff && rnd() < T.wakeChanceWithShoes) wake(s, api);
-            else api.log(d.shoesOff ? '양말 발로 조용히 취객 곁을 지나쳤다.' : '신발을 신은 채 취객 곁을 지나쳤지만 깨어나지 않았다.');
+            if (!d.shoesOff && rnd('wake') < T.wakeChanceWithShoes) wake(s, api);
+            else api.log(d.shoesOff ? '양말 발로 조용히 곁을 지나쳤다.' : '신발을 신은 채 곁을 지나쳤지만 깨어나지 않았다.');
         }
         enterCar(s, api, d.carIndex - 1);
     }
 
+    function found(s, api, target) {
+        const d = s.data, x = d.sys;
+        d.engineCardFound = true; api.log(`[수색] ${target.found}`); api.majorEvent('C_CARD_FOUND');
+        if (data.specialTargets.includes(target)) startC1(s, api, 'card');
+    }
+
     function search(s, api, id) {
         const d = s.data, x = d.sys;
-        const target = data.searchTargets.find(t => t.id === id);
+        const target = holders(id);
         if (d.carIndex !== 3 || !target) return api.log('(수색할 대상이 없다)');
         if (!x.flash) return fail(s, api, 'C_WRONG_SEARCH');
         if (d.engineCardFound) return api.log('이미 기관실 출입 카드를 확보했다.');
         if (x.searched.includes(id)) return api.log(`${target.label}: 이미 확인했다.`);
         x.searched.push(id);
-        if (id === x.cardAt) {
-            d.engineCardFound = true; api.log(`[수색] ${target.found}`); api.majorEvent('C_CARD_FOUND');
-        } else api.log(`[수색] ${target.label}: 카드는 없다.`);
+        // Contact raises the seizure chance; after C-1 was resolved or the clown was paid it cannot recur.
+        if (!x.c1 && !x.c1Done && !d.clownPaid && rnd('seizureSearch') < T.seizureOnSearch) {
+            api.log('[발작] 수색 중 먹이 상태의 인원이 발작을 일으킨다. 원인은 알 수 없다.');
+            api.log('[경고] 차량 상부의 얇은 것이 진입한다. 이를 저지할 방법은 없다.');
+            return startC1(s, api, 'seizure');
+        }
+        if (id === x.cardAt) found(s, api, target);
+        else api.log(`[수색] ${target.label}: 카드는 없다.`);
+    }
+
+    function pill(s, api) {
+        const d = s.data, x = d.sys;
+        if (!d.hasPill) return api.log('복용할 알약이 없다.');
+        if (!x.c1) return fail(s, api, 'C1_PILL_MISUSE');
+        d.hasPill = false; d.pillTaken = true; x.c1 = null; x.c1Done = true; d.c1Active = false;
+        api.log('[빨간 알약] 안내문의 지시대로 즉시 섭취했다.');
+        api.majorEvent('C1_PILL');
+    }
+
+    function pay(s, api) {
+        const d = s.data, x = d.sys;
+        if (!x.clownSeen || d.clownPaid || !d.hasPill) return;
+        d.clownPaid = true; d.hasPill = false; d.engineCardFound = true; d.injuries.push('오른손 전두엽 일부');
+        x.c1 = null; x.c1Done = true; d.c1Active = false;
+        api.log('[지불] 오른손 전두엽의 일부 그리고 빨간 알약을 지불했다.');
+        api.log('[C-2] 지불이 완료되었다. 기관실 출입 카드를 확보했다. 다음 칸으로 이동하십시오.');
+        api.majorEvent('C2_PAID'); api.majorEvent('C_CARD_FOUND');
     }
 
     function rps(s, api, hand) {
@@ -171,9 +218,15 @@
         }
         switch (name) {
             case 'forward': return forward(s, api);
+            case 'look': return api.log(data.carText[d.carIndex].look);
+            case 'wait': return api.log('[기다린다] 움직이지 않고 기다린다.');
+            case 'inventory':
+                x.pillKnown = true;
+                api.log(`[소지품] ${[d.hasPill ? '안내문과 함께 구비된 빨간 알약' : '', d.engineCardFound ? '기관실 출입 카드' : ''].filter(Boolean).join(', ') || '없음'}`);
+                return;
             case 'shoes':
                 if (d.shoesOff) return api.log('이미 신발을 벗었다.');
-                d.shoesOff = true; return api.log('[신발 벗기] 신발을 벗고 양말 차림이 되었다.');
+                d.shoesOff = true; return api.log('[신발을 벗는다] 신발을 벗고 양말 차림이 되었다.');
             case 'crouch':
                 d.crouching = target(d.crouching);
                 return api.log(d.crouching ? '좌석 사이로 들어가 웅크렸다.' : '자리에서 일어섰다.');
@@ -204,6 +257,12 @@
                 return;
             case 'rps': return rps(s, api, value);
             case 'search': return search(s, api, value);
+            case 'grope':
+                if (d.carIndex !== 3) return;
+                if (!x.flash) return fail(s, api, 'C_WRONG_SEARCH');
+                return api.log('손끝에 아무것도 잡히지 않는다.');
+            case 'pill': return pill(s, api);
+            case 'pay': return pay(s, api);
             case 'undress':
                 if (d.undressed) return api.log('이미 탈의했다.');
                 d.undressed = true; return api.log('[탈의] 전신을 탈의했다.');
@@ -241,7 +300,7 @@
                 d.escaped = true;
                 api.log('[백색 섬광] 창문을 향해 몸을 던졌다.');
                 api.log('멀어지는 열차 소리. 뒤에서 신설동 안내 방송이 들린다. 열차는 사라졌다.');
-                return api.win('탈출 성공 — 용두역 창문 탈출. 생환 기록 전송.', { patrols: {}, elapsed: s.elapsed, injuries: [] });
+                return api.win('탈출 성공 — 용두역 창문 탈출. 생환 기록 전송.', { patrols: {}, elapsed: s.elapsed, injuries: d.injuries.slice() });
         }
     }
 
@@ -260,10 +319,22 @@
                 x.flashT -= dt;
                 if (x.flashT <= 0) {
                     x.flash = true; x.flashLeft = T.flashVisible;
-                    if (rnd() < T.thinChance) api.log(data.thinLines[Math.floor(rnd() * data.thinLines.length) % data.thinLines.length]);
+                    if (x.mode === 'clown' && !x.clownSeen) { x.clownSeen = true; api.log(data.clownLines[0]); api.majorEvent('C2_CLOWN'); }
+                    else if (!d.clownPaid && rnd('thin') < T.thinChance) api.log(data.thinLines[Math.floor(rnd('thinLine') * data.thinLines.length) % data.thinLines.length]);
+                    // Seizure can also happen without any contact.
+                    if (!x.c1 && !x.c1Done && !d.clownPaid && rnd('seizureIdle') < T.seizureIdle) {
+                        api.log('[발작] 먹이 상태의 인원이 갑자기 발작을 일으킨다. 원인은 알 수 없다.');
+                        api.log('[경고] 차량 상부의 얇은 것이 진입한다. 이를 저지할 방법은 없다.');
+                        startC1(s, api, 'seizure');
+                    }
                 }
             }
         } else x.flash = false;
+
+        if (x.c1) {
+            x.c1.left -= dt;
+            if (x.c1.left <= 0) return fail(s, api, 'C_THIN_ENTRY');
+        }
 
         // The drunk is slow but never stops; frozen in the engine room and during the void-station wait.
         if (d.drunkAwake && d.drunkTracking && d.carIndex !== 0 && !d.voidStationActive) {
@@ -304,7 +375,7 @@
         if (x.segAge >= data.schedule[x.seg].dur && s.status === 'active') advance(s, api);
     }
 
-    function scene(s) { return data.carText[s.data.carIndex].scene; }
+    function scene(s) { return data.carText[s.data.carIndex].view; }
     const stamp = log => `${String(Math.floor(log.t / 60)).padStart(2, '0')}:${String(Math.floor(log.t % 60)).padStart(2, '0')}`;
 
     FieldCore.register({ id: data.id, data, init, tick, action, scene, stamp,
