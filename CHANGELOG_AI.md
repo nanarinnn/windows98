@@ -2,6 +2,15 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-05 — Vercel 배포 스토리지 정리 및 "최신 배포만 보관" 규칙
+
+- 목적: Vercel Hobby의 Deployment Storage가 10.26GB를 차지해 무료 한도를 초과한 문제를 해소하고, 이후 배포에서도 최신 버전만 유지한다. 사용자 승인에 따라 `windows98` 구버전과 다른 4개 프로젝트의 구버전을 정리했다.
+- 정리: `windows98` 구배포 3개(395e65e, bb0b94c, cf76097)와 `yuyeononly`·`yuyeon-special`·`yuyeon`·`output` 각 2개를 삭제했다. 총 11개. 각 프로젝트는 최신 Ready 프로덕션 1개만 남았고 5개 사이트 모두 200 응답을 확인했다. 정확한 감소량은 CLI로 조회할 수 없어 대시보드 확인이 필요하다.
+- 규칙: `windows98`은 push 후 Ready가 되면 최신 프로덕션 배포만 남기고 이전 배포를 삭제한다. 신규 `tools/vercel-prune.js`(기본 dry run, `--yes`로 삭제)를 사용하며 `windows98` 프로젝트에만 동작한다. 다른 프로젝트 배포는 사용자 승인 없이 삭제하지 않는다. `CLAUDE.md`에 절차를 기록했다.
+- 변경 파일: `tools/vercel-prune.js` 신규, `.vercelignore`(`tools/` 제외 추가), `CLAUDE.md`, `CHANGELOG_AI.md`. 게임 코드/영상/Save는 변경하지 않았다.
+- 검증: 스크립트 dry run으로 최신 배포 1개를 keep, 삭제 대상 없음으로 확인. 삭제 실행은 이번 push의 배포 완료 후 수행한다.
+- 미해결: 남은 4개 프로젝트의 최신 배포에 대용량 영상이 있으면 스토리지를 계속 차지할 수 있다(사용자 판단 대기).
+
 ## 2026-10-05 — Vercel 무료 한도 대응: 영상 용량 축소
 
 - 목적: Vercel(Hobby) 무료 한도를 넘는 전송량/배포 용량을 줄인다. 사용자 보고: 프로덕션 `windows98-yuyeon.vercel.app` 사용량이 10GB를 넘음. 프로젝트 `test11-6dcd/windows98`, 최신 배포는 Ready로 정상이며 도메인/배포 자체 문제는 아니었다. 저장소의 `homepage`에 적힌 `windows98-mocha.vercel.app`은 연결이 끊긴 옛 주소다.

@@ -30,6 +30,12 @@
 - force push, history rewrite(`reset --hard`, `rebase`, `commit --amend` 후 push) 금지.
 - push 전 `git fetch`로 원격 변경(GPT 등 다른 도구의 작업)을 확인하고, 뒤처져 있으면 먼저 `git pull --ff-only`.
 
+## Vercel 배포 (무료 한도 유지: 최신 배포만 보관)
+- 프로덕션 `https://windows98-yuyeon.vercel.app`, 프로젝트 `test11-6dcd/windows98`. `main` push마다 자동 배포된다.
+- push 후 배포가 Ready가 되면 `node tools/vercel-prune.js`(dry run)로 확인하고 `node tools/vercel-prune.js --yes`로 **최신 Ready 프로덕션 배포만 남기고 이전 배포를 삭제**한다. 이 프로젝트(windows98)만 대상이다.
+- 사전에 `npx vercel login`이 되어 있어야 한다. 새 영상/대용량 자산은 추가 전에 압축한다(H.264, 최대 720p, CRF 28 기준 약 13배 감소 확인됨).
+- 다른 프로젝트(yuyeononly, yuyeon-special, yuyeon, output)의 배포는 사용자 승인 없이 삭제하지 않는다.
+
 ## 보존
 - 기존 게임 구조, 스토리 진행, Save 데이터와 플레이 진행을 깨뜨리는 변경 금지. 대규모 리팩터링 금지.
 - `play.mp4`는 사용자 파일이므로 수정·삭제·스테이징하지 않는다.
