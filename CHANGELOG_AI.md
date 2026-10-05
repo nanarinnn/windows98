@@ -2,6 +2,21 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-05 — EP03 「베리 해피 종합병원」 Field Game 구현 (+ 3화 문서 재작성)
+
+- 지시/근거: 사용자 요청 "EP03 Field Game 구현". canon 최상위는 사용자 제공 reviewed `D:\YUYEON\windows98\text_original_etc\EP03_베리_해피_종합병원_reviewed.txt`. 순서: REVIEWED → `3화.txt` → Story 문서/데이터 → Field 데이터 → gameplay → UI → 테스트 → 문서. 이번에는 사용자 지시로 commit/push까지 진행.
+- 1) reviewed 반영: `docs/transcripts/reviewed/EP03_베리_해피_종합병원.txt` 추가(요약·재전사 없이 확정 문장 그대로). `docs/transcripts/README.md`에 기록, 기존 `partial/`은 superseded로 보존. "야간, 어..."는 의도된 연출로 보존.
+- 2) `3화.txt` 전면 재작성: 공통 골격(`[기관]` → `[0] 개요 및 현황` → `[1] 기본 생존 수칙` → `[2] 확인된 특수 상황 및 대응 지침`(인식표 3종, 비상 상황 A/B) → `[!] 최종 경고`). **제거한 근거 없는 설정**: `병원관리-2023-0635`(→ `2023-063호`), 시행 일자 2024-05-10, 부착 위치, 외부 게시 불가·열람 제한, "메리 정신병원"(→ 베리), 요약으로 바뀐 문장들(상황 A~D 재구성, "7일 차 면실 최종 탈출" 등).
+- 3) 연쇄 수정(한 파일만 고치지 않음): `index.html` Story EP03 문서 창, `story-data.js`(`EPISODE_DOCS[3]`, 단서 `c03-rescue`/`c03-meri`/`c03-rounds` 인용문을 원문과 일치하게), `app.js`(Story EP3 CCTV 사망 문구의 "메리 정신병원" 2곳). Field는 `ep03-data.js`에 원문을 복제하지 않고 Story 창의 같은 텍스트를 읽는다(single source).
+- 4) Field 인프라(하위 호환): `field/field-core.js` 로그 `tag`와 미션별 진행 중 스냅샷(`persist`/`snapshot`/`restore`, 1.5초 throttle + 행동 직후 + 연결 종료 시 저장, 사망·클리어 시 삭제), `field/field-save.js`의 선택적 `progress`(경계가 있는 plain JSON, EP03 전용, 진행 중에만 존재해 기존 `FieldSave.get()` 모양과 Save Code v5 호환 유지), `field/field-ui.js`의 "이어서 파견/처음부터". `field/field.css`는 `#f3-*` 선택자만 확장.
+- 5) EP03 gameplay: Day 1~7 압축 루프(자세한 규칙은 `PROJECT_CONTEXT.md` EP03 섹션) — 인식표 3종(빨강 설사약·간호사·배탈 호소 / 노랑 마취제 부위·망치·낙상 테스트 / 파랑 빨간 알약), 차트·수술 일정(앞당김, 수술 후 +3일), 10만원권 6장, 회진 응답, 호출벨(응급 수술 상태), 21시 소등·바퀴 소리·눈 감기+규칙적 숨소리·간호사에게 1장, 비상 상황 A(자판기 1줄 3번째, 2장, 반출구, 침대 위 음료, 30분 전 복용, 복통, 장기 적출술, +3일), 비상 상황 B(1층 면회실, 녹색 종료 버튼, 정보 요구 거절, 신상 판별, 보고, 수술 예정일 전후 퇴원 불가), 클리어 → EP04 해금. 모든 실수를 즉사로 처리하지 않고 수술일 앞당김·신체 변이·응급 수술 상태·낙상 테스트 대상 등 상태 변화를 먼저 사용했다.
+- 6) UI: HUD는 `DAY / 시각 / 장소`뿐, 시작 행동 5개, 나머지는 관찰·사건 후에만 노출(정답 버튼 없음, 내부 boolean/인식표 색/수술일/잔량 상시 표시 없음). 상태 탭은 "확인한 정보"만(확인 당시 값). 영상은 기존 ep3 영상을 용도별 재사용.
+- 7) 변경 파일: `3화.txt`, `docs/transcripts/reviewed/EP03_…`, `docs/transcripts/README.md`, `index.html`, `story-data.js`, `app.js`, `field/field-core.js`, `field/field-save.js`, `field/field-ui.js`, `field/field.css`, `field/ep02/ep02-ui.js`(탭 전환 즉시 렌더 보정), `field/ep03/ep03-data.js`/`ep03.js`/`ep03-ui.js`(신규), `tests/ep03_browser_smoke.py`(신규), `tests/ep02_browser_smoke.py`(EP03이 파견 가능해진 기대값), `PROJECT_CONTEXT.md`, `CHANGELOG_AI.md`, `CLAUDE.md`.
+- 8) 테스트: `tests/ep03_browser_smoke.py` — 문서 동기화(transcript 문장 전부 포함, 3화.txt = Story 창 = Field 탭, 금지 metadata, "야간, 어...", 단서 인용문), 해금/잠금, UI(스포일러·상태·시작 행동), 인식표 3종과 오용, 차트/회진/호출벨, 소등·야간 간호사·10만원권, 비상 상황 A·B 전체 분기, 진행도·Story 불변, 저장/복원(새로고침·사망 시 삭제·v5 내보내기), AUTHOR hook. 별도로 시간 점프 없이 세 인식표 모두 처음부터 구조까지 자동 플레이(게임 시간 약 667초)해 EP04 해금을 확인했다. 전체 7종 smoke test 통과.
+- 9) 호환성: `yuyeon98.save.v1`/`yuyeon98.field.v1`/AUTHOR 키 의미와 Save Code v5 유지, Story/J/블루스크린/LOOP 02/finale와 연결 없음, EP01·EP02 회귀 없음.
+- 10) 미해결/확인 필요(원문이 정하지 않아 추측하지 않은 부분): ① 파란 인식표가 알약을 올바르게 먹은 뒤의 결과(치사량 표기와 "복용하십시오" 지시가 함께 있어 "수칙대로 복용했다"만 기록하고 진행) ② 가짜 면회자의 구체적 요구/외형(최소 대사만, 외형·정체 없음), 틀린 정보형은 조정값 ③ 진짜를 돌려보낸 뒤의 재방문, 정보를 말한 뒤 보고하지 않았을 때의 결과(보호자의 지시를 따르기 전에 보고를 요구하도록만 구현) ④ 수술 예정일/전날의 보호자 도착 처리 외 일반 예정 수술의 결과(준비 없이 수술을 받으면 실패로 처리) ⑤ 낙상 테스트와 체위 변경의 정확한 시점·횟수 ⑥ 다른 환자의 호출벨(선택 요소, 구현 안 함) ⑦ Story의 EP03 CCTV 미니게임(`app.js` EP3)은 문서·표기만 맞췄고 로직은 재검수하지 않음.
+- 다음 단계 추천: 직접 플레이해 시간·확률 조정, ①~⑥ 결정, Story EP02/EP03 CCTV 미니게임 재검수, EP04 reviewed transcript 확정 후 Field EP04, 수칙문서 공통 골격 동기화 테스트를 EP01에도 적용.
+
 ## 2026-10-05 — EP02 암전 객차 터널 조명 시간 연장
 
 - 사용자 플레이 피드백: 암전 객차의 터널 조명(전등 깜빡임)이 너무 빨라 장면을 읽고 수색하기 어렵다. `field/ep02/ep02-data.js`의 tuning만 조정: 조명 지속 `flashVisible` 1.4초 → **3.2초**, 간격 `flashMin/flashMax` 2~4초 → **3~6초**. 규칙(조명이 비추는 순간에만 수색, 암흑·정차 중 움직임 금지)과 로직은 변경 없음.
