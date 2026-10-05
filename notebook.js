@@ -330,10 +330,10 @@ function renderClues(root) {
     panel.appendChild(h('div', `color: ${NB_GREEN}; font-size: 11px; margin-bottom: 6px;`,
         sel.length ? `선택한 단서 ${sel.length}/2` : '단서 2개를 선택해 연결하십시오.'));
     panel.appendChild(h('button',
-        'background: #111; color: #ff0000; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 3px 12px; cursor: pointer;',
+        'background: #111; color: #ff0000; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 4px 12px; cursor: pointer;',
         '연결 시도', tryConnectClues));
     panel.appendChild(h('button',
-        'background: #111; color: #ffcc00; border: 1px solid #ffcc00; font-family: monospace; font-size: 11px; padding: 3px 12px; cursor: pointer; margin-left: 6px;',
+        'background: #111; color: #ffcc00; border: 1px solid #ffcc00; font-family: monospace; font-size: 11px; padding: 4px 12px; cursor: pointer; margin-left: 6px;',
         '힌트', requestHint));
     if (notebookState.message) {
         panel.appendChild(h('div', `margin-top: 6px; color: #ffff00; font-size: 11px; line-height: 1.5;`, notebookState.message));
@@ -412,7 +412,7 @@ function renderRecord(root) {
     out.value = GameSave.exportCode();
     root.appendChild(out);
     const msg = h('span', `margin-left: 8px; color: #ffff00; font-size: 11px;`, '');
-    const copyBtn = h('button', 'background: #111; color: #ff0000; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 3px 12px; cursor: pointer; margin-top: 4px;',
+    const copyBtn = h('button', 'background: #111; color: #ff0000; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 4px 12px; cursor: pointer; margin-top: 4px;',
         '복사', () => { out.value = GameSave.exportCode(); copyText(out.value, () => { msg.textContent = '복사했습니다.'; }); });
     root.appendChild(copyBtn);
     root.appendChild(msg);
@@ -424,7 +424,7 @@ function renderRecord(root) {
     root.appendChild(inp);
     const msg2 = h('span', `margin-left: 8px; color: #ffff00; font-size: 11px;`, '');
     msg2.id = 'save-code-status'; msg2.setAttribute('role', 'status');
-    const importBtn = h('button', 'background: #111; color: #ff0000; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 3px 12px; cursor: pointer; margin-top: 4px;',
+    const importBtn = h('button', 'background: #111; color: #ff0000; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 4px 12px; cursor: pointer; margin-top: 4px;',
         '불러오기', async () => {
             const code = inp.value;
             if (!code.trim()) { msg2.textContent = '코드를 입력하십시오.'; return; }
@@ -455,7 +455,7 @@ function renderRecord(root) {
     root.appendChild(msg2);
 
     root.appendChild(h('div', `color: ${NB_RED}; font-size: 12px; font-weight: bold; margin: 14px 0 4px;`, '기록 초기화'));
-    root.appendChild(h('button', 'background: #2b0a0a; color: #ff3333; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 3px 12px; cursor: pointer;',
+    root.appendChild(h('button', 'background: #2b0a0a; color: #ff3333; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 4px 12px; cursor: pointer;',
         '모든 진행 기록 삭제', () => {
             if (!confirm('모든 진행 기록(사건, 현장 근무, 별도 기록)이 삭제됩니다. 되돌릴 수 없습니다. 계속할까요?')) return;
             GameSave.reset();

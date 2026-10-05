@@ -80,7 +80,7 @@ window.addEventListener('load', () => {
     const icon = document.createElement('div'); icon.className = 'icon'; icon.id = 'author-note-icon';
     icon.style.display = 'none'; // Hide before insertion; only restored unlock may reveal it.
     icon.tabIndex = 0; icon.setAttribute('role', 'button'); icon.setAttribute('aria-label', '제작자에게.txt');
-    icon.innerHTML = '<div style="font-size:26px">📄</div><span style="font-size:11px;color:#ff4444;font-family:monospace">[제작자에게.txt]</span>';
+    icon.innerHTML = '<div style="width: 32px; height: 32px; font-size: 26px; margin: 0 auto; text-align: center; line-height: 32px; filter: grayscale(1) sepia(1) hue-rotate(-50deg) saturate(3);">📄</div><span style="font-size: 11px; color: #ff0000; text-shadow: 0 0 2px #000; font-family: monospace; font-weight: bold; word-break: break-all;">[제작자에게.txt]</span>';
     desktop.querySelector('.darkweb-icons-container').append(icon);
     // Reuse the existing Darkweb text-window DOM/styles, including mobile rules.
     const win = document.getElementById('darkwebReadmeWindow').cloneNode(true);

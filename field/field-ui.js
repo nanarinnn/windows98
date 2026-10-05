@@ -93,6 +93,7 @@ window.FieldUI = (() => {
             FieldCore.action('look'); return;
         }
         const root = $('field-tools'); if (!root) return; root.replaceChildren();
+        for (const name of ['map', 'equipment', 'phone', 'rules']) $('field-tab-' + name)?.setAttribute('aria-pressed', String(name === tab));
         if (tab === 'map') {
             const title = document.createElement('h3'); title.textContent = '순찰 경로 / 현재 위치'; root.append(title);
             for (const [id, label] of Object.entries(mission().data.locations)) root.append(button(label, 'move', id, 'field-move-' + id));
@@ -133,7 +134,7 @@ window.FieldUI = (() => {
         $('field-patrol-record').textContent = `매시각 순찰 보고: ${Object.keys(s.patrols).length}/8 · 장비 ${s.data.equipmentChecked ? '점검 완료' : '미점검'}`;
         if (s.data.video !== lastVideo) {
             lastVideo = s.data.video; video.src = lastVideo;
-            video.play().catch(() => { $('field-scene').dataset.feed = '영상 신호 불가 / 관측 기록 유지'; });
+            video.play().catch(() => { const scene = $('field-scene'); if (scene) scene.dataset.feed = '영상 신호 불가 / 관측 기록 유지'; });
         }
         const inv = JSON.stringify(s.inventory);
         if (inv !== lastInventory) {

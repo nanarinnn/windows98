@@ -538,7 +538,7 @@ input[type=range]::-webkit-slider-thumb:active {
     position: relative !important;
     top: auto !important;
     left: auto !important;
-    width: 92px;
+    width: 104px;
     margin: 0;
     padding: 6px 2px;
     display: flex;
@@ -1253,3 +1253,6 @@ input[type=range]::-webkit-slider-thumb:active {
     80% { transform: translate(1px, 2px); }
 }
 .msgr-glitch { animation: msgr-glitch-shake 0.25s linear 6; border-color: #ff0000 !important; text-shadow: 1px 0 #00ffff, -1px 0 #ff0000; }
+
+/* Darkweb explorer file icons: wide enough that "name.ext" labels do not break mid-extension. */
+#darkweb-desktop .desktop-file { width: 110px !important; }

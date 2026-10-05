@@ -1,38 +1,44 @@
-#fieldWindow { position:absolute; top:55px; left:90px; width:min(980px, calc(100vw - 30px)); height:min(760px, calc(100dvh - 100px)); max-height:calc(100dvh - 100px); display:none; flex-direction:column; color:#a7b6a1; background:#0b0d0b; border:2px solid; border-color:#777 #111 #111 #777; box-shadow:6px 6px 0 #000; font:12px monospace; overflow:hidden; }
-#fieldWindow .window-header { display:flex; justify-content:space-between; align-items:center; background:#333; color:#ff5555; padding:3px 6px; font-size:12px; border-bottom:2px solid #000; flex-shrink:0; }
-#field-content { padding:10px; overflow:auto; flex:1; min-height:0; }
-#fieldWindow button, #fieldWindow select { font:inherit; font-size:11px; color:#b6cbaa; background:#171a17; border:2px solid; border-color:#666 #030503 #030503 #666; padding:7px 9px; cursor:pointer; }
-/* Notebook title-bar metrics: reuse .window-header/.window-buttons/.win-btn.
-   Only override Field's larger control padding and the native button box model. */
-#fieldWindow .window-header .win-btn { box-sizing:content-box; border-width:1px; padding:0 4px; font-size:10px; line-height:1; }
-#fieldWindow .field-tabs button { font-weight:bold; }
-#field-status { font-size:11px; font-weight:normal; }
-#fieldWindow button:active, #fieldWindow button[aria-pressed=true] { border-color:#030503 #666 #666 #030503; background:#293029; }
-#fieldWindow button:focus-visible, #fieldWindow select:focus-visible { outline:2px solid #ffff99; }
-#fieldWindow button:disabled { color:#666; cursor:default; }
-#fieldWindow small { display:block; color:#7c8479; margin:3px 0 10px; }
-#fieldWindow h2 { font-size:16px; color:#ff5555; }
-#fieldWindow h3 { font-size:12px; }
-.field-case { display:flex; align-items:center; justify-content:space-between; border-bottom:1px dotted #414941; gap:10px; padding:5px 0; }
-.field-hud { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:8px; color:#bed1b0; border:1px solid #474f40; }
+/* Field window follows the Darkweb window system (see darkwebCCTVWindow / notebookWindow):
+   window #1a1a1a bevel, title bar #333 red 12px bold, content #050505, panels #111 + 1px #333,
+   red (#f00) headings/buttons, green (#0f0) body text, #888 for secondary text, monospace throughout. */
+#fieldWindow { position:absolute; top:55px; left:140px; width:min(980px, calc(100vw - 160px)); height:min(760px, calc(100dvh - 100px)); max-height:calc(100dvh - 100px); display:none; flex-direction:column; color:#00ff00; background:#1a1a1a; border-top:2px solid #555; border-left:2px solid #555; border-right:2px solid #000; border-bottom:2px solid #000; box-shadow:6px 6px 22px rgba(0,0,0,.9); font:13px monospace; overflow:hidden; }
+#fieldWindow .window-header { display:flex; justify-content:space-between; align-items:center; background:#333; color:#ff0000; padding:3px 6px; font-size:12px; border-bottom:2px solid #555; flex-shrink:0; }
+#field-content { padding:10px; background:#050505; margin:2px; overflow:auto; flex:1; min-height:0; }
+#fieldWindow button, #fieldWindow select { font-family:monospace; font-size:11px; font-weight:normal; color:#ff0000; background:#111; border:1px solid #ff0000; padding:4px 12px; cursor:pointer; }
+/* Title-bar close: same look as the Darkweb .win-btn (dark #222, #555 border, red ✕). */
+#fieldWindow .window-header .win-btn { box-sizing:content-box; font-weight:bold; background:#222; color:#ff0000; border:1px solid #555; padding:0 4px; font-size:10px; line-height:1; }
+#fieldWindow .field-tabs button { font-weight:bold; border:1px solid #555; border-bottom:none; }
+#fieldWindow .field-tabs button[aria-pressed=true] { background:#ff0000; color:#000; }
+#field-status { font-size:11px; font-weight:normal; color:#00ff00; }
+#fieldWindow button:active, #fieldWindow button[aria-pressed=true] { background:#330000; color:#ff6666; }
+#fieldWindow button:focus-visible, #fieldWindow select:focus-visible { outline:2px solid #ffcc00; }
+#fieldWindow button:disabled { color:#555; border-color:#555; background:#111; cursor:default; }
+#fieldWindow small { display:block; color:#888; margin:3px 0 10px; font-size:11px; }
+#fieldWindow h2 { font-size:13px; color:#ff0000; margin:0 0 6px; }
+#fieldWindow h3 { font-size:12px; color:#ff0000; margin:8px 0 6px; }
+#fieldWindow p { margin:6px 0; }
+.field-case { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #333; gap:10px; padding:5px 0; }
+.field-hud { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:4px 10px; background:#111; border:1px solid #333; font-size:12px; font-weight:bold; color:#ff0000; }
 .field-grid { display:grid; grid-template-columns:minmax(0, 1.65fr) minmax(220px, 1fr); gap:10px; margin-top:10px; }
-.field-grid aside { border:1px solid #3d4337; padding:8px; min-width:0; }
-.field-camera { position:relative; height:240px; border:2px inset #444; background:#020302; overflow:hidden; }
-#field-video { width:100%; height:100%; object-fit:cover; opacity:.65; }
-.field-scanlines { position:absolute; inset:0; pointer-events:none; background:repeating-linear-gradient(transparent 0 3px, #0005 3px 4px); }
-.field-feed-label { position:absolute; top:8px; left:8px; text-shadow:1px 1px #000; color:#9fc08f; }
-#field-scene { position:absolute; left:0; right:0; bottom:0; background:#000c; padding:12px; color:#e0d9b2; }
+.field-grid aside { border:1px solid #333; padding:8px; min-width:0; }
+.field-camera { position:relative; height:240px; border:1px solid #333; background:#000; overflow:hidden; }
+#field-video { width:100%; height:100%; object-fit:cover; opacity:.85; }
+.field-scanlines { position:absolute; inset:0; pointer-events:none; background:linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,.25) 50%), linear-gradient(90deg, rgba(255,0,0,.06), rgba(0,255,0,.02), rgba(0,0,255,.06)); background-size:100% 4px, 6px 100%; }
+.field-feed-label { position:absolute; top:10px; left:15px; display:flex; align-items:center; gap:6px; font-size:11px; color:#00ff00; text-shadow:0 0 4px #00ff00; }
+.field-feed-label::before { content:''; width:8px; height:8px; border-radius:50%; background:#ff0000; animation:blink 1s infinite; }
+#field-scene { position:absolute; left:0; right:0; bottom:0; background:rgba(0,0,0,.8); padding:10px 12px; color:#00ff00; font-size:12px; }
 #field-eyelids { display:none; position:absolute; inset:0; background:#000; place-items:center; color:#888; }
-.field-controls { display:flex; gap:5px; flex-wrap:wrap; margin:8px 0; }
+.field-controls { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
 #field-eyes, #field-back { touch-action:none; }
-.field-inventory { display:flex; flex-wrap:wrap; gap:6px; align-items:center; border:1px dotted #56604e; padding:8px; }
+.field-inventory { display:flex; flex-wrap:wrap; gap:8px; align-items:center; border:1px solid #333; background:#111; padding:8px; }
+.field-inventory label { color:#888; font-size:11px; }
 #field-item { max-width:100%; }
-#field-log { height:120px; overflow:auto; white-space:pre-wrap; background:#030503; padding:8px; border:1px inset #444; color:#839b78; font:11px/1.5 monospace; }
-.field-tabs { display:flex; flex-wrap:wrap; gap:5px; padding-bottom:8px; border-bottom:1px solid #454b40; }
+#field-log { height:120px; overflow:auto; white-space:pre-wrap; background:#000; padding:8px; border:1px solid #333; color:#00ff00; font:11px/1.4 monospace; margin:8px 0 0; }
+.field-tabs { display:flex; flex-wrap:wrap; gap:4px; padding:0; border-bottom:1px solid #333; }
 #field-tools { padding:8px 0; }
-#field-tools button { display:block; width:100%; margin-bottom:5px; text-align:left; }
-.field-rules { max-height:350px; overflow:auto; white-space:pre-wrap; user-select:text; font:12px/1.65 monospace; }
-.field-help { color:#8b9384; line-height:1.5; }
-#field-outcome { color:#ffe2af; }
+#field-tools button { display:block; width:100%; margin-bottom:6px; text-align:left; }
+.field-rules { max-height:350px; overflow:auto; white-space:pre-wrap; user-select:text; font:12px/1.6 monospace; color:#00ff00; }
+.field-help { color:#888; font-size:11px; line-height:1.5; }
+#field-outcome { color:#ffcc00; }
 #field-outcome button { margin-right:8px; }
 @media (max-width:700px) { #fieldWindow { left:8px; top:35px; width:calc(100vw - 20px); height:calc(100dvh - 75px); max-height:calc(100dvh - 75px); } .field-grid { grid-template-columns:1fr; } .field-camera { height:200px; } .field-hud { font-size:11px; } }
