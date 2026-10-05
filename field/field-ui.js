@@ -65,6 +65,8 @@ window.FieldUI = (() => {
     function shell(id = 'EP01') {
         activeMission = id;
         lastVideo = lastInventory = lastEvent = ''; logLength = 0;
+        // Missions may bring their own view (EP02); the window, log and outcome handling stay shared.
+        if (mission().ui) { video = null; content.replaceChildren(); mission().ui.mount(content, {}); return; }
         content.innerHTML = `<div class="field-hud"><strong id="field-clock"></strong><span id="field-location"></span><span id="field-status"></span></div>
             <div class="field-grid"><section class="field-observation"><div class="field-camera">
             <video id="field-video" autoplay loop muted playsinline></video><div class="field-scanlines"></div>
@@ -120,8 +122,18 @@ window.FieldUI = (() => {
         for (const [label, name, value] of mission().contacts(s)) root.append(button(label, name, value, 'field-contact-' + name));
     }
 
+    function renderLog(s) {
+        const log = $('field-log'); if (!log) return;
+        if (logLength !== s.logs.length || log.dataset.last !== s.logs.at(-1)?.message) {
+            const stamp = mission().stamp || (entry => FieldCore.time(entry.minute));
+            logLength = s.logs.length; log.textContent = s.logs.map(entry => `[${stamp(entry)}] ${entry.message}`).join('\n');
+            log.dataset.last = s.logs.at(-1)?.message || ''; log.scrollTop = log.scrollHeight;
+        }
+    }
     function render(s) {
-        if (!s || !$('field-clock')) return;
+        if (!s) return;
+        if (mission().ui) { mission().ui.render(s); renderLog(s); settle(s); return; }
+        if (!$('field-clock')) return;
         $('field-clock').textContent = `근무 ${FieldCore.time(s.minute)} / 06:00`;
         $('field-location').textContent = mission().data.locations[s.data.location];
         $('field-status').textContent = s.status === 'active' ? '관측 연결 유지' : s.status === 'dead' ? '연결 소실' : '생환';
@@ -143,15 +155,15 @@ window.FieldUI = (() => {
             for (const id of Object.keys(s.inventory)) { const option = document.createElement('option'); option.value = id; option.textContent = mission().data.items[id]; select.append(option); }
         }
         $('field-item').value = s.selected;
-        if (logLength !== s.logs.length || $('field-log').dataset.last !== s.logs.at(-1)?.message) {
-            logLength = s.logs.length; $('field-log').textContent = s.logs.map(log => `[${FieldCore.time(log.minute)}] ${log.message}`).join('\n');
-            $('field-log').dataset.last = s.logs.at(-1)?.message || ''; $('field-log').scrollTop = $('field-log').scrollHeight;
-        }
+        renderLog(s);
         contact(s);
+        settle(s);
+    }
+    function settle(s) {
         const outcome = $('field-outcome');
         if (s.status !== 'active' && !outcome.children.length) {
-            video.pause();
-            const text = document.createElement('p'); text.textContent = s.status === 'dead' ? s.reason : '생환 기록 저장 / EP.02 연결 권한 갱신. 다음 현장은 연결 준비 중입니다.'; outcome.append(text);
+            video?.pause();
+            const text = document.createElement('p'); text.textContent = s.status === 'dead' ? s.reason : (mission().data.clearText || '생환 기록 저장 / EP.02 연결 권한 갱신. 다음 현장은 연결 준비 중입니다.'); outcome.append(text);
             if (FieldSave.storageError()) { const warn = document.createElement('p'); warn.textContent = '기록 저장 실패. 이 브라우저에서는 새 근무 기록이 보존되지 않습니다.'; outcome.append(warn); }
             const retry = document.createElement('button'); retry.textContent = '재파견'; retry.id = 'field-retry'; retry.onclick = () => { shell(s.id); FieldCore.dispatch(s.id); };
             const list = document.createElement('button'); list.textContent = '관측 목록'; list.id = 'field-list'; list.onclick = () => { FieldCore.disconnect(); catalog(); };

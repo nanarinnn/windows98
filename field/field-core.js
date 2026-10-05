@@ -4,19 +4,23 @@ window.FieldCore = (() => {
     const config = { realSecondsPerGameMinute: 1.5 };
     const missions = new Map();
     const listeners = new Set();
+    // Presentation-only extension points (e.g. future AUTHOR traces). Listener errors are swallowed and
+    // listeners receive ids only, so hooks can never change gameplay, clear conditions or saves.
+    const hooks = { onEpisodeStart: new Set(), onMajorEvent: new Set(), onEpisodeClear: new Set() };
+    const emit = (name, ...args) => { for (const fn of hooks[name]) { try { fn(...args); } catch (error) { /* ignored by design */ } } };
     let run = null;
     let timer = null;
     let last = 0;
     const notify = () => listeners.forEach(fn => fn(run));
     function log(message) {
         if (!run) return;
-        run.logs.push({ minute: run.minute, message });
+        run.logs.push({ minute: run.minute, t: run.elapsed, message });
         if (run.logs.length > 80) run.logs.shift();
     }
     function stop() { clearInterval(timer); timer = null; }
-    function die(reason) {
+    function die(reason, code) {
         if (!run || run.status !== 'active') return;
-        run.status = 'dead'; run.reason = reason;
+        run.status = 'dead'; run.reason = reason; run.code = code || '';
         log(`생체 신호 소실 — ${reason}`);
         stop(); FieldSave.death(run.id);
     }
@@ -24,6 +28,14 @@ window.FieldCore = (() => {
         if (!run || run.status !== 'active') return;
         run.status = 'cleared'; log('06:00 — 일출 확인. 생환 기록 전송.');
         stop(); FieldSave.clear(run.id, { patrols: run.patrols, elapsed: run.elapsed, injuries: run.data.injuries || [] });
+        emit('onEpisodeClear', run.id);
+    }
+    // Missions with their own end condition (manualClock) finish through this instead of the 06:00 clock.
+    function win(message, record) {
+        if (!run || run.status !== 'active') return;
+        run.status = 'cleared'; log(message);
+        stop(); FieldSave.clear(run.id, record || { patrols: {}, elapsed: run.elapsed, injuries: [] });
+        emit('onEpisodeClear', run.id);
     }
     // Same entry point for wall-clock pulses and deterministic integration tests.
     function step(seconds) {
@@ -45,9 +57,11 @@ window.FieldCore = (() => {
         if (!missions.has(id) || !FieldSave.unlocked(id)) return false;
         stop();
         const mission = missions.get(id);
-        run = { id, status: 'active', duration: 480 * config.realSecondsPerGameMinute, elapsed: 0, minute: 0,
+        // manualClock missions are not bound to the 22:00-06:00 shift; they end via win()/die().
+        run = { id, status: 'active', duration: mission.manualClock ? Infinity : 480 * config.realSecondsPerGameMinute, elapsed: 0, minute: 0,
             inventory: {}, selected: '', logs: [], patrols: {}, controls: {}, data: {} };
-        mission.init(run, api); log('22:00 — 현장 연결. 장비와 근무 수칙을 확인하십시오.');
+        mission.init(run, api); log(mission.startLog || '22:00 — 현장 연결. 장비와 근무 수칙을 확인하십시오.');
+        emit('onEpisodeStart', id);
         last = performance.now(); timer = setInterval(pulse, 250); notify(); return true;
     }
     function action(name, value) {
@@ -59,12 +73,17 @@ window.FieldCore = (() => {
     const api = {
         config,
         register(mission) { missions.set(mission.id, mission); },
-        available: id => missions.has(id), mission: id => missions.get(id), dispatch, action, step, log, die,
+        available: id => missions.has(id), mission: id => missions.get(id), dispatch, action, step, log, die, win,
+        majorEvent(eventId) { if (run) emit('onMajorEvent', run.id, eventId); },
+        hooks: { add(name, fn) { if (!hooks[name] || typeof fn !== 'function') return () => {}; hooks[name].add(fn); return () => hooks[name].delete(fn); } },
         get: () => run,
         onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
         disconnect() { stop(); run = null; notify(); },
         release() {
-            if (run && run.status === 'active') { action('eyes', false); action('back', false); }
+            if (!run || run.status !== 'active') return;
+            const mission = missions.get(run.id);
+            if (mission.release) mission.release(run, api); // toggle-based missions keep their state
+            else { action('eyes', false); action('back', false); }
         },
         time(minute) {
             const total = (22 * 60 + Math.floor(minute)) % (24 * 60);

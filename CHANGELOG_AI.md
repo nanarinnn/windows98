@@ -2,6 +2,19 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-05 — EP02 Field Game (서울 심야 2호선) 구현
+
+- 목적/근거: 사용자 요청 "EP02 Field Game 구현". canonical 근거는 `docs/transcripts/reviewed/EP02_서울_심야_2호선.txt`(REVIEWED) 한 가지이며 문서 번호 순환관리-2021-014호. EP01 구조를 복사하지 않고 **이동/정차/은신/탐색** 중심의 별도 상태 머신으로 구현했다.
+- 새 파일: `field/ep02/ep02-data.js`, `field/ep02/ep02.js`, `field/ep02/ep02-ui.js`, `tests/ep02_browser_smoke.py`.
+- 공용 코드(하위 호환): `field/field-core.js` — `manualClock`(06:00 자동 클리어 없음), `startLog`, `win(message, record)`, `die(reason, code)`, 로그 `t`(경과초), 미션별 `release`(토글형 조작은 포커스 이탈로 풀리지 않음), AUTHOR hook(`FieldCore.hooks.add`, `majorEvent`). `field/field-ui.js` — 미션 전용 뷰(`mission.ui`)·로그 스탬프·클리어 문구를 미션 데이터에서 받도록 분리(EP01 문구는 `ep01-data.js`의 `clearText`로 이동). `field/field.css` — 객차 스트립/칩/암전·플래시 장면 스타일(기존 Field 클래스 재사용). `index.html` — script 3줄.
+- 구현한 메커닉: 열차 시간표(주행/정차/존재하지 않는 역), 정차 중 연결문 잠금, 취객 추적(거리 게이지), 여자아이(시선 거두기·노선도 가리키기·가위바위보 보-보-바위-보·울음/부모 위험), 존재하지 않는 역 웅크리기+눈 감기 18초(원문 3분 압축), 암전 객차 터널 플래시 수색(4개 후보 중 무작위 카드), 탈의+기름+밀치기, 기관실·현실 재인식 버튼·용두역 창문 탈출. 실패 코드: A_DRUNK_CAUGHT, B_DESTINATION_ANSWER, B_WRONG_RPS, VOID_STATION_MOVE/OPEN_EYES, C_ARTIFICIAL_LIGHT/MOVE_WHILE_STOPPED/WRONG_SEARCH, D_NO_OIL/NO_UNDRESS, FINAL_WRONG_STATION/NO_RECOGNITION/TOO_LATE. A_DRUNK_WAKE는 사망이 아니라 추격 시작 이벤트다.
+- 이렇게 구현한 이유: EP01은 06:00까지 타이머로 사건이 오지만, EP02는 "지금 열차가 달리는가/서 있는가"가 행동 가능 여부를 결정하므로 시계 대신 시간표 상태 머신을 사용했다. 원문 안내는 수칙 문서에 그대로 노출하고 게임은 그 규칙대로 반응하게 했다.
+- 진행도/호환: EP01 clear → EP02 해금, EP02 clear → EP03 해금(Field 내부만). `FieldSave`/`yuyeon98.field.v1`/Save Code v5 구조는 변경 없이 재사용. Story/J/블루스크린/LOOP 02/`eps`·`finaleSeen`·`jayUnlocked` 의미와 `yuyeon98.save.v1`은 변경하지 않았다(테스트에서 Story 저장 바이트 동일 확인). 카탈로그에서 EP02 버튼이 "연결 준비 중"에서 "파견 가능"으로 바뀌어 `tests/field_browser_smoke.py`의 해당 기대값만 수정했다.
+- canon 밖의 구현 선택(조정값): 객차 7개와 사건 배치(6=취객, 5=여자아이, 3=암전, 2=기름 통로, 1=승객), 모든 시간/확률 값, 부모 조우·존재하지 않는 역 무응답 실패 코드, 취객 추적의 일시 정지 규칙, 정차 역 이름(용답·신답은 실제 성수지선 역명이며 원문에 없음), 존재하지 않는 역명은 `■■■`. 모두 `ep02-data.js`의 `tuning/schedule`에 모여 있어 조정이 쉽다.
+- 미확정/TODO: **C-1(발작·빨간 알약)**, **C-2(광대 가면 거래)** 는 전사 표현이 불완전해 구현하지 않았다(수칙 문서에는 원문 노출). 원문 "좌석과 손잡이 1000장까지"는 STT 의심으로 장면 문구에 쓰지 않았다. 객차 수/사건 배치와 EP02 Story 원고·문서의 Canonical Sync도 미진행. 영상/음향은 추가하지 않았다(텍스트 장면).
+- 검증: `tests/ep02_browser_smoke.py` 20개 항목(해금/잠금, 정차 이동 차단/주행 이동, 취객 추적·사망·신발, 여자아이 답변/지목/가위바위보/울음, 존재하지 않는 역 성공·3종 실패, 암전 객차 광원·정차·암흑 수색·카드, 탈의+기름, 용두 탈출 성공·3종 실패, EP03 해금, Story 불변, 새로고침 복원, AUTHOR hook 무영향) 통과. 기존 5종 smoke test 전부 통과. 가속 시계(`FieldCore.step`)와 고정 난수로 검증한 것이며 12분 전체 수동 플레이/영상 재생은 확인하지 않았다.
+- 다음 작업 추천: (1) 사용자가 직접 EP02를 플레이해 시간값(주행/정차 길이, 추격 속도, 재인식 12초)을 조정, (2) C-1/C-2 전사 재검수 후 메커닉 결정, (3) EP02 Story 원고/문서 Canonical Sync, (4) EP03 reviewed transcript 확정 후 Field EP03.
+
 ## 2026-10-05 — Darkweb UI 일관화 + 현장 관측 시스템을 Darkweb 스타일로 통일
 
 - 목적: Darkweb 전반의 글꼴 크기/굵기/버튼 간 불일치를 정리하고, 실제 게임인 `현장 관측 시스템.exe`를 Darkweb(CCTV/사건수사노트) 창과 같은 시각 언어로 맞춘다. 게임 로직은 변경하지 않았다.

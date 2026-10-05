@@ -139,8 +139,9 @@ def run():
         assert target_page.evaluate('GameSave.exportCode()') == bundle
         target.close()
         print('PASS v5 fresh-browser UI round-trip: actual 06:00 clear, EP02 unlock, death, duty summary, Story and AUTHOR trace')
-        click('field-list'); assert '연결 준비 중' in page.locator('#field-dispatch-EP02').inner_text()
-        assert page.locator('#field-dispatch-EP02').is_disabled()
+        # EP02 is implemented now: unlocked by the EP01 clear, it can be dispatched (still locked before).
+        click('field-list'); assert '파견 가능' in page.locator('#field-dispatch-EP02').inner_text()
+        assert not page.locator('#field-dispatch-EP02').is_disabled()
         page.reload(wait_until='load')
         assert page.evaluate("FieldSave.get().cleared.includes('EP01') && FieldSave.unlocked('EP02')")
         assert page.evaluate('(code) => GameSave.importCode(code)', code_before)

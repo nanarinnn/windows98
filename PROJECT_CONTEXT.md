@@ -122,6 +122,19 @@ field/
 
 현재 일반 script/전역 함수/DOM 기반 구조와 호환되는 접점부터 설계해야 한다. 위 경로를 채택해도 즉시 ES module 전환이나 기존 전역 함수 제거를 뜻하지 않는다. 별도 상태, UI 선택자, 타이머 생명주기를 기존 창 관리와 연결하되 Story 훅을 Field 클리어 기록에 연결하지 않는다. `vercel.json`에 `field/**` 정적 포함을 추가했고 로컬 서버의 모든 신규 자산 응답을 대조했다. 실제 Vercel 배포는 아직 실행하지 않았다. 구조 충돌이 확인되면 억지로 적용하지 말고 이유와 대안을 이 문서에 기록한다.
 
+## Field EP02 — 열차 이동·은신·탐색형 (2026-10-05)
+
+EP01(한 장소에서 밤을 버티는 관측형)과 달리 **움직이는 열차의 이동/정차 상태를 읽으며 후미(7번)에서 선두(1번) 객차와 기관실까지 이동**하는 별도 미션이다. 06:00 시계를 쓰지 않으며(`manualClock`) 열차 시간표(주행/정차/존재하지 않는 역 구간)가 가능한 행동을 결정한다. 종료는 `FieldCore.win()`(탈출) 또는 `die()`다. 약 12분 분량이며 7번 객차에서 6번으로 넘어가는 첫 의미 있는 상호작용은 시작 직후 가능하다.
+
+- 파일: `field/ep02/ep02-data.js`(전사 기반 문서 원문·시간표·조정값·실패 코드), `ep02.js`(상태 머신·행동·실패/성공), `ep02-ui.js`(객차 스트립·상태 칩·행동 버튼; 기존 Field 클래스 재사용), `tests/ep02_browser_smoke.py`. 공용: `FieldCore`에 하위 호환 확장점(`manualClock`, `startLog`, `win()`, `die(reason, code)`, 로그 `t`, 미션별 `release`/`stamp`)과 AUTHOR hook, `FieldUI`에 미션 전용 뷰(`mission.ui`) 지원을 추가했다. EP01 동작은 그대로다.
+- 상태(`s.data`): carIndex, trainMoving, shoesOff, crouching, eyesClosed, artificialLight, drunkAwake/drunkTracking, girlAsked/girlCrying/parentRisk, voidStationActive, darkCarEntered, engineCardFound, undressed, oiled, engineRoomEntered, realityButtonPressed, currentStation, nextStation, escaped, failCode. 구현 전용 값은 `s.data.sys`에 둔다(canon 아님).
+- 시간표: 주행 60초 → 성수 정차(12초) → 주행 180 → 용답 정차 → 주행 70 → **존재하지 않는 역(void, 최대 40초)** → 주행 110 → 신답 정차 → 주행 180 → **용두 정차 45초(최종 탈출 구간)** → 신설동행 주행 40초(도착 = 실패). 성수 안내 이후 남은 역 4개(용답·신답·용두·신설동).
+- 핵심 규칙(전사 근거): 객차 간 이동은 주행 중에만 가능하며 정차 중 앞칸 이동은 `[정차 중] 연결문 잠금 유지` 메시지만 출력한다(암전 객차 안에서는 실패). A 취객: 신발을 신고 통과하면 깨어나 **느리지만 꾸준히 추적**(거리 칸 수가 줄다 0이면 `A_DRUNK_CAUGHT`, 객차 이동 시 거리 회복), 신발을 벗으면 깨지 않음. B 여자아이: 시선 거두기+즉시 이동은 안전, 질문을 받으면 노선도를 가리켜야 하고 말하면 `B_DESTINATION_ANSWER`, 가위바위보는 보-보-바위-보(비김)이며 이기면 울음+`parentRisk`(이후 이동 때 부모 조우 확률), 지면 `B_WRONG_RPS`. 존재하지 않는 역: 웅크리기+눈 감기를 제때(8초) 하고 18초(원문 3분 압축) 유지, 눈 뜨기/움직이기/무응답은 각각 실패. C 암전 객차: 터널 플래시(2~4초 간격) 때만 수색, 암흑 수색 `C_WRONG_SEARCH`, 인공 광원 `C_ARTIFICIAL_LIGHT`, 카드는 원문의 4개 후보 중 하나(무작위)이며 카드 없이는 객차를 떠날 수 없다(원문: 통과가 아닌 수색). D 1번 객차: 탈의+기름 둘 다 필요(`D_NO_UNDRESS`/`D_NO_OIL`), 이후 밀치고 나아가 카드로 기관실. 기관실: 용두 정차 중에만 현실 재인식 버튼 → 제한 시간(12초) 안에 창문 투신. 다른 역/주행 중 시도 `FINAL_WRONG_STATION`, 버튼 없이 투신 `FINAL_NO_RECOGNITION`, 시간 초과·신설동 도착 `FINAL_TOO_LATE`.
+- 구현 선택(canon 아님, 문서/체인지로그에 명시): 객차 수 7, 각 사건의 객차 배치, 모든 시간 값·추격 칸 수·확률, 존재하지 않는 역 무응답(`VOID_STATION_NO_RESPONSE`)·부모 조우(`B_PARENT_ENCOUNTER`) 실패 코드, 취객 추적을 존재하지 않는 역 대기 중·기관실에서는 정지, 정차 역 이름(용답·신답은 실제 성수지선 역명), 존재하지 않는 역명은 `■■■`로 표시(역명을 만들지 않음).
+- 미구현/TODO(검수 필요): **C-1(발작 → 얇은 것 진입 확정, 특정 위치의 카드 발견 시 빨간 알약 복용)과 C-2(웃는 광대 가면 남성에게 오른손 전두엽 일부+빨간 알약 지불)** 는 원문 표현이 불명확하거나 조건 구조가 완결되지 않아 메커닉으로 구현하지 않았다(수칙 문서에는 원문 그대로 노출). "좌석과 손잡이 1000장까지"는 STT로 보이는 표현이라 장면 문구에서 사용하지 않았다. 기차 칸 수와 사건 배치, EP02 Story 원고/문서(Canonical Sync)는 아직 전사본에 맞춰지지 않았다.
+- 진행도: EP01 clear → EP02 해금, **EP02 clear → EP03 해금(Field 내부에서만)**. 기존 `FieldSave` 구조(`yuyeon98.field.v1`)와 Save Code v5의 Field 계층을 그대로 사용하며 기록은 `{patrols:{}, elapsed, injuries:[]}`다. Story/J 기록/블루스크린/LOOP 02/`eps`/`finaleSeen`/`jayUnlocked`/엔딩 조건과 `yuyeon98.save.v1`은 변경하지 않으며 EP02 clear는 이들과 연결되지 않는다(테스트로 Story 저장 바이트 동일성 확인).
+- AUTHOR hook만 준비: `FieldCore.hooks.add('onEpisodeStart' | 'onMajorEvent' | 'onEpisodeClear', fn)`. 인자는 id뿐이고 예외는 무시되며 gameplay/clear 조건/저장에 영향을 줄 수 없다. EP02 major event ID: A_DRUNK_WAKE, B_GIRL_ASKED, B_GIRL_CRYING, VOID_STATION, C_DARK_CAR, C_CARD_FOUND, D_CROWD, ENGINE_ROOM, REALITY_BUTTON. 실제 AUTHOR 콘텐츠는 추가하지 않았다.
+
 ## NORMAL / CLASSIFIED / Hidden
 
 - NORMAL: EP01~EP10. 일반 플레이어는 이 경로만으로 완결된 경험을 얻는다.
@@ -225,7 +238,7 @@ Transcript 배치 시에는 루트 원고/게임 콘텐츠를 변경하지 않�
 - F: 응시 유지, 좌/우 번갈아 깜빡이기, 뒤로 이동 hold→TV 발견→TV 뒤 이동→웅크림→앞쪽 파손음→앞으로 이동→선택한 순찰봉으로 3회 타격. 파손음은 텍스트와 짧은 합성 소리로 전달한다. 시선 이탈·양안 감기·지연 실패를 처리한다.
 - 정각 순찰 알림/지도 관측/내선 1번 보고, 파고 1.5m 이상 해안 접근 제한, 장비·조명 점검/수령, 1번 연결 불가·0번 성명 반응·통화 종료 후 게임 시간 1분 대기 경로가 있다. 순찰 누락은 기록으로만 남기며 기본 Story나 Field 생환을 새 수집 조건으로 막지 않는다.
 - 현재 조정값: 22:00~06:00=720초(게임 내 1분당 현실 1.5초), 사건 A/B/D/F는 각각 23:00/01:40/03:10/04:55. 첫 사건 A는 시작 후 현실 90초, A→B 간격은 240초다. 사건 위치는 관측 채널과 함께 전환한다. 대응 grace/deadline, 눈 피로 25초, TV 발견 거리 12보/3회 타격, 파고 변동 시간대는 gameplay tuning이며 원문 설정을 추가로 확정한 것이 아니다.
-- 미구현/한계: EP02~EP10 미션, CLASSIFIED/Hidden/11번째 사건/AUTHOR 본편·엔딩, 중간 근무 저장·복원, 실제 부상에 따른 신체 조작 변경, 자유 3D 이동, 신규 전용 영상. 기존 영상 재사용과 버튼/hold 기반 공간 조작의 Vertical Slice이며 사용자가 checkpoint를 직접 플레이한 뒤 난이도 유지와 근무 시간 단축을 요청했다. 현재 12분 배율의 전체 근무 수동 플레이는 아직 검증하지 않았다. 연결 종료/새로고침 후 현재 근무는 처음부터 다시 파견하며 완료·사망 기록만 보존된다.
+- 미구현/한계: EP03~EP10 미션(EP02는 아래 EP02 섹션 참조), CLASSIFIED/Hidden/11번째 사건/AUTHOR 본편·엔딩, 중간 근무 저장·복원, 실제 부상에 따른 신체 조작 변경, 자유 3D 이동, 신규 전용 영상. 기존 영상 재사용과 버튼/hold 기반 공간 조작의 Vertical Slice이며 사용자가 checkpoint를 직접 플레이한 뒤 난이도 유지와 근무 시간 단축을 요청했다. 현재 12분 배율의 전체 근무 수동 플레이는 아직 검증하지 않았다. 연결 종료/새로고침 후 현재 근무는 처음부터 다시 파견하며 완료·사망 기록만 보존된다.
 - 회귀 검증: `tests/field_browser_smoke.py`를 로컬 서버 실행 후 Python Playwright/Chromium 환경에서 실행한다. 격리 저장소와 production step으로 시계를 가속해 A/B/D/F 정상·실패/재시도/06:00/해금/저장 복원/Save v4/기존 CCTV/Field 미클리어 Story 경계를 검증한다. 부트/EP09 마지막 단계 등 일부 Story 진입점을 직접 호출하므로 전체 Story 수동 플레이 검증이라고 보고하지 않는다.
 
 ## 개발 및 작업 종료 절차

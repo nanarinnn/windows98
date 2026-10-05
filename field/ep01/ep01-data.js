@@ -2,6 +2,7 @@
 // not new narrative rules; C/E remain deleted. No uncertain telephone number.
 window.FieldEP01Data = {
     id: 'EP01', title: '부산 태양해안',
+    clearText: '생환 기록 저장 / EP.02 연결 권한 갱신. 다음 현장은 연결 준비 중입니다.',
     feedLabel: 'CH 01 · TAE-YANG / OBSERVATION', reportSelector: '#darkwebReportWindow textarea',
     equipment: ['baton', 'radio'],
     // Real seconds of uninterrupted protection; slice tuning, not a canonical duration.
