@@ -2,6 +2,16 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-05 — Vercel 무료 한도 대응: 영상 용량 축소
+
+- 목적: Vercel(Hobby) 무료 한도를 넘는 전송량/배포 용량을 줄인다. 사용자 보고: 프로덕션 `windows98-yuyeon.vercel.app` 사용량이 10GB를 넘음. 프로젝트 `test11-6dcd/windows98`, 최신 배포는 Ready로 정상이며 도메인/배포 자체 문제는 아니었다. 저장소의 `homepage`에 적힌 `windows98-mocha.vercel.app`은 연결이 끊긴 옛 주소다.
+- 원인 분석: 저장소 미디어 약 700MB 중 mp4가 636MB(1080p, 9~17Mbps, 오디오 320kbps). 영상은 재생 시 스트리밍되므로 한 번의 플레이스루가 수백 MB를 전송한다. 코드는 영상을 미리 로드하지 않는다(preload 없음).
+- 조치: `*.mp4` 49개(`movies/out/` 제외)를 H.264 main/CRF 28, 최대 1280px 폭, 30fps 상한, AAC 80kbps, faststart로 재인코딩해 **같은 파일명으로 교체**했다. 636MB → 47MB(약 13배 감소). 코드 수정은 없다. 원본은 git 이력(`cf76097` 이전 커밋)에 보존된다.
+- `vercel.json`: mp4/png/jpg에 `Cache-Control: public, max-age=86400` 라우트를 추가했다(재방문 시 재전송 감소). 기존 builds/라우트는 보존.
+- `.vercelignore` 신규: `*.psd`, `movies/out/`, `docs/`, `tests/`, 작업 문서(`CHANGELOG_AI.md`, `PROJECT_CONTEXT.md`, `CLAUDE.md`)를 배포에서 제외. `movies/out/`의 3개 파일은 코드에서 참조되지 않는다(삭제하지 않고 이력/저장소에 유지).
+- 검증: 인코딩본 49개 전부 ffmpeg 전체 디코드 오류 0. 대표 프레임(ep8_event_slide, ep10_event_head) 원본/신규 육안 비교에서 차이 없음. 5종 브라우저 smoke test 모두 통과(Windows, Playwright Chromium; 이 Chromium은 H.264를 재생하지 못해 실제 영상 재생 확인은 아님). `vercel.json` JSON 유효성 확인.
+- 보존: 파일명/경로, Story/Field/Save/AUTHOR 코드와 원고는 변경하지 않았다. 영상 길이는 원본과 최대 0.02초 차이다.
+- 미해결: 배포 후 프로덕션에서 영상 재생을 직접 확인하지 못했다. 정확히 어떤 지표(대역폭/배포 크기)가 한도를 넘었는지 Hobby 플랜은 CLI 사용량 조회를 제공하지 않아 대시보드 확인이 필요하다. 그래도 부족하면 영상 호스팅을 Cloudflare R2 등으로 분리하는 방안이 있다.
 ## 2026-10-05 — 로컬 Claude Code 작업환경 전환 및 작업 규칙 문서화
 
 - 목적: Cloud/Codex 중심이던 작업환경을 Windows 로컬 Claude Code로 이어받고, GPT와 동일한 방식(문서 확인 → 구현 → 검증 → 기록 → commit/push)으로 작업하도록 규칙을 정착시킨다. 게임 기능은 변경하지 않았다.

@@ -18,6 +18,13 @@
   ],
   "routes": [
     {
+      "src": "/(.*\\.(?:mp4|png|jpg))",
+      "headers": {
+        "Cache-Control": "public, max-age=86400"
+      },
+      "continue": true
+    },
+    {
       "src": "/(.*)",
       "headers": {
         "Access-Control-Allow-Origin": "*"

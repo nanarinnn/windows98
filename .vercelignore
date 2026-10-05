@@ -1,0 +1,8 @@
+# Not served by the site; keep out of Vercel deployments
+*.psd
+movies/out/
+docs/
+tests/
+CHANGELOG_AI.md
+PROJECT_CONTEXT.md
+CLAUDE.md
