@@ -29,17 +29,18 @@ window.FieldEP02Data = {
         seizureIdle: 0.03,       // checked once per tunnel flash (transcript: can happen without contact)
         pillDeadline: 10         // "즉시 섭취": seconds before the thin one's entry is no longer stoppable
     },
+    // Shortened after play feedback (the 3-minute runs felt stuck): ~7 min to Yongdu instead of ~11. Real seconds.
     // run = between stations (doors between cars can be used); stop = at a station; void = non-existent station.
     schedule: [
-        { type: 'run', to: '성수', dur: 60 },
+        { type: 'run', to: '성수', dur: 45 },
         { type: 'stop', at: '성수', dur: 12 },
-        { type: 'run', to: '용답', dur: 180 },
+        { type: 'run', to: '용답', dur: 100 },
         { type: 'stop', at: '용답', dur: 12 },
-        { type: 'run', to: '신답', dur: 70 },
+        { type: 'run', to: '신답', dur: 50 },
         { type: 'void', dur: 40 },
-        { type: 'run', to: '신답', dur: 110 },
+        { type: 'run', to: '신답', dur: 70 },
         { type: 'stop', at: '신답', dur: 12 },
-        { type: 'run', to: '용두', dur: 180 },
+        { type: 'run', to: '용두', dur: 100 },
         { type: 'stop', at: '용두', dur: 45, final: true },
         { type: 'run', to: '신설동', dur: 40, arrival: true }
     ],
