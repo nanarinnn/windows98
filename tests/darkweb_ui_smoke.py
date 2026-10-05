@@ -16,7 +16,7 @@ def run():
         context = browser.new_context(viewport={'width':1280, 'height':1000})
         page = context.new_page(); errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
-        page.goto(BASE, wait_until='load')
+        page.goto(BASE + '/?devunlock=0', wait_until='load')
         page.evaluate("document.getElementById('darkweb-terminal').style.display='none'; document.getElementById('darkweb-overlay').style.display='block'; confirmDarkWebWarning(); closeDarkWebReadme(); openNotebook('record'); FieldUI.open();")
         metrics = page.evaluate('''() => {
             const props = ['fontFamily','fontSize','fontWeight','letterSpacing','lineHeight',
@@ -68,7 +68,7 @@ def run():
         for width in [390,320]:
             mobile = browser.new_context(viewport={'width':width,'height':844}, is_mobile=True, has_touch=True)
             m = mobile.new_page(); m.on('pageerror', lambda error: errors.append(str(error)))
-            m.goto(BASE, wait_until='load')
+            m.goto(BASE + '/?devunlock=0', wait_until='load')
             m.evaluate("document.getElementById('darkweb-terminal').style.display='none'; document.getElementById('darkweb-overlay').style.display='block'; confirmDarkWebWarning(); closeDarkWebReadme(); FieldUI.open();")
             assert m.locator('#fieldWindow .window-header').evaluate('e => e.scrollWidth <= e.clientWidth')
             assert m.locator('#field-close').is_visible()

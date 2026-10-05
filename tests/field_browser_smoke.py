@@ -21,7 +21,7 @@ def run():
         page = context.new_page()
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
-        page.goto(BASE, wait_until='load')
+        page.goto(BASE + '/?devunlock=0', wait_until='load')
         page.evaluate("document.getElementById('darkweb-terminal').style.display='none'; document.getElementById('darkweb-overlay').style.display='block'; confirmDarkWebWarning(); closeDarkWebReadme();")
         def click(id): page.locator('#' + id).click()
         def state(): return page.evaluate('FieldCore.get()')
@@ -126,7 +126,7 @@ def run():
         expected_author = page.evaluate('AuthorRoute.get()')
         target = browser.new_context(); target_page = target.new_page()
         target_page.on('dialog', lambda dialog: dialog.accept())
-        target_page.goto(BASE, wait_until='load')
+        target_page.goto(BASE + '/?devunlock=0', wait_until='load')
         assert not target_page.evaluate('FieldSave.get().cleared.length || AuthorRoute.get().unlocked')
         target_page.evaluate("document.getElementById('darkweb-terminal').style.display='none'; document.getElementById('darkweb-overlay').style.display='block'; confirmDarkWebWarning(); closeDarkWebReadme(); openNotebook('record');")
         target_page.locator('#save-code-input').fill(bundle)
@@ -216,7 +216,7 @@ def run():
         other = browser.new_context(); fresh = other.new_page(); fresh.on('pageerror', lambda e: errors.append(str(e)))
         legacy = {'v':1, 'eps':{'1':{'clears':2,'deaths':1,'firstClearAt':10}}, 'clues':{'c01-blink':10}, 'deductions':{}, 'flags':{}}
         fresh.add_init_script('(function(){ if(!localStorage.getItem("yuyeon98.save.v1")) localStorage.setItem("yuyeon98.save.v1", ' + json.dumps(json.dumps(legacy)) + '); })();')
-        fresh.goto(BASE, wait_until='load')
+        fresh.goto(BASE + '/?devunlock=0', wait_until='load')
         assert fresh.evaluate('GameSave.ep(1).clears') == 2
         assert fresh.evaluate('FieldSave.get().cleared.length') == 0
         fresh.evaluate("document.getElementById('darkweb-terminal').style.display='none'; document.getElementById('darkweb-overlay').style.display='block'; confirmDarkWebWarning(); closeDarkWebReadme(); phoneCurrentPhase=3; document.getElementById('phone-input').disabled=false; document.getElementById('phone-input').value='5264'; handlePhoneInputSubmit();")
@@ -232,7 +232,7 @@ def run():
         other.close()
         # Narrow mobile viewport: direct controls and report remain reachable without overflow.
         mobile = browser.new_context(viewport={'width':390,'height':844}, is_mobile=True, has_touch=True)
-        m = mobile.new_page(); m.goto(BASE, wait_until='load')
+        m = mobile.new_page(); m.goto(BASE + '/?devunlock=0', wait_until='load')
         m.evaluate("document.getElementById('darkweb-terminal').style.display='none'; document.getElementById('darkweb-overlay').style.display='block'; confirmDarkWebWarning(); closeDarkWebReadme(); FieldUI.open();")
         m.locator('#field-dispatch-EP01').click(); m.locator('#field-tab-rules').click()
         assert m.locator('.field-rules').is_visible()

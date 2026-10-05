@@ -29,7 +29,7 @@ def run():
             page.locator('#save-code-input').fill(code)
             page.locator('#save-code-import').click()
 
-        page.goto(BASE, wait_until='load'); enter()
+        page.goto(BASE + '/?devunlock=0', wait_until='load'); enter()
         assert page.evaluate('AuthorRoute.get()') == {'v':1, 'unlocked':False, 'authorAccessLevel':0, 'authorTraces':[]}
         assert not page.locator('#author-note-icon').is_visible()
         assert page.evaluate("AuthorRoute.normalize('  Ａｂ　Ｃ  ')") == 'Ab C'
@@ -142,7 +142,7 @@ def run():
         page.evaluate('applyLoopDesktopState(false)')
         assert 'LOOP 02' in page.locator('#darkweb-desktop').inner_text()
         assert page.evaluate('AuthorRoute.get().authorTraces.length === 2')
-        fresh = browser.new_context(); fresh_page = fresh.new_page(); fresh_page.goto(BASE, wait_until='load')
+        fresh = browser.new_context(); fresh_page = fresh.new_page(); fresh_page.goto(BASE + '/?devunlock=0', wait_until='load')
         assert not fresh_page.evaluate('AuthorRoute.get().unlocked')
         assert not fresh_page.evaluate("AuthorRoute.addTrace('creator-note')")
         assert not fresh_page.locator('#author-note-icon').is_visible()

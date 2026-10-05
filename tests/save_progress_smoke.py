@@ -11,7 +11,7 @@ def run():
                                     headless=True, args=['--no-sandbox'])
         context = browser.new_context(); page = context.new_page(); errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
-        page.goto(BASE, wait_until='load')
+        page.goto(BASE + '/?devunlock=0', wait_until='load')
         page.evaluate('''() => {
             window.unpack = code => {
                 const b = Uint8Array.from(atob(code.replace(/\\s/g,'').replace(/-/g,'+').replace(/_/g,'/')), c => c.charCodeAt(0));
@@ -47,7 +47,7 @@ def run():
         assert 'f7dda4fd1a2aaaae283a1382d8e0f5f39abe70d410d9cf1a438e58c0aaa220ae' not in str(payload)
         assert not any(term in str(payload) for term in ['AUTHOR_SAVE_HASH','hashOverride','secret','inventory','controls','stage','minute'])
         # Resume only persistent layers; full Story bit/flag/worker semantics still round-trip.
-        fresh = browser.new_context(); target = fresh.new_page(); target.goto(BASE, wait_until='load')
+        fresh = browser.new_context(); target = fresh.new_page(); target.goto(BASE + '/?devunlock=0', wait_until='load')
         assert target.evaluate('(code)=>GameSave.importCode(code)', code)
         assert target.evaluate('GameSave.exportStoryCode()') == snapshot['story']
         assert target.evaluate('FieldSave.get()') == snapshot['field']

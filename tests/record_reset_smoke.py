@@ -45,7 +45,7 @@ def run():
             assert page.locator('#author-note-text').is_visible()
             assert page.evaluate('AuthorRoute.get().authorTraces') == ['creator-note']
 
-        page.goto(BASE, wait_until='load'); enter()
+        page.goto(BASE + '/?devunlock=0', wait_until='load'); enter()
         assert page.evaluate('authorInitialDisplay') == 'none'
         assert not page.locator('#author-note-icon').is_visible()
         assert page.evaluate('AuthorRoute.get()') == AUTHOR_BLANK

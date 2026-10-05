@@ -2,6 +2,10 @@
 window.FieldSave = (() => {
     const key = 'yuyeon98.field.v1';
     const blank = () => ({ v: 1, cleared: [], unlocked: ['EP01'], deaths: {}, records: {} });
+    // Dev convenience: on localhost every episode can be dispatched without clearing the previous one.
+    // View-only override: nothing is written to progress/Save Code, and production hosts never enable it.
+    // Add ?devunlock=0 to the URL to test the real locks (the smoke tests do).
+    const devUnlock = ['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).get('devunlock') !== '0';
     let state = blank();
     let storageError = false;
     function sanitize(saved) {
@@ -56,7 +60,8 @@ window.FieldSave = (() => {
             state = blank(); persist();
         },
         storageError: () => storageError,
-        unlocked: id => state.unlocked.includes(id),
+        devUnlock,
+        unlocked: id => devUnlock || state.unlocked.includes(id),
         death(id) { state.deaths[id] = (state.deaths[id] || 0) + 1; persist(); },
         clear(id, record) {
             if (!state.cleared.includes(id)) state.cleared.push(id);

@@ -2,6 +2,14 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-05 — 개발 모드: localhost에서 모든 Field 에피소드 개방
+
+- 목적: 테스트할 때 EP01을 매번 클리어하지 않아도 되도록 개발 환경에서는 모든 Field 에피소드를 파견 가능하게 한다. 사용자 요청.
+- 구현: `field/field-save.js`의 `FieldSave.unlocked()`가 호스트가 `localhost`/`127.0.0.1`이고 URL에 `?devunlock=0`이 없을 때만 true를 반환한다(`FieldSave.devUnlock`). **표시/파견 가능 여부만 바꾸는 보기 전용 override**이며 저장된 해금·클리어 기록, Save Code, Story 저장에는 아무것도 쓰지 않는다. 배포(Vercel) 도메인에서는 동작하지 않는다. 개방 중에는 Field 목록 하단에 `[개발 모드]` 안내가 표시된다. 아직 구현되지 않은 에피소드(EP03~)는 해금되어도 "연결 준비 중"으로 비활성이다.
+- 실제 잠금 검증: `?devunlock=0`을 붙이면 원래 잠금 규칙으로 동작한다. 기존 smoke test 5종과 `ep02_browser_smoke.py`는 `/?devunlock=0`으로 접속하도록 수정했다.
+- 변경 파일: `field/field-save.js`, `field/field-ui.js`(안내 문구), `tests/*.py`(접속 주소), `tests/ep02_browser_smoke.py`(개발 모드 검증 추가), `CLAUDE.md`.
+- 검증: 6종 smoke test 모두 통과(개발 모드에서 EP02 파견 가능·EP05 준비 중·저장된 `unlocked`가 `["EP01"]` 그대로임을 포함).
+
 ## 2026-10-05 — EP02 Field Game (서울 심야 2호선) 구현
 
 - 목적/근거: 사용자 요청 "EP02 Field Game 구현". canonical 근거는 `docs/transcripts/reviewed/EP02_서울_심야_2호선.txt`(REVIEWED) 한 가지이며 문서 번호 순환관리-2021-014호. EP01 구조를 복사하지 않고 **이동/정차/은신/탐색** 중심의 별도 상태 머신으로 구현했다.

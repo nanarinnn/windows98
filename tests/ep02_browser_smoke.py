@@ -17,7 +17,7 @@ def run():
         page = browser.new_context(viewport={'width': 1280, 'height': 900}).new_page()
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
-        page.goto(BASE, wait_until='load')
+        page.goto(BASE + '/?devunlock=0', wait_until='load')
         page.evaluate("document.getElementById('darkweb-terminal').style.display='none'; document.getElementById('darkweb-overlay').style.display='block'; confirmDarkWebWarning(); closeDarkWebReadme();")
 
         def click(id): page.locator('#' + id).click()
@@ -158,6 +158,14 @@ def run():
         assert page.evaluate(f"localStorage.getItem('{STORY_KEY}')") == story_before
         assert 'EP02' in page.evaluate('FieldSave.exportProgress().cleared.join()') and page.evaluate('GameSave.exportCode().length') > 0
         print('PASS 18-20 EP03 unlocks only in Field; Story save byte-identical; EP02 clear/deaths/EP03 unlock survive reload')
+        # Dev unlock (localhost only, no ?devunlock=0): every episode dispatchable, saved progress untouched.
+        dev = browser.new_context().new_page(); dev.goto(BASE, wait_until='load')
+        dev.evaluate("document.getElementById('darkweb-terminal').style.display='none'; document.getElementById('darkweb-overlay').style.display='block'; confirmDarkWebWarning(); closeDarkWebReadme(); FieldUI.open();")
+        assert dev.evaluate('FieldSave.devUnlock') and dev.locator('#field-dispatch-EP02').inner_text() == '파견 가능'
+        assert dev.locator('#field-dispatch-EP05').inner_text() == '연결 준비 중' and '[개발 모드]' in dev.locator('#field-content').inner_text()
+        assert dev.evaluate("JSON.stringify(FieldSave.get().unlocked) === '[\"EP01\"]' && JSON.stringify(FieldSave.exportProgress().unlocked) === '[\"EP01\"]'")
+        dev.locator('#field-dispatch-EP02').click(); assert dev.evaluate("FieldCore.get().id === 'EP02' && FieldCore.get().status === 'active'")
+        print('PASS dev unlock: all episodes open on localhost without changing saved progress; ?devunlock=0 restores real locks')
         assert not errors, errors
         browser.close()
 
