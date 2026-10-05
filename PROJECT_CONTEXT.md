@@ -233,6 +233,7 @@ Transcript 배치 시에는 루트 원고/게임 콘텐츠를 변경하지 않�
 현재 검증된 개발 환경은 Node.js 24/npm 11이다. 저장소 자체에는 Node 버전 핀이 없다. `/workspace/windows98`에서 `npm ci`로 잠금 파일 기준 설치 후 `npm start`로 실행한다. 기본 포트는 3000이며 `PORT`로 변경 가능하다. 별도 빌드/자동 테스트 명령은 없다. 이전 환경 설정에서는 정적 HTML/JS/CSS/이미지/영상과 영상 Range 응답을 확인했지만 브라우저 게임 상호작용이나 Save 전체 호환성을 검증한 것은 아니다.
 
 작업 종료 시 두 문서를 다시 읽고 `git diff`, `git diff --check`, `git status --short`를 확인한다. 미추적 파일과 기존 사용자 파일을 구분해 보고한다. commit/push는 사용자 지시 범위에 따른다. 기존 checkpoint는 work에 보존하고 main에 fast-forward 반영했다. 현재 통합 Save 변경은 사용자 지시대로 main에 commit하고 origin/main에 normal push한다.
+2026-10-05 갱신: 기준 작업환경은 로컬 Windows 체크아웃 `C:\Users\Ahn\windows98`(Claude Code)이다. 위 `/workspace/windows98` 기준을 대체한다. 이 저장소의 commit과 `main` normal push는 사용자가 상시 승인했다. 작업 단위 종료 후 변경 파일만 명시적으로 스테이징해 commit/push하고, force push/history rewrite와 `git add .`는 계속 금지한다. 상세 규칙은 `CLAUDE.md`를 따른다. 이 PC에는 아직 Python이 없어 `tests/*.py`는 설치 전까지 실행할 수 없다.
 
 ## 분석 시점의 전체 tracked 파일 목록
 

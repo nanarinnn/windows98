@@ -2,6 +2,14 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-05 — 로컬 Claude Code 작업환경 전환 및 작업 규칙 문서화
+
+- 목적: Cloud/Codex 중심이던 작업환경을 Windows 로컬 Claude Code로 이어받고, GPT와 동일한 방식(문서 확인 → 구현 → 검증 → 기록 → commit/push)으로 작업하도록 규칙을 정착시킨다. 게임 기능은 변경하지 않았다.
+- 환경: 저장소 `nanarinnn/windows98`을 `C:\Users\Ahn\windows98`에 clone했다. 기준 HEAD는 `cf76097`(fix: reset field and author progress with game records)이며 origin/main과 동일했다. `npm install`을 수행했다. 이후 기준 작업환경은 이 로컬 체크아웃이다(기존 `/workspace/windows98` Cloud 기준은 대체).
+- 변경 파일: `CLAUDE.md` 신규(작업 규칙, commit `bb0b94c`), `CHANGELOG_AI.md`, `PROJECT_CONTEXT.md`(작업환경/commit 권한 갱신).
+- Git 정책: 사용자가 이 저장소의 자동 commit/normal push를 승인했다. 작업 단위가 끝나고 검증하면 변경 파일을 이름으로 스테이징해 commit하고 `main`에 normal push한다. `git add .`, force push, history rewrite는 금지한다. 커밋 작성자는 기존과 같은 `바나나 BANANA <sakuchann00125@gmail.com>`(저장소 로컬 설정)이다.
+- 검증: `git push --dry-run` 인증 확인, `CLAUDE.md` push 성공(`cf76097..bb0b94c`). 이 PC에는 Python이 없어 `tests/*.py` 브라우저 smoke test는 아직 실행하지 못했다.
+- 미해결: Python + Playwright + Chromium 설치 전까지 smoke test 회귀 검증 불가. EP02 이후 Canonical Sync/Field는 미착수.
 ## 2026-10-05 — 인수인계 문서 초안 정착
 
 - 목적: 기존 게임과 Save를 보존하면서 향후 Field/CLASSIFIED/AUTHOR 설계 및 작업 규칙을 기록한다. 이번에는 기능 구현을 시작하지 않는다.
