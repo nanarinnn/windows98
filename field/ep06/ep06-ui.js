@@ -8,10 +8,34 @@ window.FieldEP06UI = (() => {
     const X = data.text;
     const $ = id => document.getElementById(id);
     let sig = '', lastVideo = '', view = '', lastPhase = '', last = null;
+    // After the day is cleared (EP07 is already unlocked) the classroom stays open for a free inspection. Looking at desk 17 again
+    // offers a contextual action; it runs the records search that can recover PUBLIC CLASSIFIED 01. Nothing here affects the clear.
+    const post = { inspected: false, running: false, token: 0, delay: 700 };
+    const POST_LINES = ['[기록 대조 중...]', '학생명       박예림', '사건 연도    2019', '실종 위치    부산광역시 기장군 태양해안', '동일 지역 기록이 발견되었습니다.',
+        '문서 번호    해안관리-2019-031', '[자동 연계 실패]', '열람 권한이 없습니다.'];
+    function postLog(message) { if (FieldCore.get()?.id === 'EP06') { FieldCore.log(message); FieldCore.refresh(); } }
+    function postInspect() {
+        if (post.inspected) return;
+        post.inspected = true;
+        postLog('[17번 자리] 책상과 의자가 깨끗하게 정돈되어 있다.');
+    }
+    function postReinspect() {
+        if (post.running) return;
+        if (window.Classified?.has('classified-01')) { postLog('[17번 자리] 이미 대조한 기록이다.'); return; }
+        post.running = true; const token = ++post.token; let i = 0;
+        const step = () => {
+            if (token !== post.token || FieldCore.get()?.id !== 'EP06') { post.running = false; return; }
+            if (i < POST_LINES.length) { postLog(POST_LINES[i++]); setTimeout(step, post.delay); return; }
+            post.running = false;
+            window.Classified?.discover('classified-01');
+            FieldCore.refresh();
+        };
+        step();
+    }
 
     function mount(root) {
-        sig = ''; lastVideo = ''; view = ''; lastPhase = ''; last = null;
-        const seats = [15, 16, 17, 18, 19].map(n => `<button type="button" class="f6-obj f6-seat${n === 17 ? ' f6-seat17' : ''}" id="f6-seat-${n}" data-id="seat${n}" aria-label="${n}번 자리">${n}</button>`).join('');
+        sig = ''; lastVideo = ''; view = ''; lastPhase = ''; last = null; post.inspected = false; post.running = false; post.token += 1;
+        const seats = [15, 16, 17, 18, 19].map(n => `<button type="button" class="f6-obj f6-seat${n === 17 ? ' f6-seat17' : ''}" id="f6-seat-${n}" data-id="seat${n}"${n === 17 ? ' data-live' : ''} aria-label="${n}번 자리">${n}</button>`).join('');
         root.innerHTML = `<div class="field-hud"><strong id="f6-phase"></strong><span id="f6-place"></span><span id="f6-status"></span></div>
             <div class="field-grid"><section class="field-observation">
             <div class="field-camera f6-room" id="f6-room"><video id="f6-video" muted loop playsinline></video><div class="field-scanlines"></div>
@@ -35,6 +59,7 @@ window.FieldEP06UI = (() => {
 
     // The podium opens a card; the roll book is one of its items. Everything else goes straight to the game.
     function click(id) {
+        if (last?.status === 'cleared') { if (id === 'seat17') postInspect(); return; }   // the cleared day only allows the free inspection
         if (id === 'podium') { view = view === 'podium' ? '' : 'podium'; card(last); }
         FieldCore.action('obj', id);
     }
@@ -47,6 +72,13 @@ window.FieldEP06UI = (() => {
     function actions(s) {
         const d = s.data, list = [];
         const add = (...args) => list.push(btn(...args));
+        if (s.status === 'cleared') {
+            if (post.inspected) {
+                const b = document.createElement('button'); b.type = 'button'; b.id = 'f6-recheck-17'; b.textContent = '17번 자리를 다시 확인한다';
+                b.setAttribute('data-live', ''); b.addEventListener('click', postReinspect); list.push(b);
+            }
+            return $('f6-actions').replaceChildren(...list);
+        }
         const elapsed = T.aTime - d.aT;
         if (d.phase === 'prep') add('조회를 시작한다', 'startHomeroom', null, 'f6-start-homeroom');
         if (d.deskSeen && d.deskDirty && !d.deskClean && d.a !== 'active' && d.iso !== 'inside') add('17번 책상과 의자를 닦는다', 'clean', null, 'f6-clean');
@@ -154,10 +186,10 @@ window.FieldEP06UI = (() => {
         $('f6-water').style.height = d.a === 'active' ? `${Math.round((1 - d.aT / T.aTime) * 70)}%` : '0%';
         $('f6-seat-17').classList.toggle('f6-occupied', d.b && d.phase === 'homeroom');
         const next = JSON.stringify([d.phase, d.att, d.a, d.strainLeft > 0, d.talkShown, d.urgeShown, T.aTime - d.aT < d.talkUntil, T.aTime - d.aT < d.urgeUntil, d.iso, d.c, d.d, d.ltEnd, d.dAnom, d.seatSeen, d.out,
-            d.deskSeen, d.deskClean, d.next, d.reported, d.absent, s.status]);
+            d.deskSeen, d.deskClean, d.next, d.reported, d.absent, s.status, post.inspected]);
         if (next !== sig) { sig = next; actions(s); card(s); }
         video(s);
     }
 
-    return { mount, render };
+    return { mount, render, post };
 })();

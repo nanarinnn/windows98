@@ -40,7 +40,7 @@ def run():
         snapshot = page.evaluate('({story:GameSave.exportStoryCode(),field:FieldSave.get(),author:AuthorRoute.get()})')
         code = page.evaluate('GameSave.exportCode()')
         payload = page.evaluate('unpack(GameSave.exportCode())')
-        assert set(payload) == {'v', 'story', 'field', 'author'}
+        assert set(payload) == {'v', 'story', 'field', 'author', 'classified'}   # classified is an additive layer
         assert payload['v'] == 5 and payload['story'] == snapshot['story']
         assert payload['field'] == snapshot['field'] and payload['author'] == snapshot['author']
         assert set(payload['author']) == {'v','unlocked','authorAccessLevel','authorTraces'}

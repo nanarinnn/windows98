@@ -139,6 +139,10 @@ function renderNotebook() {
     body.innerHTML = '';
 
     const tabs = [['board', '사건 보드'], ['clues', '단서'], ['deductions', '추리'], ['achievements', '업적'], ['record', '기록']];
+    // The CLASSIFIED section does not exist until the first recovered record.
+    const hasClassified = !!(window.Classified && Classified.count() > 0);
+    if (hasClassified) tabs.push(['classified', 'CLASSIFIED']);
+    else if (notebookState.tab === 'classified') notebookState.tab = 'board';
     const bar = h('div', 'display: flex; gap: 4px; padding: 6px 8px 0; background: #1a1a1a; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 2;');
     bar.className = 'nb-tabs';
     tabs.forEach(([key, label]) => {
@@ -152,7 +156,7 @@ function renderNotebook() {
     body.appendChild(bar);
 
     const content = h('div', 'padding: 10px 12px;');
-    ({ board: renderBoard, clues: renderClues, deductions: renderDeductions, achievements: renderAchievements, record: renderRecord })[notebookState.tab](content);
+    ({ board: renderBoard, clues: renderClues, deductions: renderDeductions, achievements: renderAchievements, record: renderRecord, classified: renderClassified })[notebookState.tab](content);
     body.appendChild(content);
     body.scrollTop = prevScroll;
 }
@@ -376,6 +380,31 @@ function renderAchievements(root) {
     });
 }
 
+// ---------- CLASSIFIED (공개 히든: 발견한 뒤에만 이 구역이 생긴다) ----------
+function renderClassified(root) {
+    const total = Classified.total, found = Classified.count();
+    root.appendChild(h('div', `color: ${NB_RED}; font-size: 12px; font-weight: bold;`, '[ CLASSIFIED ]'));
+    root.appendChild(h('div', `color: ${NB_DIM}; font-size: 11px; margin: 2px 0 10px;`, `복구된 분류 보류 기록 ${found} / ${total}`));
+    const open = notebookState.classifiedOpen;
+    Classified.entries().forEach(entry => {
+        if (!Classified.has(entry.id)) return;
+        const row = h('div', `color: ${open === entry.id ? '#ffcc00' : NB_GREEN}; font-size: 12px; margin-bottom: 6px; cursor: pointer;`,
+            `■ ${entry.number}  ${entry.title}`, () => {
+                notebookState.classifiedOpen = open === entry.id ? null : entry.id;
+                if (notebookState.classifiedOpen) Classified.markViewed(entry.id);
+                renderNotebook();
+            });
+        row.className = 'nb-classified-entry';
+        root.appendChild(row);
+        if (open === entry.id) {
+            const doc = h('pre', 'color: #cfcfcf; background: #050505; border: 1px solid #333; padding: 10px; margin: 0 0 10px; font-size: 12px; line-height: 1.6; white-space: pre-wrap;', entry.document);
+            doc.id = 'classified-document';
+            root.appendChild(doc);
+        }
+    });
+    for (let i = found; i < total; i++) root.appendChild(h('div', `color: ${NB_DIM}; font-size: 12px; margin-bottom: 6px;`, '□ [미확보]'));
+}
+
 function copyText(text, onDone) {
     const fallback = () => {
         const ta = document.createElement('textarea');
@@ -524,5 +553,9 @@ window.addEventListener('load', () => {
         if (win && win.style.display !== 'none') renderNotebook();
     });
     GameSave.onChange(checkAchievements);
+    if (window.Classified) Classified.onChange(() => {
+        const win = document.getElementById('notebookWindow');
+        if (win && win.style.display !== 'none') renderNotebook();
+    });
     checkAchievements(); // 이미 저장된 기록으로 달성한 업적 반영
 });

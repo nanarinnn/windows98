@@ -176,7 +176,7 @@ window.FieldUI = (() => {
             const retry = document.createElement('button'); retry.textContent = '재파견'; retry.id = 'field-retry'; retry.onclick = () => { shell(s.id); FieldCore.dispatch(s.id); };
             const list = document.createElement('button'); list.textContent = '관측 목록'; list.id = 'field-list'; list.onclick = () => { FieldCore.disconnect(); catalog(); };
             outcome.append(retry, list);
-            content.querySelectorAll('.field-grid button, .field-grid select').forEach(el => { el.disabled = true; });
+            content.querySelectorAll('.field-grid button:not([data-live]), .field-grid select').forEach(el => { el.disabled = true; });   // [data-live] stays usable (EP06 post-clear inspection)
         }
     }
     window.addEventListener('load', () => {

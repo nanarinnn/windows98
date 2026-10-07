@@ -5,6 +5,7 @@
     { "src": "styles.css", "use": "@vercel/static" },
     { "src": "app.js", "use": "@vercel/static" },
     { "src": "save.js", "use": "@vercel/static" },
+    { "src": "classified.js", "use": "@vercel/static" },
     { "src": "story-data.js", "use": "@vercel/static" },
     { "src": "notebook.js", "use": "@vercel/static" },
     { "src": "terminal.js", "use": "@vercel/static" },

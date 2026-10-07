@@ -88,6 +88,7 @@ window.FieldCore = (() => {
         majorEvent(eventId) { if (run) emit('onMajorEvent', run.id, eventId); },
         hooks: { add(name, fn) { if (!hooks[name] || typeof fn !== 'function') return () => {}; hooks[name].add(fn); return () => hooks[name].delete(fn); } },
         get: () => run,
+        refresh() { notify(); },   // re-render only (e.g. a post-clear inspection line); never advances the clock
         onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
         disconnect() { persistNow(); stop(); run = null; notify(); },
         release() {

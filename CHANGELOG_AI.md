@@ -2,6 +2,20 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-08 — PUBLIC CLASSIFIED 시스템과 AUTHOR 메타 반응 추가 (classified-01)
+
+- 목적: 사용자 지시. 플레이어 유형은 일반/AUTHOR 둘뿐이며 CLASSIFIED는 모두에게 공개된 선택적 히든 발견(권한/접근 코드 없음, 서로 독립, Story·Field unlock·J·LOOP·엔딩과 무관). AUTHOR는 CLASSIFIED를 자동 해금하지 않고 특정 발견 후 `[제작자에게.txt]` 재열람 시에만 추가 반응을 본다.
+- 구조: 새 `classified.js`(`CLASSIFIED_ENTRIES`, `CLASSIFIED_TOTAL=3`, `Classified` 상태 모듈, 독립 키 `yuyeon98.classified.v1`의 `{v:1, discovered:[], viewed:[]}`; 알려진 id만 허용). `classified-02/03`은 미정이며 만들지 않았다. index-sensitive 배열(`CLUES` 등)은 변경하지 않았다.
+- classified-01: EP06(박예림/2019/태양해안)과 EP01(`해안관리-2019-031`)이 같은 장소를 가리킨다는 사실만 표시. 인과·동일 사건·동일 존재·은폐 비확정, 문서 끝 문장 `두 사건의 관계는 확인되지 않았습니다.` 유지. 발견: EP06 clear(→ EP07 unlock 그대로) 후 post-clear free inspection에서 17번 자리를 다시 조사 → contextual `17번 자리를 다시 확인한다` → 기록 대조 로그 → `[자동 연계 실패]` → `[CLASSIFIED TRACE RECOVERED]` 토스트(`CLASSIFIED 1/3`). 재조사 중복 획득 없음. 새 괴이 물건 없음. 변경: `field/ep06/ep06-ui.js`(post-clear 상태), `field/field-core.js`(`FieldCore.refresh()` 추가: 시계를 진행하지 않는 재렌더), `field/field-ui.js`(종료 후에도 `[data-live]` 요소는 비활성화하지 않음).
+- 사건수사노트 UI: 첫 발견 전에는 CLASSIFIED 탭/문구가 어디에도 없고, 발견 후에만 `CLASSIFIED` 탭(`[ CLASSIFIED ]`, `복구된 분류 보류 기록 1 / 3`, `■ 01 태양해안 기록 대조`, `□ [미확보]` ×2, 항목 클릭 시 문서). AUTHOR 표시 없음. 변경: `notebook.js`.
+- AUTHOR: hash `f7dda4fd…20ae`는 기존 값과 동일해 그대로(입력 처리 trim → NFKC → UTF-8 → SHA-256, 대소문자 구분; 코드 평문은 소스에 두지 않음). 반응: `field/field-author.js`의 `AUTHOR_CLASSIFIED_REACTIONS` 표(`classified-01` → `HIDDEN을 전부 열었을까? 다음 문장은 말이야.`)를 `[제작자에게.txt]`를 열 때 계산해 본문 끝에 한 줄 추가(AUTHOR 해금 AND 발견, 순서 무관). 발견 순간 팝업 없음, 일반 플레이어 비노출.
+- Save/Reset: Save Code v5에 additive 계층 `classified` 추가(구 코드는 현재 상태 보존, 구 세이브에 키 없으면 기본값). `GameSave.reset()`이 CLASSIFIED도 초기화하고 AUTHOR reset 의미는 그대로. 변경: `save.js`, `tests/save_progress_smoke.py`(v5 payload 키 기대값에 `classified` 추가). `vercel.json` 정적 빌드 목록에 `classified.js` 추가(누락 시 배포본에서 404).
+- 테스트: 새 `tests/classified_browser_smoke.py` ALL PASS(첫 발견 전 UI 없음, EP06 clear → EP07 무관, post-clear 재조사 → 발견·중복 없음, 노트 UI/문서, reload/Save Code/구 세이브/알 수 없는 id, reset, AUTHOR 입력 변형, 잠금 상태 비노출, AUTHOR 먼저/CLASSIFIED 먼저 모두 문구 표시, 팝업 없음, 자동 해금 없음, Story flag 불변). AUTHOR 코드는 저장소에 없으므로 환경변수 `AUTHOR_TEST_SECRET`로 주입해 실행한다(없으면 AUTHOR 케이스는 SKIP으로 표시). 회귀: ep06, ep05, ep04, ep03, ep02, field, author, record_reset, save_progress, darkweb_ui 모두 PASS(Story/J/LOOP 포함).
+- 직접 확인: 실제 클릭으로 EP06 clear 화면에서 17번 자리 → 재확인 → 대조 로그 → 토스트 → 노트 CLASSIFIED 탭/문서까지, AUTHOR 해금 후 `[제작자에게.txt]`의 발견 전/후 문구를 스크린샷·테스트로 확인했다. 발견하지 않은 AUTHOR에게 문장이 미리 노출되지 않음을 확인했다.
+- 미해결: classified-02/03의 내용·발견 방식과 두 번째 AUTHOR 반응 대상은 미정(EP07~EP10 reviewed canon 확인 후 결정). 문구 자체는 소스(`field-author.js`)에 있으므로 "화면에 보이지 않음"이지 "소스에서 숨김"은 아니다(프론트엔드 이스터에그). 사람이 직접 플레이한 UX 확인은 아직이다.
+- 다음: EP07~EP10 reviewed canon 확보 후 classified-02/03 설계, 두 번째 AUTHOR 반응 결정.
+- Git: 커밋/푸시는 사용자 지시 시.
+
 ## 2026-10-08 — 1~6화 수칙문서를 현장 지침서 형태로 정리
 
 - 목적: 사용자 요청 "원문을 그대로 파싱한 느낌이라 진짜 지침서처럼, 요약하되 게임에 필요한 문구는 남기고 참고용만 남겨 달라". 범위는 사용자 선택에 따라 reviewed 원문이 있는 1~6화(7~10화는 변경 없음).

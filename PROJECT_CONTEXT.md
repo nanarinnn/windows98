@@ -216,10 +216,28 @@ EP01(한 장소에서 밤을 버티는 관측형)과 달리 **움직이는 열�
 - 영상(기존 자산 재사용, 실제 프레임으로 용도 확인): `ep6_idle`=책상·교탁·칠판이 있는 빈 교실(기본), `ep6_event_call`=교탁 위 출석부와 페이지 근접(조회 출석부), `ep6_event_freeze`=어두운 교실에서 모두가 같은 쪽을 보는 장면(A), `ep6_event_dismiss`=유리문 옆 바닥에 물이 퍼지는 장면(17번 자리의 바닷물), `ep6_event_door`=불투명 유리문 너머의 형체(E). 새 asset은 없다.
 - 미해결/한계: ① Story의 EP6 CCTV 미니게임(`app.js` EP6 영역)은 옛 수칙 구성(옛 A 응답/B 집단 응시/C 복도 문/D 종례 후 소금기 잔여물)의 선택지형이라 새 수칙문서와 어긋난다 — Story 독립 원칙으로 건드리지 않았다(EP02/EP04/EP05와 동일 처리, 정리 여부는 별도 결정). ② transcript가 결과를 말하지 않는 지점은 system failure/조정값으로 처리했다: 고개를 듦·복창 생략, A 중 시선·눈·대답·이동, 격리실 문 열기, E에서 직접 문을 연 뒤, 수업 중단, C 미완료, D 중단·경고 생략, 조례 처리 순서, 17번 자리 방치, 격리 종료 방식(정정 통보). ③ 박예림 호명 시 A/답변/무응답 비율, 학생 5명(15~19번)만 보이는 출석부, 판서 6회·시간표 라벨·마스킹 이름은 implementation 선택이다. ④ 사람이 처음부터 끝까지 실제 속도로 플레이한 시간(목표 10~15분)은 측정하지 않았다(봇은 판단 시간이 없어 사람은 더 오래 걸린다). ⑤ 효과음 없음.
 
-## NORMAL / CLASSIFIED / Hidden
+## PLAYER TYPES / PUBLIC CLASSIFIED (2026-10-08, 이 섹션이 아래 옛 H01~H10 계획을 대체한다)
+
+**플레이어 유형은 두 종류뿐이다. 제3의 HIDDEN USER / CLASSIFIED ACCESS USER / 권한 계층은 만들지 않는다.**
+
+1. **NORMAL PLAYER** — 표준 Story, 표준 Field, **PUBLIC CLASSIFIED 발견**. AUTHOR 전용 콘텐츠(`[제작자에게.txt]`, AUTHOR trace, AUTHOR meta 문구)는 접근/노출 불가.
+2. **AUTHOR** — NORMAL이 할 수 있는 모든 것 + AUTHOR 전용 메타 파일/문구. **CLASSIFIED를 자동 해금하지 않는다**(AUTHOR도 일반 플레이어처럼 발견 조건을 직접 만족해야 한다). 선택된 CLASSIFIED를 발견했을 때만 AUTHOR에게 추가 메타 반응이 생길 수 있다. 관리자/debug/true ending/Story 조건이 아니다.
+
+**PUBLIC CLASSIFIED** = 모두에게 공개된 선택적 히든 발견. 권한 state(`hiddenAccess` 등)는 없고 오직 "발견 조건을 충족했는가"로만 결정한다. 서로 **독립**이며(순차 해금 아님, 01 없이 02 발견 가능, 02 발견이 01을 열지 않음) collectible progression이 아니다. 발견 여부는 EP07 이후 Field unlock, J, 블루스크린, LOOP 02, `finaleSeen`, `jayUnlocked`, 엔딩 어디에도 영향을 주지 않는다(3/3도 true ending 조건 아님).
+
+- 목표 총수 3, 구현 현황: **`classified-01`만 구현**. `classified-02`/`classified-03`은 **미정(undefined)** — EP07~EP10 reviewed canon을 확인하기 전에는 내용을 만들지 않는다. 향후 발견 방식도 서로 다르게 설계한다(01은 post-clear object reinspection; 나머지는 정상 진행과 무관한 특이 행동 / 후반부 cross-case 관찰 등 후보일 뿐 확정 아님).
+- 구조: `classified.js`(`CLASSIFIED_ENTRIES` 표, `CLASSIFIED_TOTAL=3`, `Classified` 상태 모듈). 저장은 **독립 키 `yuyeon98.classified.v1`**의 `{v:1, discovered:[], viewed:[]}`(알려진 id만 whitelist)이며 AUTHOR state와 섞지 않는다. `CLUES/DEDUCTIONS/ACHIEVEMENTS/SECRETS`(index-sensitive)는 건드리지 않았다. Save Code v5에는 **additive 계층 `classified`**가 추가되었다(없는 구 코드는 현재 상태를 보존하고, 있으면 whitelist 검증 후 교체). 명시적 "기록 초기화"(`GameSave.reset()`)는 CLASSIFIED도 초기화하며 AUTHOR reset 의미는 그대로다. 구 세이브에 키가 없으면 기본값(`discovered: [], viewed: []`)으로 정상 로드.
+- UI: 첫 발견 전에는 CLASSIFIED 메뉴/문구가 **어디에도 없다**. 첫 발견 뒤에만 사건수사노트에 `CLASSIFIED` 탭이 생기고 `[ CLASSIFIED ]` / `복구된 분류 보류 기록 1 / 3` / `■ 01 태양해안 기록 대조` / `□ [미확보]` 두 칸을 보여 준다(항목을 누르면 문서). AUTHOR 여부(`AUTHOR BONUS`, `AUTHOR ACCESS` 등)는 CLASSIFIED UI에 표시하지 않는다. 정상 진행 버튼처럼 보이는 UI(`[CLASSIFIED 찾기]` 등)는 만들지 않는다.
+- **classified-01 (EP06 × EP01 태양해안 기록 대조)**: 기존 canon만 사용한다. EP06(박예림, 2019, 부산광역시 기장군 태양해안 실종)과 EP01(부산광역시 태양해안, 문서 번호 `해안관리-2019-031`)이 **같은 장소를 가리킨다**는 사실만 보여 주며, 인과·동일 사건·동일 존재·은폐는 확정하지 않는다(문서의 마지막 문장은 `두 사건의 관계는 확인되지 않았습니다.`). 발견 조건: EP06 normal clear(→ EP07 unlock, CLASSIFIED 불필요) **후** 교실을 닫기 전의 post-clear free inspection에서 17번 자리를 다시 조사하면 contextual action `17번 자리를 다시 확인한다`가 생기고, 누르면 본부 기록 검색이 자동 대조하는 로그(`[기록 대조 중...]` → 학생명/사건 연도/실종 위치 → 동일 지역 기록 → 문서 번호 → `[자동 연계 실패]` → `열람 권한이 없습니다.`)가 흐른 뒤 `[CLASSIFIED TRACE RECOVERED]` 토스트(`CLASSIFIED 1/3`)가 뜬다. 새 괴이 물건은 만들지 않았고, 재조사는 중복 획득하지 않는다. 구현: `field/ep06/ep06-ui.js`의 post-clear 상태(clear 기록·EP07 unlock은 그대로, `FieldCore.refresh()`와 `[data-live]`로 clear 화면에서 17번 자리와 이 버튼만 활성).
+- **AUTHOR hash/입력**: `AUTHOR_SAVE_HASH`(`f7dda4fd…20ae`)는 기존 값과 동일해 변경 없음. 입력 처리는 trim → NFKC → UTF-8 → SHA-256, 대소문자 구분. **AUTHOR 코드의 평문은 소스·문서에 두지 않는다**(테스트는 환경변수 `AUTHOR_TEST_SECRET`으로 주입).
+- **AUTHOR + classified-01 반응**: `field/field-author.js`의 `AUTHOR_CLASSIFIED_REACTIONS` 표(`'classified-01': { authorTextAppend: 'HIDDEN을 전부 열었을까? 다음 문장은 말이야.' }`)가 **`[제작자에게.txt]`를 AUTHOR가 다시 열 때만** 본문 끝에 한 줄을 붙인다(조건: AUTHOR 해금 AND classified-01 발견; 순서 무관). 발견 순간 AUTHOR 팝업은 없고, 일반 플레이어에게는 파일/문구가 노출되지 않는다. 표만 확장하면 두 번째 AUTHOR 반응 대상(미정)을 추가할 수 있다.
+
+**현재 AUTHOR 반응 CLASSIFIED**: classified-01 → "HIDDEN을 전부 열었을까? 다음 문장은 말이야." / **두 번째 AUTHOR 반응 CLASSIFIED: 미정** — reviewed canon이 생기기 전에는 만들지 않는다.
+
+## (대체됨) NORMAL / CLASSIFIED / Hidden — 옛 H01~H10 계획
 
 - NORMAL: EP01~EP10. 일반 플레이어는 이 경로만으로 완결된 경험을 얻는다.
-- CLASSIFIED: H01~H10. 각 Field episode에는 최소 하나의 Hidden Anomaly/CLASSIFIED 요소를 둘 수 있다.
+- (옛 계획, 위 PLAYER TYPES / PUBLIC CLASSIFIED로 대체) CLASSIFIED: H01~H10. 각 Field episode에는 최소 하나의 Hidden Anomaly/CLASSIFIED 요소를 둘 수 있다.
 - 충분한 Hidden 발견 시 `10 / 10 CASES`가 `11 / 10 CASES`처럼 변하는 연출을 사용할 수 있다.
 - `11/10`은 진엔딩이 아니다. 현재 11번째 사건의 정체를 확정하지 않고 단서와 떡밥만 허용한다.
 - Hidden/CLASSIFIED 발견은 기본 엔딩이나 Story/LOOP 02 진입의 필수 조건이 아니다.

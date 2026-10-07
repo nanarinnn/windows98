@@ -92,7 +92,18 @@ window.addEventListener('load', () => {
     closeControl.id = 'author-note-close'; closeControl.removeAttribute('onclick');
     closeControl.setAttribute('role', 'button'); closeControl.setAttribute('aria-label', '닫기'); closeControl.tabIndex = 0;
     const text = win.querySelector('textarea'); text.id = 'author-note-text';
-    text.textContent = '누군가 이 창을 다시 열어 주었다.\n남겨 둔 문장 하나는, 여기까지 읽어 준 사람에게.\n\n영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께';
+    // AUTHOR-only meta reactions to PUBLIC CLASSIFIED discoveries. Every CLASSIFIED is open to everyone and AUTHOR must discover
+    // it in the game like anyone else; this table only appends text to this file when the AUTHOR re-opens it. Extendable per id.
+    const AUTHOR_CLASSIFIED_REACTIONS = {
+        'classified-01': { authorTextAppend: 'HIDDEN을 전부 열었을까? 다음 문장은 말이야.' }
+    };
+    const BASE_NOTE = '누군가 이 창을 다시 열어 주었다.\n남겨 둔 문장 하나는, 여기까지 읽어 준 사람에게.\n\n영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께';
+    const noteText = () => {
+        const extra = Object.entries(AUTHOR_CLASSIFIED_REACTIONS)
+            .filter(([id]) => window.Classified?.has(id)).map(([, reaction]) => reaction.authorTextAppend);
+        return extra.length ? `${BASE_NOTE}\n\n${extra.join('\n')}` : BASE_NOTE;
+    };
+    text.textContent = BASE_NOTE;
     desktop.append(win); makeDraggable(win);
     darkWebWindowsList.push({ id: win.id, title: '📄 제작자에게.txt' });
     const close = () => { if (win.style.display === 'none') return; win.style.display = 'none'; updateDarkWebTaskbar(); };
@@ -103,7 +114,8 @@ window.addEventListener('load', () => {
     };
     const open = () => {
         if (!AuthorRoute.get().unlocked) return;
-        AuthorRoute.addTrace('creator-note'); win.style.display = 'flex';
+        AuthorRoute.addTrace('creator-note'); text.value = noteText();   // evaluated only when the file is (re)opened: no popup on discovery
+        win.style.display = 'flex';
         win.style.zIndex = ++highestZIndex; updateDarkWebTaskbar();
     };
     icon.onclick = open;

@@ -138,6 +138,7 @@ const GameSave = (() => {
         const payload = { v: 5, story: encodeCompact() };
         if (window.FieldSave) payload.field = FieldSave.exportProgress();
         if (window.AuthorRoute) payload.author = AuthorRoute.exportProgress();
+        if (window.Classified) payload.classified = Classified.exportProgress();   // additive layer: older codes simply lack it
         const bytes = [5, ...new TextEncoder().encode(JSON.stringify(payload))];
         bytes.push(checksum(bytes));
         let bin = '';
@@ -229,6 +230,7 @@ const GameSave = (() => {
                     window.FieldCore?.disconnect();
                 }
                 if (window.AuthorRoute && Object.hasOwn(bundle.payload, 'author')) AuthorRoute.importProgress(bundle.payload.author);
+                if (window.Classified && Object.hasOwn(bundle.payload, 'classified')) Classified.importProgress(bundle.payload.classified);
             }
             state = s;
             persist();
@@ -238,6 +240,7 @@ const GameSave = (() => {
             // Explicit record deletion resets every layer. Legacy import preserves absent layers.
             window.FieldSave?.reset();
             window.AuthorRoute?.reset();
+            window.Classified?.reset();
             state = blank();
             persist();
         }
