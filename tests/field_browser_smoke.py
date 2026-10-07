@@ -17,7 +17,7 @@ def run():
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH', '/usr/bin/chromium'),
                                     headless=True, args=['--no-sandbox'])
-        context = browser.new_context(viewport={'width': 1280, 'height': 900})
+        context = browser.new_context(viewport={'width': 1280, 'height': 900}, bypass_csp=True)  # wait_for_function needs eval; the page CSP forbids it
         page = context.new_page()
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))

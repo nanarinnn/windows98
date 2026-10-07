@@ -2,6 +2,84 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-08 — 1~6화 수칙문서를 현장 지침서 형태로 정리
+
+- 목적: 사용자 요청 "원문을 그대로 파싱한 느낌이라 진짜 지침서처럼, 요약하되 게임에 필요한 문구는 남기고 참고용만 남겨 달라". 범위는 사용자 선택에 따라 reviewed 원문이 있는 1~6화(7~10화는 변경 없음).
+- 변경 파일: `1화.txt`~`6화.txt`, `index.html`(Story 문서 창 6개를 같은 텍스트로 동기화), `tests/ep02`~`ep06_browser_smoke.py`, `PROJECT_CONTEXT.md`, 메모리 노트.
+- 방식: 문서 번호·작성/부착 정보·`[0] 개요 / 현황`·`[1] 기본 수칙`·`[2] 확인된 비정상 상황 및 대응 지침`·`[!] 최종 경고`의 공통 골격은 유지. 배경 서술은 줄이고(예: 3화 본부 조치, 5화 2021년 사고/필수 사항, 6화 버스 사고) 규칙과 상황은 `징후/대응/금지/주의/결과/해제` 라벨의 짧은 항목으로 재구성했다. 게임 규칙 문구와 Story 인용문은 원문 문장 그대로 유지(`[문장 일부 삭제]`, `잠든 환자는 야간, 어...`, 5화 상황 A 삭제 표기, 91번 문장, 6화 `보고 전, 단 한 번이라도…` 포함). 새 사실은 추가하지 않았다.
+- 1화: 이미 지침서 형태라 내용 변경 없이 항목 구조만 정리했다. 최종 경고의 구판 문장을 reviewed 원문(`구판 문서 발견 시 즉시 관리소에 반납하십시오. 구판의 수칙을 따르지 마시기 바랍니다.`)에 맞췄고 `MESSENGER_GENERIC`의 1화 인용문과 일치한다(기존에는 불일치).
+- 검증: `CLUES`·`MESSENGER_GENERIC`의 1~6화 인용문이 모두 해당 문서에 그대로 있음을 확인했고(누락 0), 2~6화 테스트의 `reviewed 전체 문장 포함` 검사를 `핵심 문구 + Story 인용문` 검사로 바꿔(축약으로 사라진 배경 문구 마커는 목록에서 제외) 전체 회귀(ep06~ep02, field, author, record_reset, save_progress, darkweb_ui)가 PASS했다. Story window == `N화.txt` single source 검사는 그대로다.
+- 한계: 규칙·상황 문구는 게임/Story가 의존하므로 요약 폭이 크지 않다(문서 크기 약 5~15% 감소). 더 줄이려면 어떤 규칙 문장을 의역해도 되는지 사용자 결정이 필요하다. Field 로직·영상·저장은 변경하지 않았다.
+- Git: 커밋/푸시 안 함.
+
+## 2026-10-08 — Field EP06 「청림고등학교 2학년 3반 17번」 구현 (담임교사 일상 유지 + 절차 대응)
+
+- 목적: 사용자 지시로 EP06 Field Game 구현. 핵심 개념은 "담임교사 일상 유지 + 절차 대응 시뮬레이션"(이상현상이 발생해도 교사는 평소와 같은 행동을 계속해야 한다). canon 순서는 REVIEWED TRANSCRIPT → `6화.txt` → Story → Field Data → Gameplay → UI → Tests → 문서.
+- transcript 반영: 사용자 확정본 `D:\YUYEON\windows98\text_original_etc\EP06_청림고등학교_2학년_3반_17번_reviewed.txt`를 `docs/transcripts/reviewed/EP06_청림고등학교_2학년_3반_17번.txt`로 바이트 동일 복사(`cmp`로 확인). `docs/transcripts/README.md`에 EP06 절 추가. RAW 원본은 제공되지 않았다.
+- `6화.txt` 교체: 이전 판은 transcript와 충돌(`학급관리-2021-05-20`, 교무행정실, 2025년 개정/시행 일자, 책상 유리 하단, 열람 금지, 옛 상황 A~D)해 전면 교체했다. 새 판은 transcript 문장을 그대로 쓴 공통 골격(문서 번호 `2021-05-20`, 부착 위치 `청림고등학교 교무실. 2학년 3반 담임선생 전용 지정석`, `[0] 개요 / 현황`, `[1] 기본 수칙` 규칙 1~2, `[2]` ■ 상황 A~E(원문 순서), `[!] 최종 경고`)이다. 프롬프트 예시의 `[0] 개요 및 현황`·`[1] 기본 담임 업무 수칙` 대신 EP02~EP05의 공통 제목을 썼다. `보고 전, 단 한 번이라도 17번으로 다른 학생을 호명한 경우`는 원문 그대로이며 `그 전`/`보고 후`/`배정 전`으로 바꾸지 않았다. 학교 주소·교장 이름·박예림 생년월일·정확한 날짜·SNS-0017 제조 정보·학급 인원은 만들지 않았다.
+- Story 연쇄 수정: `index.html`의 EP6 문서 창 textarea를 `6화.txt`와 동일하게 교체, 라벨 `청림고 2-3반 17번`→`청림고등학교 2학년 3반 17번`, `story-data.js`(`EPISODE_TITLES[6]`, `EPISODE_DOCS[6]`=`2021-05-20`, 단서 `c06-yerim` 인용을 원문 표기로; 나머지 단서 인용은 원문에 그대로 있어 유지).
+- Field data/gameplay/UI(새 파일): `field/ep06/ep06-data.js`, `ep06.js`, `ep06-ui.js`, `tests/ep06_browser_smoke.py`. 변경: `field/field-save.js`(진행 중 스냅샷 대상에 `EP06` 추가), `field/field.css`(EP06 섹션), `index.html`(스크립트 3개).
+- 핵심 구현: 교실 하나가 인터페이스(칠판·스피커·시계·교실 문·교탁·학생 좌석·17번 자리가 클릭하는 사물, 출석부는 조회 카드, 교탁 서랍에 SNS-0017/버튼/내선 전화). 일과 압축: 교실 준비 → 조회(출석 ritual) → 수업(판서) → 쉬는 시간 → 영어 듣기 평가 → 오후 수업 → 방과 후 조례 → 종료. 출석: 17번은 항상 박예림, 대답 여부와 무관하게 결석 복창, 고개를 들면(다른 사물 클릭) 실패, 출석 처리는 canon 실패. 17번 자리: 먼지는 닦아야 하고(조례 종료 시 확인), 조례에서 바다 냄새면 SNS-0017, 바닷물·해조류면 모든 학생을 내보낸 뒤 0050-0200. A(전원 응시: 17번 자리 응시·한쪽씩 번갈아 눈 감기·무응답·무이동·물 차오름·45초 뒤 구조), B(17번 배정: 보고→임시 번호, 보고 전 호명→20초 안에 격리실 이동 아니면 canon 실패, 격리실 문 열기 금지), C(젖은 흔적 간접 관찰→교탁 버튼→학생안전부 안내), D(듣기 평가 이상음: 잡담 금지 발언·중단/스피커 끄기 금지·종료 후 SNS-0017 두 번), E(문 밖 목소리: 열면 의미 변경·기록 중단, 판서 지속, 박예림이 스스로 여는 건 실패 아님). NORMALITY: E 중 판서가 25초 멈추면 `ROUTINE_BROKEN`.
+- UI 정답 비노출: HUD는 일과 라벨/장소/진행 중뿐, 이상 이름·내부 flag 없음, 시작 행동은 `조회를 시작한다` 하나, 수업 중에는 버튼이 없고, 결석/출석 선택·눈 감기·대답/움직임·이상음 대응·격리 이동 같은 상황 행동은 그 순간에만 등장, 교탁 서랍은 사물 목록이며 사용 시점을 알려 주지 않는다.
+- Save/호환: 기존 키 3개와 Save Code v5/v4 의미 그대로. EP06 진행 중 스냅샷(`progress.EP06`)은 reload 후 "이어서 파견"으로 복원, v5 내보내기에 포함, 손상 스냅샷 무시. EP06 clear → Field EP07 해금만.
+- AUTHOR: generic hook만(`onEpisodeStart('EP06')`, `onMajorEvent('EP06', id)`, `onEpisodeClear('EP06')`), 콘텐츠 없음. CLASSIFIED/H01-H10/11번째 사건 미구현.
+- 영상: 새 asset 없이 `movies/ep6_*.mp4` 5개를 실제 프레임으로 확인해 재사용(빈 교실/출석부/모두가 같은 쪽을 보는 교실/바닥에 퍼지는 물/불투명 유리문 너머의 형체).
+- 테스트 변경: `tests/ep05_browser_smoke.py`(EP05 clear 후 EP06이 `파견 가능`).
+- 검증(실행함): `tests/ep06_browser_smoke.py` ALL PASS(규칙 문서·해금·교실 UI 비노출·17번 자리·출석 ritual·A·B·E·C·D·조례·전체 일과·저장 복원/v5/손상 스냅샷). 회귀 테스트 전체 실행 결과는 아래 최종 확인 참고. 직접 플레이: 실제 클릭으로 교실 준비→출석부→A/B/C/D/E→조례를 msedge 스크린샷으로 확인하고 정답 버튼 상시 노출 여부를 점검했다(수업 중 버튼 0개). 완전 플레이 봇 300회: 100% clear, soft-lock 0. 못 한 것: 사람이 처음부터 끝까지 실제 속도로 플레이한 시간 측정(목표 10~15분), 소리.
+- 보존: 기존 Story(Darkweb → 사건 파일/CCTV/docs → EP09 스마트폰 → J → 블루스크린 → LOOP 02), `GameSave`/`GameProgress`, EP01~EP05 Field 로직 변경 없음. Story EP6 CCTV 미니게임(app.js)은 로직·문구를 손대지 않았다.
+- Git: 커밋/푸시 안 함(개발 서버 `http://localhost:3000`에만 반영, CLAUDE.md 규칙). commit hash 없음.
+- 미해결: ① Story EP6 CCTV 미니게임이 옛 수칙 구성을 그대로 사용 — 별도 결정 필요. ② transcript가 결과를 말하지 않는 지점(고개를 듦·복창 생략, A 중 시선/눈/대답/이동, 격리실 문, E에서 직접 문을 연 뒤, 수업 중단, C 미완료, D 중단·경고 생략, 조례 처리, 17번 자리 방치, 격리 종료 방식)은 system failure/조정값. ③ 출석부는 15~19번만, 판서 횟수·시간표·마스킹 이름·확률은 implementation 선택. ④ 사람 플레이 시간 미측정.
+- 다음: 사용자 직접 플레이로 일과 길이/난이도 확인 후 조정, Story EP6 CCTV 정리 여부 결정, EP07 구현(`reviewed` 자료 필요).
+
+## 2026-10-07 — Field EP05 「애기소」 구현 (10분 제한 구조작전 + 접촉/오염 판별)
+
+- 목적: 사용자 지시로 EP05 Field Game 구현. 핵심 개념은 "10분 제한 구조작전 + 접촉/오염 판별". canon 순서는 REVIEWED TRANSCRIPT → `5화.txt` → Story → Field Data → Gameplay → UI → Tests → 문서.
+- transcript 반영: 사용자 확정본 `D:\YUYEON\windows98\text_original_etc\EP05_애기소_reviewed.txt`를 `docs/transcripts/reviewed/EP05_애기소.txt`로 바이트 동일 복사(`cmp`로 확인). `docs/transcripts/README.md`에 EP05 절 추가. RAW 원본은 제공되지 않았다.
+- `5화.txt` 교체: 이전 판은 transcript와 충돌(`아기소`, `통제구역-2024-06-02`, 개정/시행 일자/부착 위치/열람 제한, 상황 A 최면성 침수 충동, 상황 D 10분 도달, `수심 수십 cm`, `5m`, `철책`, `스프레이`)해 전면 교체했다. 새 판은 transcript 문장을 그대로 쓴 공통 골격(문서 번호 `2024-06-02`, `[0] 개요 / 현황`, `[1] 기본 수칙` 규칙 1~4, `[2]` `애기소 현장 투입팀 구조 매뉴얼.` + `■ 상황 A: 해당 항목은 삭제되었습니다.` + B~F, `[!] 최종 경고`)이다. 프롬프트 예시의 `[0] 개요 및 현황`·`[1] 기본 접근 / 구조 수칙` 대신 EP02~EP04의 공통 제목을 썼다. 상황 A는 복원/추측하지 않았고 상황 F 문장은 원문 그대로다. 시행 일자·통제 등급·좌표·시설명·개체 91번 설명은 만들지 않았다.
+- Story 연쇄 수정: `index.html`의 EP5 문서 창 textarea를 `5화.txt`와 동일하게 교체, 라벨/Story CCTV 표기 `아기소`→`애기소`(`살둔 계곡 애기소`→`살둔계곡 애기소`), `story-data.js`(`EPISODE_TITLES[5]`=`살둔계곡 애기소`, `EPISODE_DOCS[5]`=`2024-06-02`, 단서 `c05-annual` 인용을 원문 표기로), `terminal.js` 검색 정규식에 `애기소` 추가(`아기소`도 유지).
+- Field data/gameplay/UI(새 파일): `field/ep05/ep05-data.js`, `ep05.js`, `ep05-ui.js`, `tests/ep05_browser_smoke.py`. 변경: `field/field-save.js`(진행 중 스냅샷 대상에 `EP05` 추가), `field/field.css`(EP05 섹션), `index.html`(스크립트 3개).
+- 핵심 구현: 브리핑(타이머 미작동) → 각성제 주입(없이 진입하면 시스템 실패) → 반경 진입 시 정확히 600초(실시간) 타이머 시작, 수칙/기록 열람 중에도 멈추지 않음, 0:00 = canon 실패 → 지역 이동/살피기/수색/질문이 모두 실시간 소요 → 대상자 확보 → 판별 → 경계 이탈. 접촉(옷/신발 포함)은 상태로 관리하며 저림→부종→전신 팽창→사망을 압축 구현, 문지르기/씻기는 가속, 부종 후 압박/얼음찜질은 즉발 파열, 접촉 보고 시 작전 종료(치료법 없음). B(30시간 생존자: 회복 아님→비상 프로토콜 A 완전 격리), C(각성제 후 울음/웃음→빨간 알약), D(통신 장비 파일: 재생 금지, EMP→밀폐→본부 보고 순서), E(체류 시간→저림→접촉 전 후송/접촉자 보고, 초과 체류=접촉자, 부은 곳 묶어 달라는 요구 거절), F(반사 이상→확보 개체 91번 검은 것을 반복 방사해 완전 제거). 상황 A는 이벤트 없음. 충동은 vignette/문구/선택지 꼬리표로만 표현.
+- 안전: D의 위험한 소리는 어떤 형태로도 재생하지 않는다(audio asset·AudioContext 없음, `재생 차단` 파형 텍스트만; 테스트가 소스를 검사).
+- UI 정답 비노출: HUD는 타이머/반경/상태/TEAM 3뿐, 장비 목록은 점검 후 이름만, 빨간 알약·EMP·밀폐·보고·91번·압박·얼음·판단 버튼은 해당 상황 관찰 후에만 등장, SAFE/INFECTED 라벨 없음, 대상자 종류·젖은 길 쪽 비표시, 접촉 대응 버튼은 정답을 가운데에 둔 순서.
+- Save/호환: 기존 키 3개와 Save Code v5/v4 의미 그대로. EP05 진행 중 스냅샷(`progress.EP05`)은 reload 후 "이어서 파견"으로 복원되며 복원 후에도 타이머가 줄어든다. v5 내보내기에 포함, 손상 스냅샷 무시. EP05 clear → Field EP06 해금만.
+- AUTHOR: generic hook만(`onEpisodeStart('EP05')`, `onMajorEvent('EP05', id)`, `onEpisodeClear('EP05')`), 콘텐츠 없음. CLASSIFIED/H01-H10/11번째 사건 미구현.
+- 영상: 새 asset 없이 `movies/ep5_*.mp4` 5개를 실제 프레임으로 확인해 재사용(계곡/흰 방호복 3인/웅덩이와 손/어두운 숲의 실루엣/웅덩이 표면).
+- 테스트 변경: `tests/ep04_browser_smoke.py`(EP04 clear 후 EP05가 `파견 가능`), `tests/ep02_browser_smoke.py`(개발 모드에서 EP05가 `파견 가능`).
+- 검증(실행함): `tests/ep05_browser_smoke.py` ALL PASS(규칙 문서·해금·브리핑·정확히 10분 타이머·기본 이동·접촉(진행/문지르기/씻기/압박/얼음/보고/대상자 접촉)·A 삭제·B·C·D·E·규칙 4·F·UI 비노출·전체 플레이·저장 복원/v5/손상 스냅샷). 회귀: ep04, ep03, ep02, field, author, record_reset, save_progress, darkweb_ui 모두 PASS. 직접 플레이: 실제 클릭으로 브리핑→주입→진입→수색→확보→판별→이탈과 접촉/C/D/F 화면을 msedge 스크린샷으로 확인하고 정답 노출 여부를 점검했다. 완전 플레이 봇 300회: 100% clear, soft-lock 0, 남은 시간 중앙값 약 288초. 못 한 것: 사람이 처음부터 끝까지 실제 속도로 플레이한 시간 측정(목표 10~15분), 소리.
+- 보존: 기존 Story(Darkweb → 사건 파일/CCTV/docs → EP09 스마트폰 → J → 블루스크린 → LOOP 02), `GameSave`/`GameProgress`, EP01~EP04 Field 로직 변경 없음. Story EP5 CCTV 미니게임(app.js)은 로직·문구를 손대지 않았다.
+- Git: 커밋/푸시 안 함(개발 서버 `http://localhost:3000`에만 반영, CLAUDE.md 규칙). commit hash 없음.
+- 미해결: ① Story EP5 CCTV 미니게임이 삭제된 상황 A(최면성 침수 충동)와 옛 상황 D 등 옛 규칙을 그대로 사용 — 별도 결정 필요. ② transcript가 결과를 말하지 않는 지점(각성제 없이 진입, 대상자 없이 이탈, 절차를 건너뛴 판단, 오판 결과, D 순서 위반/미격리, 접촉 미보고 이탈, 접촉 보고 후 작전 종료, 대상자 접촉 실패)은 system failure/조정값. ③ 지역·이동 시간·진행 압축 비율·젖은 길·진술 문구·부은 곳 요구는 implementation 선택. ④ 사람 플레이 시간 미측정.
+- 다음: 사용자 직접 플레이로 10분 타이머 체감/난이도 확인 후 조정, Story EP5 CCTV 정리 여부 결정, EP06 구현(`reviewed` 자료 필요).
+
+## 2026-10-07 — Field EP04 「불 꺼진 13층 엘리베이터」 구현 (거울 관찰 퍼즐)
+
+- 목적: 사용자 지시로 EP04 Field Game 구현. 핵심 개념은 "거울 관찰 퍼즐"(확인하지 않으면 내려갈 수 없지만 확인할수록 그녀가 가까워진다). canon 순서는 REVIEWED TRANSCRIPT → `4화.txt` → Story → Field Data → Gameplay → UI → Tests → 문서.
+- transcript 반영: 사용자 확정본 `D:\YUYEON\windows98\text_original_etc\EP04_엘리베이터_reviewed.txt`를 `docs/transcripts/reviewed/EP04_불_꺼진_13층_엘리베이터.txt`로 바이트 동일 복사(검증: `cmp`). `docs/transcripts/README.md`에 EP04 절 추가. RAW 원본은 제공되지 않았다.
+- `4화.txt` 교체: 이전 판은 transcript와 충돌(`승강기관리-2016-0135`, 오피스텔관리국, 시행 일자, 부착 위치, 열람 금지, 옛 A/B/C/D 구성, `내발로`)해 전면 교체했다. 새 판은 transcript 문장을 그대로 쓴 공통 골격(`[ 특별재난관리본부 ]` / 문서 번호 `2026-013호` / `[0] 개요 / 현황` / `[1] 기본 수칙` / `[2] 확인된 비정상 상황 및 대응 지침` ■ 상황 A~E / `[!] 최종 경고`)이다. 프롬프트 예시의 `[0] 개요 및 현황`·`[1] 기본 탈출 수칙` 대신 EP02/EP03에서 확립된 공통 제목을 썼다(전 에피소드 동일 구조 규칙). 시행 일자·부착 위치·보안 등급·담당 부서·주소·층수 범위는 만들지 않았다.
+- Story 연쇄 수정: `index.html`의 EP4 문서 창 textarea를 `4화.txt`와 동일하게 교체, 라벨 `불꺼진`→`불 꺼진`(index.html·app.js 주석/로그), `story-data.js`의 `EPISODE_DOCS[4]`=`2026-013호`(단서 인용 4건은 transcript에 그대로 있어 변경 없음). `terminal.js`/`notebook.js`는 점검 결과 수정 불필요.
+- Field data/gameplay/UI(새 파일): `field/ep04/ep04-data.js`, `ep04.js`, `ep04-ui.js`, `tests/ep04_browser_smoke.py`. 변경: `field/field-save.js`(진행 중 스냅샷 대상에 `EP04` 추가), `field/field.css`(EP04 섹션), `index.html`(스크립트 3개), `server.js`(`/favicon.ico` 204).
+- 핵심 구현: 정면 표시기 항상 13. 실제 층은 후면 거울 관찰에서만 확인(첫 관찰 20), 그녀의 쪽은 측면 거울에서만 확인(측면 관찰은 그녀를 움직이지 않음). 후면 관찰은 그녀를 반대 거울로 옮기고 한 걸음 접근시키며 조명·노이즈 단서가 강해진다. 그녀 좌측=위층 버튼/우측=아래층 버튼이 하강, 반대는 상승, 하강 폭 1~3 무작위, 1층은 반드시 정차하며 하차하면 clear·떠나면 실종. 상황 A~E는 transcript대로 구현(A 얼굴/층 확인 불가/횟수 차감/무작위 상승·하강, B 말 걸 때만 대응·거울 3회·귀·웅크림, C 남성 하차→다음 정차에서 문 열림 hold→방송 흐느낌 때 release, D 양쪽 그녀→반대쪽 촬영/가만히(+2걸음)/잘못된 거울 canon 실패/사진 확인 금지, E 이름·가족 목소리→마지막 확인 층 버튼 3초 hold/대답·스피커 쪽 보기·잘못된 버튼 실패).
+- 정답 비노출: HUD는 `13F/문 상태/휴대폰`뿐, 실제 층·그녀 쪽·거리·정답 방향·이벤트 이름·boolean 없음, 정답 버튼 강조 없음(버튼 점등은 무작위 가짜), 상황 행동은 관찰 후에만 등장. 로그는 현장 관찰 문장.
+- Save/호환: 기존 `yuyeon98.save.v1`/`yuyeon98.field.v1`/`yuyeon98.author.v1` 의미와 Save Code v5/v4 그대로. EP04 진행 중 스냅샷(`progress.EP04`)은 필드 키의 선택적 항목이며 reload 후 "이어서 파견"으로 복원, v5 내보내기에 포함, 손상된 스냅샷은 무시. 이전 세이브 코드/기록은 영향 없음. EP04 clear → Field EP05 해금만.
+- AUTHOR: generic hook만(`onEpisodeStart('EP04')`, `onMajorEvent('EP04', id)`, `onEpisodeClear('EP04')`), 콘텐츠 없음. CLASSIFIED/H01-H10/11번째 사건 미구현.
+- 영상: 새 asset 없이 `movies/ep4_*.mp4` 5개를 실제 프레임으로 확인해 용도에 맞게 재사용(복도/반복 거울 통로/그녀/거울 가득 얼굴/버튼 누르는 손).
+- 테스트 변경: `tests/ep03_browser_smoke.py`(EP03 clear 후 EP04가 `연결 준비 중`이 아니라 `파견 가능`), `tests/field_browser_smoke.py`·`author_browser_smoke.py`·`record_reset_smoke.py`(페이지 CSP가 Playwright `wait_for_function`의 문자열 평가를 막아 `bypass_csp=True` 컨텍스트 사용; 페이지 CSP 자체는 약화하지 않음).
+- 검증(실행함): `tests/ep04_browser_smoke.py` ALL PASS(규칙 문서·해금·UI 비노출·거울 루프·접근 단서·방향 규칙·1층 하차/실종·A·B·C·D·E·페이싱·진행/Story 불변/AUTHOR hook·저장 복원/v5/손상 스냅샷). 회귀: field, author, record_reset, save_progress, darkweb_ui, ep02, ep03 모두 PASS. 직접 플레이: 스크립트로 실제 클릭(거울·층 버튼·누른 채 유지)을 수행하며 msedge 스크린샷으로 시작/관찰/D/E/C hold/A 얼굴/B 발화/1층/clear 화면을 확인했고 정답이 노출되지 않음을 점검, 390px 모바일 레이아웃(가로 스크롤 없음) 확인. 완전 플레이 봇 300회: 97% clear, soft-lock 0, 평균 도착 8.1회·후면 관찰 8.8회(나머지 RECORD_LOST). 못 한 것: 사람이 처음부터 끝까지 실제 속도로 플레이한 시간 측정(목표 10~15분), 소리.
+- 보존: 기존 Story(Darkweb → 사건 파일/CCTV/docs → EP09 스마트폰 → J → 블루스크린 → LOOP 02), `GameSave`/`GameProgress`, EP01~EP03 Field 로직 변경 없음. Story EP4 CCTV 미니게임(app.js)은 로직·문구를 손대지 않았다.
+- Git: 커밋/푸시 안 함(개발 서버 `http://localhost:3000`에만 반영, CLAUDE.md 규칙). commit hash 없음.
+- 미해결: ① Story EP4 CCTV 미니게임이 옛 규칙·원문에 없는 사망 묘사를 사용(수칙문서와 불일치) — 별도 검토 필요. ② transcript가 결과를 말하지 않는 지점을 system failure/조정값으로 처리: 남은 횟수 0, 그녀가 완전히 접근한 뒤(`RECORD_LOST`), 잘못된 거울 두드림·B 절차 순서/시간 초과, C에서 버튼 미입력·조기 release, D 사진 확인, E 스피커 쪽 보기, 1층이 아닌 곳 하차, C가 B에서 이어지는 구조, 문 열림·사건 중 층 버튼 무반응. ③ 층 버튼 1~13/상승 상한 12/시작 11~12층 등 모든 수치는 조정값. ④ 사람 플레이 시간 미측정.
+- 다음: 사용자 직접 플레이로 난이도·시간 확인 후 조정, Story EP4 CCTV 정리 여부 결정, EP05 구현(`reviewed` 자료 필요).
+
+## 2026-10-07 — 개발서버 정적 노출 차단 및 보안 헤더 추가
+
+- 목적: 보안 점검에서 `express.static(__dirname)` 이 `.git`, `server.js`, `*.md`, `tests`, `docs`, `*.psd` 등 프로젝트 루트 전체를 노출하는 것을 확인해 수정 요청.
+- 변경 파일: `server.js`, `vercel.json`.
+- 핵심 구현: server.js 에 공개 허용 목록(루트의 html/css/js/mp4/png/jpg/txt 와 `field/`, `image/`, `movies/`)만 서빙, 점(.)으로 시작하는 경로·`server.js`·역슬래시·NUL·인코딩 우회 경로는 404, 확장자 있는 없는 파일은 SPA 폴백 대신 404, `x-powered-by` 제거. 보안 헤더(CSP, nosniff, X-Frame-Options DENY, Referrer-Policy)를 server.js 와 vercel.json 양쪽에 동일하게 추가하고 vercel.json 의 `Access-Control-Allow-Origin: *` 제거. CSP 는 app.js 의 인라인 onclick 때문에 script-src 에 `unsafe-inline` 유지, mona 폰트용으로 cdn.jsdelivr.net 허용.
+- 검증: `node --check server.js`, vercel.json JSON 파싱, curl 로 허용 경로(/, 정적 JS/CSS, field/image/movies, 루트 mp4/txt) 200 및 차단 경로(.git/config, %2e 인코딩, server.js, package.json, CLAUDE.md, node_modules, tests, docs, psd, 없는 파일, ..%2f) 404 확인. 브라우저 스모크 테스트와 CSP 콘솔 위반 확인은 실행하지 못함.
+- 보존: 게임 코드·Save 데이터·스토리 진행 변경 없음.
+- Git: 커밋/푸시 안 함(개발 서버에만 반영).
+- 미해결: 브라우저에서 폰트·영상·이미지 CSP 위반 여부 수동 확인 필요. `innerHTML` 사용처(app.js 약 60곳) 중 변수 삽입부 점검, 세이브 코드 변조 방지(체크섬은 손상 감지용)는 미착수.
+
 ## 2026-10-05 — 3화.txt 서식을 EP01/EP02 수칙문서와 통일
 
 - 사용자 지시: EP03 수칙문서 서식이 EP01/EP02와 맞지 않아 다시 확인해 작성. 문장은 reviewed transcript 그대로이며 내용·canon 변경 없음(서식만).

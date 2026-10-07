@@ -55,3 +55,79 @@
 #f2-train.f2-stopped { color:#ffcc00; }
 .f2-status { margin:0; font:11px/1.7 monospace; color:#00ff00; }
 @media (max-width:700px) { #fieldWindow { left:8px; top:35px; width:calc(100vw - 20px); height:calc(100dvh - 75px); max-height:calc(100dvh - 75px); } .field-grid { grid-template-columns:1fr; } .field-camera { height:200px; } .field-hud { font-size:11px; } }
+/* EP04 (elevator): the room is one fixed interface. Mirrors are the interactive surfaces; the panel sits beside them. */
+#f4-indicator { color:#ff3030; font-size:15px; text-shadow:0 0 4px #f00; }
+.f4-stage { display:grid; grid-template-columns:minmax(0, 1fr) 118px; gap:8px; }
+.f4-room { position:relative; height:318px; background:#000; border:1px solid #333; overflow:hidden; display:flex; flex-direction:column; }
+.f4-front { position:relative; height:62px; flex-shrink:0; background:#0b0b0b; border-bottom:2px solid #222; overflow:hidden; text-align:center; }
+.f4-front video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .4s; }
+.f4-doors-open .f4-front video { opacity:.8; }
+.f4-indicator { position:relative; z-index:2; display:inline-block; margin-top:8px; padding:1px 18px; font:bold 28px monospace; color:#ff3030; background:#120000; border:1px solid #600; text-shadow:0 0 6px #f00; }
+.f4-mirrors { flex:1; display:grid; grid-template-columns:1fr 1.7fr 1fr; gap:6px; padding:6px; min-height:0; }
+#fieldWindow .f4-mirror { position:relative; overflow:hidden; padding:0; margin:0; text-align:left; color:#9fd; border:2px solid #666; background:linear-gradient(135deg, #1b2326, #070a0b); box-shadow:inset 0 0 18px rgba(160,255,230,.12); }
+#fieldWindow .f4-mirror:hover { border-color:#bbb; }
+#fieldWindow .f4-mirror video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.16; transition:opacity .35s; transform:scaleX(var(--flip, 1)); }
+#fieldWindow .f4-mirror.observed video { opacity:.8; }
+#fieldWindow .f4-mirror.her video { transform:scale(var(--f4-near, 1)) scaleX(var(--flip, 1)); transform-origin:50% 100%; }
+.f4-label { position:absolute; top:4px; left:6px; z-index:2; font-size:10px; color:#888; }
+.f4-num { position:absolute; inset:0; z-index:2; display:grid; place-items:center; padding-bottom:22px; font:bold 64px monospace; color:#d8fff0; text-shadow:0 0 10px #4fa, 0 0 2px #000; }
+.f4-cnt { position:absolute; left:0; right:0; bottom:26px; z-index:2; text-align:center; font-size:11px; color:#9fd; text-shadow:0 0 3px #000; }
+.f4-note { position:absolute; left:0; right:0; bottom:0; z-index:2; padding:3px 6px; font-size:11px; color:#d8ffd8; background:rgba(0,0,0,.6); min-height:1px; }
+.f4-note:empty { display:none; }
+.f4-shade { position:absolute; inset:0; background:#000; pointer-events:none; z-index:5; transition:opacity .6s; }
+.f4-noise { position:absolute; inset:0; pointer-events:none; z-index:6; mix-blend-mode:screen; background:repeating-linear-gradient(0deg, rgba(255,255,255,.1) 0 1px, transparent 1px 3px); animation:f4-noise .25s steps(2) infinite; }
+@keyframes f4-noise { 0% { background-position:0 0; } 100% { background-position:0 3px; } }
+.f4-moving .f4-mirrors { animation:f4-shake .18s linear infinite; }
+@keyframes f4-shake { 0% { transform:translateY(0); } 50% { transform:translateY(1px); } 100% { transform:translateY(0); } }
+.f4-panel { display:flex; flex-direction:column; gap:6px; background:#0c0c0c; border:1px solid #333; padding:6px; }
+.f4-floors { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+#fieldWindow .f4-floor { padding:6px 0; text-align:center; font-weight:bold; font-size:12px; color:#bbb; border-color:#666; }
+#fieldWindow .f4-floor.lit { color:#ffd24a; border-color:#ffd24a; background:#2a2000; box-shadow:0 0 6px rgba(255,210,74,.5); }
+.f4-flicker .f4-floor { animation:f4-blink .5s steps(2) infinite; }
+@keyframes f4-blink { 0%, 100% { opacity:1; } 50% { opacity:.2; } }
+#fieldWindow .f4-open { padding:6px 0; text-align:center; touch-action:none; }
+#f4-press { display:none; width:100%; height:56px; object-fit:cover; border:1px solid #333; }
+.f4-pressing #f4-press { display:block; }
+#f4-door, #f4-phone { font-size:11px; font-weight:normal; color:#00ff00; }
+@media (max-width:700px) { .f4-stage { grid-template-columns:1fr; } .f4-room { height:280px; } .f4-floors { grid-template-columns:repeat(5, 1fr); } .f4-num { font-size:48px; } }
+/* EP05 (forest extraction): shared scene classes plus the surface-reflection overlay and the urge vignette. */
+#f5-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.85; }
+.f2-scene #f5-text { background:linear-gradient(rgba(0,0,0,.72), rgba(0,0,0,.4)); text-shadow:1px 1px #000; position:absolute; left:0; right:0; bottom:0; top:34px; padding:12px; color:#00ff00; font-size:12px; line-height:1.6; white-space:pre-wrap; overflow:auto; }
+#f5-timer { font-size:16px; color:#ffcc00; letter-spacing:1px; }
+#f5-timer.f5-low { color:#ff3030; animation:blink 1s infinite; }
+#f5-radius, #f5-status, #f5-team { font-size:11px; font-weight:normal; color:#00ff00; }
+.f5-vignette { position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at center, rgba(0,0,0,0) 35%, rgba(0,0,0,.9) 100%); opacity:0; transition:opacity 1.2s; z-index:4; }
+#f5-surface { position:absolute; right:14px; top:40px; width:130px; padding:8px; background:rgba(0,0,0,.75); border:1px solid #333; text-align:center; z-index:3; font-size:11px; color:#aaa; }
+#f5-surface[hidden], #f5-wave[hidden] { display:none; }
+.f5-refl { display:grid; gap:3px; justify-items:center; margin-bottom:6px; animation:f5-sway 1.1s steps(3) infinite; }
+.f5-band { display:block; width:54px; height:16px; background:#789; opacity:.85; }
+.f5-band:nth-child(1) { width:24px; height:24px; border-radius:50%; }
+.f5-band.covered { background:#000; opacity:1; box-shadow:0 0 0 1px #000; }
+@keyframes f5-sway { 0% { transform:translateX(-6px); } 33% { transform:translateX(5px) skewX(4deg); } 66% { transform:translateX(-2px); } 100% { transform:translateX(7px) skewX(-4deg); } }
+#f5-wave { position:absolute; left:14px; right:14px; bottom:14px; z-index:5; padding:6px 10px; background:#000; border:1px solid #ff0000; color:#ff3030; font-size:12px; text-align:center; }
+/* EP06 (classroom): the room is the interface; every object is a clickable surface. */
+.f6-room { height:330px; background:#101214; }
+#f6-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.6; transition:filter 1s; transform:scale(1.3); transform-origin:50% 0; }
+.f6-dark #f6-video { filter:brightness(.55) contrast(1.2); opacity:.85; }
+.f6-iso #f6-video { filter:brightness(.25); }
+#fieldWindow .f6-obj { position:absolute; z-index:2; padding:2px 6px; font-size:11px; color:#c8d8c8; background:rgba(0,0,0,.45); border:1px solid #556; }
+#fieldWindow .f6-obj:hover { border-color:#ff6666; color:#fff; }
+#f6-board { left:22%; top:34px; width:46%; height:50px; }
+#f6-speaker { left:8px; top:34px; width:64px; height:26px; }
+#f6-clock { right:8px; top:34px; width:54px; height:26px; }
+#f6-door { right:8px; top:78px; width:50px; height:120px; }
+#f6-podium { left:12%; top:108px; width:96px; height:52px; }
+.f6-seats { position:absolute; left:8%; right:76px; bottom:14px; display:flex; gap:8px; z-index:2; }
+#fieldWindow .f6-seat { position:static; flex:1; height:44px; font-size:13px; font-weight:bold; }
+#fieldWindow .f6-seat17 { border-color:#8ab; }
+#fieldWindow .f6-seat17.f6-occupied { background:rgba(120,140,170,.45); }
+#f6-text { position:absolute; left:8px; right:76px; bottom:66px; z-index:2; padding:4px 8px; font-size:11px; color:#d8ffd8; background:rgba(0,0,0,.6); }
+#f6-text:empty { display:none; }
+#f6-water { position:absolute; left:0; right:0; bottom:0; height:0; background:rgba(70,150,180,.5); z-index:3; pointer-events:none; transition:height 1s linear; }
+#f6-card { position:absolute; left:26%; top:70px; width:46%; z-index:4; padding:8px; background:rgba(0,0,0,.9); border:1px solid #ff0000; font-size:11px; }
+#f6-card[hidden] { display:none; }
+#f6-card b { display:block; color:#ff0000; margin-bottom:4px; }
+#f6-card button { display:block; width:100%; margin-bottom:4px; text-align:left; }
+#f6-roll { margin:0 0 6px; font:12px/1.5 monospace; color:#00ff00; white-space:pre; }
+.f6-iso #f6-board, .f6-iso #f6-speaker, .f6-iso #f6-clock, .f6-iso #f6-podium, .f6-iso .f6-seats { display:none; }
+@media (max-width:700px) { #f6-card { left:6%; width:88%; } .f6-room { height:360px; } }

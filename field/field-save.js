@@ -6,8 +6,8 @@ window.FieldSave = (() => {
     // View-only override: nothing is written to progress/Save Code, and production hosts never enable it.
     // Add ?devunlock=0 to the URL to test the real locks (the smoke tests do).
     const devUnlock = ['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).get('devunlock') !== '0';
-    // Optional in-progress snapshots (EP03 only). Bounded plain JSON; absent unless a run is mid-way, so older saves/Save Codes stay valid.
-    const PROGRESS_IDS = ['EP03'];
+    // Optional in-progress snapshots (EP03-EP06). Bounded plain JSON; absent unless a run is mid-way, so older saves/Save Codes stay valid.
+    const PROGRESS_IDS = ['EP03', 'EP04', 'EP05', 'EP06'];
     function cleanJSON(value, depth) {
         if (typeof value === 'number') return Number.isFinite(value) ? value : null;
         if (typeof value === 'boolean') return value;

@@ -2529,7 +2529,7 @@ function triggerGameClearEP3() {
 }
 
 // ==========================================
-// CCTV Gaming Engine (EP.04 불꺼진 13층 엘리베이터)
+// CCTV Gaming Engine (EP.04 불 꺼진 13층 엘리베이터)
 // ==========================================
 let cctvFloorEP4 = 13;
 let cctvOpsEP4 = 20;
@@ -2592,7 +2592,7 @@ function startCCTVGameEP4() {
     if (logsContainer) {
         logsContainer.innerHTML = '<div style="color: #888;">[SYSTEM] 신도림 만수 오피스텔 승강기 감시 시스템 v4.01 로드 완료...</div>';
     }
-    addCCTVLogEP4("[00:13:00] 불꺼진 13층 엘리베이터 편입 감지. 사방 거울 통로 형성. 남은 조작 횟수: 20회.");
+    addCCTVLogEP4("[00:13:00] 불 꺼진 13층 엘리베이터 편입 감지. 사방 거울 통로 형성. 남은 조작 횟수: 20회.");
     
     playCCTVVideoEP4('movies/ep4_idle.mp4', '[FEED: CAM-REAR ELEVATOR_MIRROR_IDLE]');
     clearCCTVChoicesEP4();
@@ -2938,7 +2938,7 @@ function triggerGameClearEP4() {
     openDarkWebAlert("🏆 [무사 탈출 성공]<br>축하합니다! 신도림 만수 오피스텔 승강기에서 1층 로비로 정상 탈출하셨습니다.");
 }
 
-// CCTV Gaming Engine (EP.05 강원도 홍천군 살둔 계곡 아기소 반경 500m 원격 관제 콘솔)
+// CCTV Gaming Engine (EP.05 강원도 홍천군 살둔계곡 애기소 반경 500m 원격 관제 콘솔)
 // ==========================================
 let ep5Stage = 0;
 let cctvTimerEP5 = null;
@@ -3000,7 +3000,7 @@ function startCCTVGameEP5() {
     
     const logsContainer = document.getElementById('cctv-logs-ep5');
     if (logsContainer) {
-        logsContainer.innerHTML = '<div style="color: #888;">[SYSTEM] 살둔 계곡 아기소 반경 500m 원격 관제 콘솔 로드 완료...</div>';
+        logsContainer.innerHTML = '<div style="color: #888;">[SYSTEM] 살둔계곡 애기소 반경 500m 원격 관제 콘솔 로드 완료...</div>';
     }
     addCCTVLogEP5("[00:00:00] 통제 구역 500m 라인 진입 확인. 각성제 투여 완료. 제한 시간 10분 카운트다운 시작.");
     
@@ -3164,7 +3164,7 @@ function triggerEventA_EP5() {
     cctvGameStateEP5 = 'event_A';
     cctvTimeStrEP5 = "LIMIT: 03:20:15 / 10:00:00";
     updateCCTVHUDEP5();
-    setCAMTitleEP5("CH 02: CAM-POND [아기소 수면 전경] - 상황 A (최면성 침수 충동)");
+    setCAMTitleEP5("CH 02: CAM-POND [애기소 수면 전경] - 상황 A (최면성 침수 충동)");
     
     playCCTVVideoEP5('movies/ep5_event_water.mp4', '[FEED: CAM-POND WATER_HYPNOSIS]');
     addCCTVLogEP5("[03:20:15] 수면에서 맑은 물소리가 울리며 급격한 갈증과 함께 물에 뛰어들고 싶다는 충동이 발생합니다.", true);
@@ -3379,7 +3379,7 @@ function triggerGameClearEP5() {
         `;
     }
     
-    openDarkWebAlert("🏆 [살둔 계곡 무사 생환]<br>축하합니다! 500m 경계 철책을 10분 내에 돌파하여 살둔 계곡 아기소 통제 구역에서 무사히 생환하셨습니다!");
+    openDarkWebAlert("🏆 [살둔 계곡 무사 생환]<br>축하합니다! 500m 경계 철책을 10분 내에 돌파하여 살둔계곡 애기소 통제 구역에서 무사히 생환하셨습니다!");
 }
 
 // ==========================================
@@ -5857,7 +5857,7 @@ const darkWebWindowsList = [
     { id: 'darkwebReportWindowEP4', title: '📄 엘리베이터_수칙.txt' },
     { id: 'darkwebCCTVWindowEP4', title: '🖥️ 승강기_CCTV' },
     { id: 'darkwebFolderWindowEP5', title: '📁 [EP.05] 탐색기' },
-    { id: 'darkwebReportWindowEP5', title: '📄 아기소_수칙.txt' },
+    { id: 'darkwebReportWindowEP5', title: '📄 애기소_수칙.txt' },
     { id: 'darkwebCCTVWindowEP5', title: '🖥️ 살둔초소_CCTV' },
     { id: 'darkwebFolderWindowEP6', title: '📁 [EP.06] 탐색기' },
     { id: 'darkwebReportWindowEP6', title: '📄 청림고_수칙.txt' },

@@ -11,7 +11,7 @@ def run():
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH', '/usr/bin/chromium'),
                                     headless=True, args=['--no-sandbox'])
-        context = browser.new_context(); page = context.new_page(); errors = []
+        context = browser.new_context(bypass_csp=True); page = context.new_page(); errors = []  # bypass_csp: wait_for_function needs eval, the page CSP forbids it
         page.on('pageerror', lambda e: errors.append(str(e)))
         page.on('dialog', lambda dialog: dialog.accept())
         # Inspect the icon synchronously at DOM insertion, before state-dependent update.
