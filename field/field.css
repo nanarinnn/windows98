@@ -131,3 +131,11 @@
 #f6-roll { margin:0 0 6px; font:12px/1.5 monospace; color:#00ff00; white-space:pre; }
 .f6-iso #f6-board, .f6-iso #f6-speaker, .f6-iso #f6-clock, .f6-iso #f6-podium, .f6-iso .f6-seats { display:none; }
 @media (max-width:700px) { #f6-card { left:6%; width:88%; } .f6-room { height:360px; } }
+/* EP07 (convenience store): counter duty; POS/customer text overlays the scene, right panel holds HQ/disposal/app. */
+.f7-store { height:220px; background:#0d1210; }
+#f7-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.75; }
+#f7-text { position:absolute; left:0; right:0; top:0; z-index:2; padding:6px 10px; font-size:12px; color:#d8ffd8; background:rgba(0,0,0,.55); }
+#f7-pos { position:absolute; left:0; right:0; bottom:0; z-index:2; padding:6px 10px; font-size:12px; color:#ffcc00; background:rgba(0,0,0,.75); font-family:monospace; }
+#f7-pos[hidden] { display:none; }
+#f7-hq button, #f7-disposal button, #f7-app button { display:block; width:100%; margin-bottom:6px; text-align:left; }
+#f7-disposal p, #f7-app p { margin:4px 0 10px; }

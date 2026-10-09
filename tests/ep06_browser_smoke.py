@@ -288,7 +288,7 @@ def run():
         click('f6-seat-17'); click('f6-dismiss'); click('f6-podium'); click('f6-item-hq'); click('f6-end-closing')
         s = state(); assert s['status'] == 'cleared', (s['status'], s.get('reason'), data())
         assert page.evaluate("FieldSave.get().cleared.includes('EP06') && FieldSave.unlocked('EP07')") and page.evaluate("FieldSave.get().records.EP06.elapsed") > 0
-        click('field-list'); assert page.locator('#field-dispatch-EP07').inner_text() == '연결 준비 중' and page.locator('#field-dispatch-EP07').is_disabled()
+        click('field-list'); assert page.locator('#field-dispatch-EP07').inner_text() == '파견 가능' and not page.locator('#field-dispatch-EP07').is_disabled()  # EP07 is implemented now
         assert page.evaluate(f"localStorage.getItem('{STORY_KEY}')") == story_before, 'Story save must be untouched'
         assert page.evaluate("!FieldSave.get().cleared.includes('EP07') && AuthorRoute.get().unlocked === false && !FieldSave.get().progress?.EP06")
         hooks = page.evaluate('window.__hooks')

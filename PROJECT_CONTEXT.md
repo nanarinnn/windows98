@@ -216,6 +216,18 @@ EP01(한 장소에서 밤을 버티는 관측형)과 달리 **움직이는 열�
 - 영상(기존 자산 재사용, 실제 프레임으로 용도 확인): `ep6_idle`=책상·교탁·칠판이 있는 빈 교실(기본), `ep6_event_call`=교탁 위 출석부와 페이지 근접(조회 출석부), `ep6_event_freeze`=어두운 교실에서 모두가 같은 쪽을 보는 장면(A), `ep6_event_dismiss`=유리문 옆 바닥에 물이 퍼지는 장면(17번 자리의 바닷물), `ep6_event_door`=불투명 유리문 너머의 형체(E). 새 asset은 없다.
 - 미해결/한계: ① Story의 EP6 CCTV 미니게임(`app.js` EP6 영역)은 옛 수칙 구성(옛 A 응답/B 집단 응시/C 복도 문/D 종례 후 소금기 잔여물)의 선택지형이라 새 수칙문서와 어긋난다 — Story 독립 원칙으로 건드리지 않았다(EP02/EP04/EP05와 동일 처리, 정리 여부는 별도 결정). ② transcript가 결과를 말하지 않는 지점은 system failure/조정값으로 처리했다: 고개를 듦·복창 생략, A 중 시선·눈·대답·이동, 격리실 문 열기, E에서 직접 문을 연 뒤, 수업 중단, C 미완료, D 중단·경고 생략, 조례 처리 순서, 17번 자리 방치, 격리 종료 방식(정정 통보). ③ 박예림 호명 시 A/답변/무응답 비율, 학생 5명(15~19번)만 보이는 출석부, 판서 6회·시간표 라벨·마스킹 이름은 implementation 선택이다. ④ 사람이 처음부터 끝까지 실제 속도로 플레이한 시간(목표 10~15분)은 측정하지 않았다(봇은 판단 시간이 없어 사람은 더 오래 걸린다). ⑤ 효과음 없음.
 
+## Field EP07 — 야간 편의점 계산대 근무 (2026-10-10)
+
+**EP07 = night-shift convenience-store counter duty.** canon 순서는 reviewed transcript(`docs/transcripts/reviewed/EP07_나눔_12시_편의점.txt`, 문서 번호 `2026-07-19`, 장소 `나눔 12시 편의점`, 신고 번호 `0050-0200`, 회수 집게 `SNS-0719`) → `7화.txt`(= `index.html` `#darkwebReportWindowEP7` 본문) → `field/ep07/*` → 테스트다.
+
+- 파일: `field/ep07/ep07-data.js`(조정값·대기열·문구·실패 문구·영상 매핑; 수칙 원문 없음, `reportSelector`로 Story 문서 창을 읽음), `ep07.js`(상태 머신), `ep07-ui.js`(상단 시계/자동문 알림음·퇴장 수/방범거울, 중앙 매장·손님·POS, 하단 응대 버튼, 우측 본부 연락·폐기 도구·알바지옥 앱), `tests/ep07_browser_smoke.py`. 스크립트 순서 `ep07-data.js → ep07-ui.js → ep07.js`. 공용 코어 변경 없음.
+- 진행: 고정 대기열 `N A N B N C N D N E N F` → G. A~F에 canon 시각을 붙이지 않고, 시계는 대기열 진행률로 22:00→06:00을 표시한다. 정답 노출 UI·이벤트 라벨·디버그 토글 없음.
+- invariant: ⓪ 모든 손님은 결제기 화면을 보는 척 방범거울로 먼저 확인한다(그 전에는 응대 버튼·POS 없음; A만 끝없는 통로, A 도착은 정상 손님과 구별 불가). ① 손님이 있을 때 먼저 말 걸기/계산대 이탈 = 실패(결과 미기재라 기록 중단). ①-2 자리를 비우려면 손님 0명 확인 → `자동문을 잠근다` → 이동, 미잠금 이탈 = `DOOR_UNLOCKED`(canon 이름표/부위별 분리). ② 알림음 수≠퇴장 수 동안 이탈 = 실패, E는 보이지 않는 손님의 결제·퇴장으로 숫자가 맞은 뒤에만 진행. ③ D는 거울 확인 후 바코드가 찍히고, 본부 신고는 결제(손님 퇴장) 전에만 유효, 미신고 피해는 transcript 금액 구간표 그대로. ④ F는 집게→용기→본부 보고 순서, 재폐기 시 폐기 목록에 이름·근무 시작 시각. ⑤ G 밖으로 나가면 실패, `근무 종료`는 여러 번 눌러야 성공. ⑥ 실패 문장은 transcript가 말하는 결과만(`FieldEP07Data.canonFailures`), 그 외(`SPOKE_FIRST`, `LEAVE_WITH_CUSTOMER`, `F_BAREHAND`)는 "기록 중단" 수준.
+- RNG: `FieldEP07Data.random(name)` 주입(`nItem`, `dTier` 0~5, `endPresses`). 시간 제한(거울 4초, 신분증 7초, D 8초, E 5/10초)과 근무 종료 3~5회는 tuning이다.
+- 진행도/저장: EP06 clear → EP07 해금, **EP07 clear → Field EP08 해금만**. 진행 중 스냅샷 없음(새로고침 시 처음부터). Story/J/블루스크린/LOOP 02/Save Code v5·v4 불변, CLASSIFIED/AUTHOR는 조건이 아니다.
+- AUTHOR: `onEpisodeStart('EP07')`, `onMajorEvent('EP07', id)`(A_MIRROR, B_ID, C_VOICE, D_GHOST_ITEM, E_CHIME, F_RETURNED, G_DAWN_DELAY), `onEpisodeClear('EP07')`만(id만 전달).
+- 미해결/한계: "확인하는 모습을 들킴"은 별도 분기 없이 시선 지연으로만 표현, Story EP7 CCTV 미니게임은 미정리, 효과음 없음, 사람 실측 플레이 시간 미측정.
+
 ## PLAYER TYPES / PUBLIC CLASSIFIED (2026-10-08, 이 섹션이 아래 옛 H01~H10 계획을 대체한다)
 
 **플레이어 유형은 두 종류뿐이다. 제3의 HIDDEN USER / CLASSIFIED ACCESS USER / 권한 계층은 만들지 않는다.**
@@ -318,6 +330,11 @@ docs/transcripts/partial/
 | EP04 | (없음) | `reviewed/EP04_불_꺼진_13층_엘리베이터.txt` | REVIEWED |
 | EP05 | (없음) | `reviewed/EP05_애기소.txt` | REVIEWED |
 | EP06 | (없음) | `reviewed/EP06_청림고등학교_2학년_3반_17번.txt` | REVIEWED |
+| EP07 | (없음) | `reviewed/EP07_나눔_12시_편의점.txt` | REVIEWED |
+| EP08 | (없음) | `reviewed/EP08_유성_워터파크.txt` | REVIEWED (보관만, 미반영) |
+| EP09 | (없음) | `reviewed/EP09_안전_안내_문자.txt` | REVIEWED (보관만, 미반영) |
+| EP10 | `raw/EP10_인어왕국_행복_공장_original.txt` | (없음) | RAW (보관만, 미반영) |
+| J 기록 | (없음) | `reviewed/JAY_요원_제이의_기록.txt` | REVIEWED (보관만, 미반영) |
 
 위 경로는 `docs/transcripts/` 기준이다. RAW 3개는 ZIP의 UTF-16 원본 바이트를 인코딩/줄바꿈 변환 없이 보존했다. 검수/부분 검수 자료 역시 ZIP 그대로 배치했다. EP01 검수본의 09:52 전화번호 미확정 표기도 그대로 유지한다.
 
@@ -340,7 +357,7 @@ Transcript 배치 시에는 루트 원고/게임 콘텐츠를 변경하지 않�
 - F: 응시 유지, 좌/우 번갈아 깜빡이기, 뒤로 이동 hold→TV 발견→TV 뒤 이동→웅크림→앞쪽 파손음→앞으로 이동→선택한 순찰봉으로 3회 타격. 파손음은 텍스트와 짧은 합성 소리로 전달한다. 시선 이탈·양안 감기·지연 실패를 처리한다.
 - 정각 순찰 알림/지도 관측/내선 1번 보고, 파고 1.5m 이상 해안 접근 제한, 장비·조명 점검/수령, 1번 연결 불가·0번 성명 반응·통화 종료 후 게임 시간 1분 대기 경로가 있다. 순찰 누락은 기록으로만 남기며 기본 Story나 Field 생환을 새 수집 조건으로 막지 않는다.
 - 현재 조정값: 22:00~06:00=720초(게임 내 1분당 현실 1.5초), 사건 A/B/D/F는 각각 23:00/01:40/03:10/04:55. 첫 사건 A는 시작 후 현실 90초, A→B 간격은 240초다. 사건 위치는 관측 채널과 함께 전환한다. 대응 grace/deadline, 눈 피로 25초, TV 발견 거리 12보/3회 타격, 파고 변동 시간대는 gameplay tuning이며 원문 설정을 추가로 확정한 것이 아니다.
-- 미구현/한계: EP07~EP10 미션(EP02~EP06은 각 섹션 참조), CLASSIFIED/Hidden/11번째 사건/AUTHOR 본편·엔딩, 중간 근무 저장·복원, 실제 부상에 따른 신체 조작 변경, 자유 3D 이동, 신규 전용 영상. 기존 영상 재사용과 버튼/hold 기반 공간 조작의 Vertical Slice이며 사용자가 checkpoint를 직접 플레이한 뒤 난이도 유지와 근무 시간 단축을 요청했다. 현재 12분 배율의 전체 근무 수동 플레이는 아직 검증하지 않았다. 연결 종료/새로고침 후 현재 근무는 처음부터 다시 파견하며 완료·사망 기록만 보존된다.
+- 미구현/한계: EP08~EP10 미션(EP02~EP07은 각 섹션 참조), CLASSIFIED/Hidden/11번째 사건/AUTHOR 본편·엔딩, 중간 근무 저장·복원, 실제 부상에 따른 신체 조작 변경, 자유 3D 이동, 신규 전용 영상. 기존 영상 재사용과 버튼/hold 기반 공간 조작의 Vertical Slice이며 사용자가 checkpoint를 직접 플레이한 뒤 난이도 유지와 근무 시간 단축을 요청했다. 현재 12분 배율의 전체 근무 수동 플레이는 아직 검증하지 않았다. 연결 종료/새로고침 후 현재 근무는 처음부터 다시 파견하며 완료·사망 기록만 보존된다.
 - 회귀 검증: `tests/field_browser_smoke.py`를 로컬 서버 실행 후 Python Playwright/Chromium 환경에서 실행한다. 격리 저장소와 production step으로 시계를 가속해 A/B/D/F 정상·실패/재시도/06:00/해금/저장 복원/Save v4/기존 CCTV/Field 미클리어 Story 경계를 검증한다. 부트/EP09 마지막 단계 등 일부 Story 진입점을 직접 호출하므로 전체 Story 수동 플레이 검증이라고 보고하지 않는다.
 
 ## 개발 및 작업 종료 절차

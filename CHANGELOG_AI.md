@@ -2,6 +2,32 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-10 — Field EP07 원문 정합: 모든 손님 거울 확인, 자동문 잠금 단계, 계산대 이탈 실패 분리
+
+- 목적: 사용자 지시("원문대로 고쳐줘"). reviewed transcript 03:11 "반드시 모든 손님을 방범 거울로 먼저 확인하십시오", 02:17 "손님이 한 명도 없는 것을 확인한 뒤 자동문을 잠그고 이동 / 잠그지 않고 다녀온 근무자는 … 이름표 … 부위별로 나뉜 채 발견"에 맞춤.
+- 변경 파일: `field/ep07/ep07.js`, `field/ep07/ep07-ui.js`, `field/ep07/ep07-data.js`, `tests/ep07_browser_smoke.py`, `PROJECT_CONTEXT.md`. `7화.txt`/Story 문서 창은 이미 원문 문장을 담고 있어 변경 없음.
+- 거울: 손님이 있는 모든 방문(N/A/B/C/D)은 `결제기 화면을 보는 척 거울을 확인한다`가 첫 단계이며, 그 전에는 결제·신분증·응대 버튼과 POS 표시가 나오지 않는다. 정상 손님은 `평범한 매장 통로`(`mirrorState='clear'`), A만 끝없는 통로(기존 4초 내 시선 거두기). A 도착 장면은 정상 손님과 동일(품목 포함)해 거울 전에는 구별되지 않는다. D는 거울 확인 후 바코드 스캔 로그(`dScan`)와 함께 POS `[ 코드만 표시 ]`가 뜨고 신고 제한 시간도 그때부터 흐른다. 거울을 건너뛰는 경로는 없으므로(버튼 비노출) 새 실패 코드는 만들지 않았다.
+- 자동문: `자동문을 잠근다` 버튼(`lockDoor`) 추가. 손님이 보이면 잠기지 않고 로그만 남는다. 보이지 않는 손님(E 불일치)은 감지하지 않는다(숫자 세기는 플레이어 몫). HUD 자동문 표시에 ` · 잠김`. 이탈 판정 순서: 손님 있음 → `LEAVE_WITH_CUSTOMER`, 알림음≠퇴장 → `E_LEFT_DURING_MISMATCH`, 미잠금 → 새 `DOOR_UNLOCKED`(canon 이름표/부위별 분리 문장), 모두 통과 시 복귀 후 잠금 해제.
+- 실패 문구: `LEAVE_WITH_CUSTOMER`는 transcript에 결과가 없으므로 "현장 연결이 끊겼습니다. 기록 중단." 수준으로 바꾸고 canon 목록에서 제외, `canonFailures`에 `DOOR_UNLOCKED` 추가. 기존 실패 코드 id는 삭제하지 않았다.
+- 검증: `node --check`(ep07 3개), `git diff --check` 통과. `tests/ep07_browser_smoke.py` ALL PASS(거울 전 결제 불가·정상 통로 확인, A 도착 구별 불가, B/C/D 거울 선행, D 타이머는 스캔 후 시작, 손님 있을 때 잠금 불가, 미잠금 이탈 canon 실패, 잠금 후 안전 복귀, 잠가도 E 불일치 이탈은 실패, 모바일 tap 잠금/이탈 포함). 다른 테스트는 EP07 파일만 바뀌어 재실행하지 않았다.
+- 보존: Story/J/블루스크린/LOOP 02, Save Code v5·v4, EP07→EP08 해금만, CLUES 등 id·순서 불변.
+- Git: commit/push 하지 않음.
+- 미해결: transcript의 "확인하는 모습을 손님에게 들킨 경우"는 별도 분기 없이 A 통로에서 시선을 늦게 거둔 경우로만 표현한다. 사람 실측 플레이 시간(거울 단계 추가로 늘어남) 미측정.
+
+## 2026-10-10 — Field EP07 나눔 12시 편의점 야간 근무 구현
+
+- 목적: 사용자 지시. EP07을 2D 야간 편의점 계산대 근무 시뮬레이션으로 구현(기존 EP01~06 Field 공통 코어/UI/실패·재시도 패턴 재사용, 전역 리팩터링 없음). 개발 서버에만 반영하고 commit/push하지 않았다.
+- 변경 파일: 새 `field/ep07/ep07-data.js`(조정값·대기열·문구·실패 문구; 수칙 원문은 두지 않고 `#darkwebReportWindowEP7`에서 읽음), `field/ep07/ep07.js`(상태 머신), `field/ep07/ep07-ui.js`(계산대 화면), `tests/ep07_browser_smoke.py`. 수정 `index.html`(EP07 스크립트 3개 등록, EP07 문서 창 본문을 새 `7화.txt`와 동일하게, 표기 `나눔 12 편의점`→`나눔 12시 편의점`), `7화.txt`(reviewed transcript 기준 재작성), `story-data.js`(`EPISODE_TITLES[7]`=`나눔 12시 편의점`, `EPISODE_DOCS[7]`=`2026-07-19`, `c07-hq` 인용·태그의 `0050-0`→`0050-0200`; CLUES id/순서 불변), `field/field.css`(`.f7-*` 스타일 추가), `tests/ep06_browser_smoke.py`(EP06 clear 후 EP07 버튼 기대값 `연결 준비 중`→`파견 가능`), `docs/transcripts/README.md`.
+- 자료 보관: 사용자 업로드본을 바이트 동일하게 추가 — `reviewed/EP07_나눔_12시_편의점.txt`, `reviewed/EP08_유성_워터파크.txt`, `reviewed/EP09_안전_안내_문자.txt`, `reviewed/JAY_요원_제이의_기록.txt`, `raw/EP10_인어왕국_행복_공장_original.txt`. EP07 외 자료는 보관만 했고 콘텐츠에 반영하지 않았다.
+- 핵심 구현: 고정 대기열 `N A N B N C N D N E N F` 후 G(06:00). 정상 손님(N)을 사이사이 배치하고 A~F에 canon 시각을 부여하지 않았다(시계는 대기열 진행률로 22:00→06:00 표시). 기본 규칙: 손님이 있을 때 먼저 말 걸기 = 실패(`SPOKE_FIRST`), 손님이 있을 때 계산대 이탈 = 실패(`LEAVE_WITH_CUSTOMER`), 알림음 수≠퇴장 수일 때 이탈 = 실패(`E_LEFT_DURING_MISMATCH`), 손님 0명·숫자 일치 시에만 자동문을 잠그고 이동 가능.
+- A 결제기 화면을 보는 척 거울 확인→끝없는 통로→4초 안에 시선을 거둬야 함(`MIRROR_LOCKED`, "여기 알바는 거울을 좋아하나 봐요?"+실종/승강기 측면 거울 목격). B 신분증 사진 깜빡임→같은 손짓·속도로 반환만 성공, 거절(확인 전/후 모두)·놀람·다른 속도·7초 지연은 `ID_FAIL`. C 목소리 겹침→가격표/화면 가리키기만 성공, 입으로 대답 = `VOICE_LOST`(성대 소실). D POS 상단 `[ 코드만 표시 ]`+정상 가격, 8초 안에 본부 연락(0050-0200) 필요, 미신고 시 가격 구간별 canon 신체 손실표(`D_UNREPORTED`). E 알림음만 울리고 사람 없음→HUD `자동문 알림음 불일치 (n/m)`→대기 시 POS 불빛·봉투 연출→퇴장으로 숫자 일치 후에만 진행. F 시작 로그에 `전 근무일 폐기 완료 상품: 삼각김밥(참치마요)`, 후반 진열대 복귀→`SNS-0719` 집게→회수 용기→본부 보고 순서 강제, 맨손 `F_BAREHAND`, 재폐기 `F_REREGISTER`(폐기 목록에 이름과 근무 시작 시각). G 06:00 날이 밝지 않음·교대자 없음, 밖으로 나가기 `G_OUTSIDE`, `알바지옥` 앱→`근무 종료` 3~5회(랜덤) 눌러야 clear.
+- 조정값(non-canon): 거울 4초, 신분증 7초, D 신고 8초, E 결제 연출 5초/퇴장 10초, 근무 종료 3~5회, 정상 손님 품목, 전 근무일 폐기 상품명. `canonFailures`에 transcript 결과 문장을 쓰는 코드를 명시했고, `SPOKE_FIRST`/`F_BAREHAND`는 transcript에 결과가 없어 "현장 연결이 끊겼습니다. 기록 중단." 수준이다.
+- 이번 세션 수정: ① HQ 연락 버튼이 `hqCall`을 보내는데 로직은 `dReport`/`fReportHQ`만 처리해 D 신고와 F 본부 보고가 불가능했던 문제를 `hqCall`로 통일해 수정. ② B에서 신분증 확인 전 표시되는 `판매를 거절한다` 버튼이 무반응이던 문제 수정(항상 `ID_FAIL`). ③ EP07 테스트의 잘못된 기대값 2곳(다음 손님 입장으로 알림음이 1 더 많은 상태를 불일치로 오판) 및 and/or 우선순위 오류 수정.
+- 검증: `node --check`(ep07 3개, story-data.js), `git diff --check` 통과. Playwright(Chromium ARM64, Linux) — `ep07_browser_smoke` ALL PASS(문서 동일성·잠금/해금·A~G 정답/오답·D 코드 표시와 신고·E 불일치 이탈·F 처리/재폐기·G 외출/반복 종료·EP08만 해금·Story 저장 바이트 동일·Save Code v5 round-trip·모바일 tap), `ep06`·`ep05`·`ep04`·`ep03`·`field`·`author`·`classified`·`record_reset_smoke`·`save_progress_smoke` PASS. `darkweb_ui_smoke`(아이콘 폭 metrics)와 `ep02_browser_smoke`(line 192 `carIndex == 2`)는 실패하지만 변경 전 HEAD(637d467) 워크트리에서도 동일하게 실패함을 확인 — 이 환경(ARM Linux 폰트/타이밍) 기존 실패로 판단, EP07 회귀 아님. Windows 기준 환경에서는 재실행하지 못했다. 사람이 실제 속도로 끝까지 플레이한 시간(목표 7~9분)은 측정하지 않았다.
+- 보존: Story 진행/J 기록/블루스크린/LOOP 02/`finaleSeen`/`jayUnlocked`/`eps` 불변, CLASSIFIED/AUTHOR는 EP07 조건에 사용하지 않음(AUTHOR 훅은 id만 전달), EP07 clear → Field EP08 해금만(EP09 불변), `yuyeon98.save.v1`/`field.v1`/Save Code v5·v4 형식 불변, CLUES/DEDUCTIONS/ACHIEVEMENTS/SECRETS id·순서 불변(`c07-hq` 인용 문구만 canon 번호로 교정). EP07은 진행 중 스냅샷을 저장하지 않는다(`FieldSave` PROGRESS_IDS 불변).
+- Git: commit/push 하지 않음(개발 서버 반영만, 사용자 확인 대기).
+- 미해결: ① 거울 확인은 A 손님에서만 요구한다(정상 손님에게 거울 확인을 강제하지 않음). ② 자동문 잠금은 `계산대를 비우고 화장실에 다녀온다` 한 동작 안에서 조건 충족 시 잠금으로 처리하며 별도 잠금 버튼은 없다. ③ Story의 EP7 CCTV 미니게임(`app.js`)은 Story 독립 원칙으로 건드리지 않았다. ④ 효과음 없음, 영상은 기존 `movies/ep7_*.mp4` 재사용. ⑤ darkweb_ui/ep02 기존 실패 원인 미조사.
+
 ## 2026-10-08 — PUBLIC CLASSIFIED 시스템과 AUTHOR 메타 반응 추가 (classified-01)
 
 - 목적: 사용자 지시. 플레이어 유형은 일반/AUTHOR 둘뿐이며 CLASSIFIED는 모두에게 공개된 선택적 히든 발견(권한/접근 코드 없음, 서로 독립, Story·Field unlock·J·LOOP·엔딩과 무관). AUTHOR는 CLASSIFIED를 자동 해금하지 않고 특정 발견 후 `[제작자에게.txt]` 재열람 시에만 추가 반응을 본다.
