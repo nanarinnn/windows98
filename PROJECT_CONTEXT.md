@@ -83,7 +83,7 @@ Field에서 발견한 정보가 LOOP 02 이후 추가 콘텐츠에 영향을 줄
 
 현재 코드에서 EP09 스마트폰 마지막 성공 처리로 `GameProgress.onClear(9)`와 `unlockJayReport()`가 호출된다. J 기록을 열면 진행 훅이 `jayUnlocked`를 기록한다. J 기록을 닫거나 끝까지 스크롤한 후 대기하면 `triggerLoopShutdown()`이 호출되고, 블루스크린/재부팅/LOOP 02로 이어진다. 진행 훅은 셧다운 시작 시 `finaleSeen`을 저장한다. Darkweb 재진입 시 `finaleSeen`이면 LOOP 데스크톱을 적용하고, 아니면 기존 EP09 클리어 또는 J 해금 기록에 따라 J 아이콘을 복원한다. 이 관찰을 새 조건 설계로 대체하지 않는다.
 
-J 기록은 일반 수집품이 아닌 특수 스토리 계층이다. 기존 J 이벤트 이전에는 일반 조사 목록에 노출하지 않는다. 현재 노트는 `jayUnlocked` 전 J 목록을 숨기며 터미널의 일부 J 관련 조회도 해당 플래그를 확인한다.
+J 기록은 일반 수집품이 아닌 특수 스토리 계층이다. 2026-10-10부터 `jay-viewer.js`가 표시 계층(읽을수록 무너지는 문서)을 더한다: 본문은 `#jay-report-textarea` 그대로이며(향후 reviewed J 본문은 textarea 내용만 교체), 스크롤 위치로 4단계(정상 → `2019년 12월 6일.`부터 관찰: 스크롤 몇 px 되돌림·한 줄 겹침·읽은 문단 잔상·없는 줄의 커서 → `개체 D:`부터 모방: 선택한 문장이 아래에 희미하게·문단이 한 박자 늦게 따라옴 → 첫 `우리 병동`부터 동화: 머리말·이름 약화, 본부 워터마크 흐려짐, 양쪽 정렬)로 바뀐다. 잔상/메아리는 기록 자체의 문장만 쓰고, 줄 수·높이를 바꾸지 않아 기존 끝까지 스크롤 → 4.5초 → `triggerLoopShutdown()`과 닫기 동작이 그대로다. 열 때마다 처음부터 같은 연출, 새 canon 없음. `jayUnlocked`와 해금 조건은 변경하지 않았고 Field 10/10은 조건이 아니다. 기존 J 이벤트 이전에는 일반 조사 목록에 노출하지 않는다. 현재 노트는 `jayUnlocked` 전 J 목록을 숨기며 터미널의 일부 J 관련 조회도 해당 플래그를 확인한다.
 
 ## 콘텐츠 시스템의 역할과 계획
 
@@ -216,37 +216,57 @@ EP01(한 장소에서 밤을 버티는 관측형)과 달리 **움직이는 열�
 - 영상(기존 자산 재사용, 실제 프레임으로 용도 확인): `ep6_idle`=책상·교탁·칠판이 있는 빈 교실(기본), `ep6_event_call`=교탁 위 출석부와 페이지 근접(조회 출석부), `ep6_event_freeze`=어두운 교실에서 모두가 같은 쪽을 보는 장면(A), `ep6_event_dismiss`=유리문 옆 바닥에 물이 퍼지는 장면(17번 자리의 바닷물), `ep6_event_door`=불투명 유리문 너머의 형체(E). 새 asset은 없다.
 - 미해결/한계: ① Story의 EP6 CCTV 미니게임(`app.js` EP6 영역)은 옛 수칙 구성(옛 A 응답/B 집단 응시/C 복도 문/D 종례 후 소금기 잔여물)의 선택지형이라 새 수칙문서와 어긋난다 — Story 독립 원칙으로 건드리지 않았다(EP02/EP04/EP05와 동일 처리, 정리 여부는 별도 결정). ② transcript가 결과를 말하지 않는 지점은 system failure/조정값으로 처리했다: 고개를 듦·복창 생략, A 중 시선·눈·대답·이동, 격리실 문 열기, E에서 직접 문을 연 뒤, 수업 중단, C 미완료, D 중단·경고 생략, 조례 처리 순서, 17번 자리 방치, 격리 종료 방식(정정 통보). ③ 박예림 호명 시 A/답변/무응답 비율, 학생 5명(15~19번)만 보이는 출석부, 판서 6회·시간표 라벨·마스킹 이름은 implementation 선택이다. ④ 사람이 처음부터 끝까지 실제 속도로 플레이한 시간(목표 10~15분)은 측정하지 않았다(봇은 판단 시간이 없어 사람은 더 오래 걸린다). ⑤ 효과음 없음.
 
-## Field EP07 — 야간 편의점 계산대 근무 (2026-10-10)
+## Field EP07 — 야간 편의점 계산대 근무 시뮬레이션 (2026-10-10 리워크)
 
-**EP07 = night-shift convenience-store counter duty.** canon 순서는 reviewed transcript(`docs/transcripts/reviewed/EP07_나눔_12시_편의점.txt`, 문서 번호 `2026-07-19`, 장소 `나눔 12시 편의점`, 신고 번호 `0050-0200`, 회수 집게 `SNS-0719`) → `7화.txt`(= `index.html` `#darkwebReportWindowEP7` 본문) → `field/ep07/*` → 테스트다.
+**EP07 = WORK. 22:00~06:00 한 근무.** canon 순서는 reviewed transcript(`docs/transcripts/reviewed/EP07_나눔_12시_편의점.txt`, 문서 번호 `2026-07-19`, 신고 번호 `0050-0200`, 회수 집게 `SNS-0719`) → `7화.txt`(= `#darkwebReportWindowEP7` 본문) → `field/ep07/*` → 테스트다. 프롬프트의 `EP07_나눔_12시_편의점_reviewed.txt`는 위 reviewed 파일이다.
 
-- 파일: `field/ep07/ep07-data.js`(조정값·대기열·문구·실패 문구·영상 매핑; 수칙 원문 없음, `reportSelector`로 Story 문서 창을 읽음), `ep07.js`(상태 머신), `ep07-ui.js`(상단 시계/자동문 알림음·퇴장 수/방범거울, 중앙 매장·손님·POS, 하단 응대 버튼, 우측 본부 연락·폐기 도구·알바지옥 앱), `tests/ep07_browser_smoke.py`. 스크립트 순서 `ep07-data.js → ep07-ui.js → ep07.js`. 공용 코어 변경 없음.
-- 진행: 고정 대기열 `N A N B N C N D N E N F` → G. A~F에 canon 시각을 붙이지 않고, 시계는 대기열 진행률로 22:00→06:00을 표시한다. 정답 노출 UI·이벤트 라벨·디버그 토글 없음.
-- invariant: ⓪ 모든 손님은 결제기 화면을 보는 척 방범거울로 먼저 확인한다(그 전에는 응대 버튼·POS 없음; A만 끝없는 통로, A 도착은 정상 손님과 구별 불가). ① 손님이 있을 때 먼저 말 걸기/계산대 이탈 = 실패(결과 미기재라 기록 중단). ①-2 자리를 비우려면 손님 0명 확인 → `자동문을 잠근다` → 이동, 미잠금 이탈 = `DOOR_UNLOCKED`(canon 이름표/부위별 분리). ② 알림음 수≠퇴장 수 동안 이탈 = 실패, E는 보이지 않는 손님의 결제·퇴장으로 숫자가 맞은 뒤에만 진행. ③ D는 거울 확인 후 바코드가 찍히고, 본부 신고는 결제(손님 퇴장) 전에만 유효, 미신고 피해는 transcript 금액 구간표 그대로. ④ F는 집게→용기→본부 보고 순서, 재폐기 시 폐기 목록에 이름·근무 시작 시각. ⑤ G 밖으로 나가면 실패, `근무 종료`는 여러 번 눌러야 성공. ⑥ 실패 문장은 transcript가 말하는 결과만(`FieldEP07Data.canonFailures`), 그 외(`SPOKE_FIRST`, `LEAVE_WITH_CUSTOMER`, `F_BAREHAND`)는 "기록 중단" 수준.
-- RNG: `FieldEP07Data.random(name)` 주입(`nItem`, `dTier` 0~5, `endPresses`). 시간 제한(거울 4초, 신분증 7초, D 8초, E 5/10초)과 근무 종료 3~5회는 tuning이다.
-- 진행도/저장: EP06 clear → EP07 해금, **EP07 clear → Field EP08 해금만**. 진행 중 스냅샷 없음(새로고침 시 처음부터). Story/J/블루스크린/LOOP 02/Save Code v5·v4 불변, CLASSIFIED/AUTHOR는 조건이 아니다.
-- AUTHOR: `onEpisodeStart('EP07')`, `onMajorEvent('EP07', id)`(A_MIRROR, B_ID, C_VOICE, D_GHOST_ITEM, E_CHIME, F_RETURNED, G_DAWN_DELAY), `onEpisodeClear('EP07')`만(id만 전달).
-- 미해결/한계: "확인하는 모습을 들킴"은 별도 분기 없이 시선 지연으로만 표현, Story EP7 CCTV 미니게임은 미정리, 효과음 없음, 사람 실측 플레이 시간 미측정.
+- 파일: `ep07-data.js`(근무 일정 `schedule`, 상품·D 금액 구간·전 근무 폐기 기록·진열대, 조정값, 문구·실패 문구·기록 종류), `ep07.js`(상태 머신), `ep07-ui.js`(HUD 시각/계산대/자동문 잠금, 매장 화면·방범거울 inset·POS·신분증 트레이, 메모(tally)·계산대 아래(전화/잠금/화장실)·진열대·알바지옥), `tests/ep07_browser_smoke.py`. 스크립트 순서 `data → ui → logic`.
+- 루프: 자동문 `띵동` → 손님 입장(진열대) → 계산대 → 방범거울(결제기 화면 보는 척, 누르고 있는 동안만, 손님이 이쪽을 볼 때 보면 들킴) → 스캔 → 담배/주류는 신분증 드래그(손님 손 → 계산대 → 손님 손) → 결제(카드/현금) → 봉투 → 퇴장. A~G는 단계가 아니라 이 루프 안에 끼어드는 interrupt이며 이름표가 없다.
+- 시간: 손님이 없을 때만 0.55초/분으로 흐르고, 거래 하나가 끝나면 +6분. 후반일수록 손님 간격이 길어진다. 일정 시각(22:06~05:26 손님 11명, 01:16 보이지 않는 띵동, 01:46 화장실 급함, 03:00 폐기 알림, 03:10 보이지 않는 손님 결제·퇴장, 06:00 새벽)은 canon이 아니다.
+- invariant: ⓪ 실제 알림음/퇴장 수는 화면 어디에도 표시하지 않는다. 메모(+/−)는 플레이어 기록일 뿐 판정에 쓰지 않는다. ① 거울 확인 전 스캔·결제 = 기록 중단, 들킴·오래 봄·통로 응시 = canon A 결과. ② 깜빡이는 신분증은 받은 드래그 시간 ±60% 안에 돌려줘야 하고, 자세히 보기·거절·5초 이상 멈칫 = canon B 결과(정상 신분증은 속도 무관). ③ 같은 "이거 얼마예요?" 질문이 내 목소리와 겹칠 때만 말로 답하면 canon C 결과, 가리키면 통과. ④ D는 상품명 칸이 빈칸 또는 코드만, 손님이 나가기 전 계산대 전화 0050-0200 신고, 미신고 퇴장 = 금액 구간 피해. ⑤ 화장실은 손님 0명 + 자동문 잠금 + 띵동 수=퇴장 수일 때만 안전(불일치 = canon E, 미잠금 = canon 이름표 결과). 급함을 05:20까지 해결 못 하면 기록 중단. ⑥ 전 근무 폐기 기록의 상품이 진열대에 다시 있음: 폐기 등록 = canon F, 맨손 = 기록 중단, SNS-0719 → 회수 용기 → 본부. 일반 폐기 상품은 정상 폐기 등록. ⑦ 06:00 창밖이 밤, 밖으로 나가면 canon G, 알바지옥 `근무 종료`를 될 때까지(3~5회) 누르면 창밖이 밝아지고 clear.
+- 실패 표시: `CODE — [본부 회수 기록|본부 실종 기록|CCTV 기록|POS 기록|근무 기록] … [근무 기록 중단]`, canon 결과는 `canonFailures` 문장만. 재파견은 현재 run만 초기화.
+- 진행도/저장: EP06 clear → EP07 해금, **EP07 clear → Field EP08 해금만**. 진행 중 스냅샷 없음. Story/J/블루스크린/LOOP 02/AUTHOR/CLASSIFIED/Save Code v5·v4 불변.
+- AUTHOR 훅: `onMajorEvent('EP07', id)` — A_MIRROR, B_ID, C_VOICE, D_GHOST_ITEM, E_CHIME, F_RETURNED, G_DAWN_DELAY(id만).
+- 미해결/한계: 즉시 행동 봇 기준 약 5분(사람 실측 미측정), 효과음 없음(기존 영상 5개 재사용).
 
-## Field EP08 — 유성 워터파크 하루 (2026-10-10)
+## Field EP08 — 유성 워터파크: 폐장까지의 연속 생존 run (2026-10-10 재설계)
 
-**EP08 = a day at the water park with the electronic wristband.** canon 순서는 reviewed transcript(`docs/transcripts/reviewed/EP08_유성_워터파크.txt`, 문서 번호 없음, 본부 `0050-0200`) → `8화.txt`(= `#darkwebReportWindowEP8` 본문) → `field/ep08/*` → 테스트다.
+**EP08 = one continuous run, 17:02 탈의실 → 18:00 폐장 → 출구 정산.** canon 순서는 reviewed transcript(`docs/transcripts/reviewed/EP08_유성_워터파크.txt`, 문서 번호 없음, 본부 `0050-0200`) → `8화.txt`(= `#darkwebReportWindowEP8` 본문) → `field/ep08/*` → 테스트다. 프롬프트가 말한 `EP08_유성온천_reviewed.txt`는 존재하지 않으며 위 reviewed 파일이 그것이다.
 
-- 파일: `ep08-data.js`(일정·조정값·문구·실패 문구, `reportSelector`), `ep08.js`(상태 머신), `ep08-ui.js`(시계/구역/밴드 HUD, 시설 장면, 12구역 지도, 손목 밴드), `tests/ep08_browser_smoke.py`. 스크립트 순서 `data → ui → logic`.
-- 진행: 구역 이동으로 고정 일정이 시작된다. 실패 문장은 transcript 결과만(`canonFailures`), 그 외 "기록 중단". 진행 중 스냅샷 없음.
-- 진행도: EP07 clear → EP08 해금, **EP08 clear → Field EP09 해금만**. Story/J/블루스크린/LOOP 02 불변.
+- 파일: `ep08-data.js`(지도/인접, `clock`·`TIME_PHASES`, `CORE_EVENTS`·`OPTIONAL_EVENTS`·`OVERLAP_RULES`·덱 조합, 문구·실패 문구), `ep08.js`(상태 머신·스케줄러), `ep08-ui.js`(HUD 시각/위치/BAND, 장면·군중·슬라이드 터널·정산 출력, 11구역 지도, 손목 밴드), `tests/ep08_browser_smoke.py`. 스크립트 순서 `data → ui → logic`.
+- 시간: 게임 시계(분). 시작 17:02는 canon 아님(입장 게이트에서 받은 전자 손목 밴드를 차는 것으로 시작). 튜토리얼 중에는 행동으로만 흐르고(이동 2분 등), 17:30 이후 배회 중 실시간 흐름(20→15→12초/분, 후반일수록 빠름). 파도풀 core 전에는 17:14, 슬라이드 core 전에는 17:56에서 멈춘다(core 보장). canon 고정점: 파도 :00/:30·15분(17:15 물러남 → 17:30 다음 파도), 입욕 15분, 18:00 폐장 방송.
+- CORE: ① 탈의실(배정 사물함 → 미배정 사물함이 스스로 열림 → 숨 참기 누른 채 유지 + 데스크로 이동 → 신고) ② 파도풀(17:15 물러남, 군중 중 한 명만 마름, 표시 없음 → 시선 떨구고 17:30까지 정지 + 오버레이 1개) ③ 메가 슬라이드(곡선을 직접 셈, 3 → 암전 → 4번째, 팔·벽·감속·정지 순서 + 밴드 긴급 버튼) ④ 18:00 폐장(음악 정지 → "조금 더 놀고 가자." 정중히 거절 → 막아섬 → 긴급 버튼 → 짧게 열린 길, 지체 시 재차단) → 정산기(쓰지 않은 내역 섞임, 결제/이의 제기/환불 요청/직원 호출 중 그대로 결제만 통과) → 밴드 반납 → 퇴장.
+- 덱(run마다 같은 형태): 파도풀 오버레이 1(성함 방송 | 후루라기·요원대 있음) + 이동형 2(밴드 헐거움→물에서 풀림 / 혼자 있는 아이 / 빈 요원대 후루라기, 17:35·17:43) + 후반 중첩 1(17:49 혼자인 캐릭터 + 물이면 후루라기, 땅이면 아직 안 쓴 성함 방송) + 시설 이상 2(스파 갈증 / 주문하지 않은 메뉴+수술 질문 / 빈 선베드 유혹, 들렀을 때만). 물 전용 이벤트는 플레이어가 물에 없으면 대기 후 아이 이벤트로 대체.
+- invariant: ⓪ 동시에 장면 1 + 오버레이 1까지, 오버레이는 `OVERLAP_RULES`에 있는 조합만(둘 다 지킬 행동이 존재). 파도풀+빈 요원대·밴드 풀림, 슬라이드/폐장/정산 위 오버레이는 금지. ① 정답 버튼은 순서·이름 없이 오답과 섞는다. ② 실패는 `[CASE TERMINATED] … [퇴장 기록 없음]`, canon 결과는 `canonFailures` 문장만, 그 외 짧은 결과. ③ 재파견은 현재 run만 초기화. ④ 17:50 이후 연출(음악 늘어짐, "환자", 물 쪽으로 걷는 사람들)은 해설 없이 모호하게.
+- 진행도/저장: EP07 clear → EP08 해금, **EP08 clear → Field EP09 해금만**. 진행 중 스냅샷 없음. Save Code v5·v4 형식 불변. Story/J/블루스크린/LOOP 02/AUTHOR/CLASSIFIED 불변.
+- 미해결/한계: 즉시 행동하는 봇 기준 run 약 4.3분(사람의 읽기·탐색 시간 미측정, 목표 10~12분 실측 필요). 효과음 없음(기존 영상 5개 재사용). 방송의 "[플레이어 이름]"은 게임에 이름 체계가 없어 이름을 만들지 않고 "방송이 부른 이름은 분명히 내 이름이다"로 표현한다.
 
-## Field EP09 — 안전 안내 문자: 휴대전화가 플레이 공간 (2026-10-10)
+## Field EP09 — 안전 안내 문자: 휴대폰을 관리하며 버티는 비동기 위기관리 (2026-10-10 리워크)
 
-**EP09 = the phone itself is the play space.** canon 순서는 reviewed transcript(`docs/transcripts/reviewed/EP09_안전_안내_문자.txt`, 문서 번호 없음, 본부 `0050-0200`) → `9화.txt`(= `#darkwebReportWindowEP9` 본문, Field에서는 문자 앱의 `안전 안내 문자` 스레드) → `field/ep09/*` → 테스트다. `9화-안전안내문자_original.txt`는 gameplay 근거가 아니다.
+**EP09 = MANAGE.** canon 순서는 reviewed transcript(`docs/transcripts/reviewed/EP09_안전_안내_문자.txt`, 문서 번호 없음, 본부 `0050-0200`) → `9화.txt`(= `#darkwebReportWindowEP9` 본문, Field에서는 문자 앱의 `안전 안내 문자` 스레드) → `field/ep09/*` → 테스트다. 프롬프트의 `EP09_안전안내문자_reviewed.txt`는 위 reviewed 파일이다.
 
-- 파일: `ep09-data.js`(상황 순서 A~L, 조정값, 번호·금액 구간(`tierOf`)·앱·문구·실패 문구), `ep09.js`(상태 머신), `ep09-ui.js`(휴대전화: 상태바/앱 화면/통화·영상 오버레이/뒤로·홈·손전등 버튼, 우측 주변·방향·로그), `tests/ep09_browser_smoke.py`. 모든 DOM id는 `f9-` 접두사.
-- **Story 스마트폰과 완전히 별개**: `app.js`의 Story PDA(`#mobile-phone-view`, `phoneCurrentPhase`, `initPhonePhase*`, `triggerCallTrap` 등)를 읽거나 쓰지 않는다. EP09 Story 클리어 → J 해금 경로는 그대로다.
-- invariant: ⓪ 상황은 A→L 순서로 하나씩, E는 "확인된 비정상 상황 E. [해당 항목은 삭제되었습니다.]" 로그만(이벤트·실패 없음). ① 배터리 실시간 감소, 다음 상황까지 간격 = `interval(battery)`(낮을수록 짧음), 0% = `NO_DATA`("SIGNAL LOST / NO DATA", 사망 표현 없음 — `FieldCore.die`의 `logText`). ② L은 세 번째 인증번호를 안전 안내 문자 스레드에 입력해야 구조 시작, 1·2번째는 무효. 구조 소요 시간은 표시하지 않고(`[구조 작업 진행 중] [위치 확인 완료]`), 도착까지 A/C/D가 다시 발생한다. ③ 실패 문장은 transcript가 말하는 결과만(`canonFailures`), 그 외 "기록 중단". ④ 연출(배터리 깨짐, `--:--`, 이름 변형, 가짜 알림)은 정답과 무관.
-- RNG: `FieldEP09Data.random(name)` 주입(`aAnswer`, `bill`, `fApp`, `fIcon`, `fSlot`, `gDir`, `h1~h3`, `jWho`, `code1~3`, `rescue`, `repeat`). 제한 시간(A 25초, B 3초 내 응시·6초 유지, C 30초=3분 표시, F 45초, H 12초 간격, I 40초 내 시작·12초=5분, J 16초, K 8초)은 tuning이다.
-- 진행도/저장: EP08 clear → EP09 해금, **EP09 clear → Field EP10 해금만**(EP10 미구현이라 `연결 준비 중`). 진행 중 스냅샷 없음. Save Code v5·v4 불변.
-- AUTHOR: `onMajorEvent('EP09', id)` — A_MISSED_CALL, B_VIDEO_CALL, C_BILL, D_SCREAM, F_UNKNOWN_APP, G_CRAWL, H_PHOTO, I_SHUTTER, J_AUTOPLAY, K_FAKE_AGENT, L_AUTH_CODE, RESCUE(재발은 `_REPEAT` 접미사), start/clear(id만).
-- 미해결/한계: 효과음은 WebAudio 합성만, Story EP09 PDA는 기존 흐름 그대로, 사람 실측 플레이 시간 미측정.
+- 파일: `ep09-data.js`(제안 순서 `order`, `OVERLAY`/`COMPAT`/`maxActive`/`chainNext`/`codeAfter`, 조정값, 번호·금액 구간·앱·문구·실패 문구), `ep09.js`(상태 머신·스케줄러), `ep09-ui.js`, `tests/ep09_browser_smoke.py`. 모든 DOM id는 `f9-` 접두사.
+- **Story 스마트폰과 완전히 별개**: `app.js`의 Story PDA를 읽거나 쓰지 않는다. EP09 Story 클리어 → J 해금 경로는 그대로다.
+- 비동기 구조: 상황은 단계가 아니라 휴대폰을 쓰는 도중 끼어드는 interrupt(`d.evs`). 제안 순서 A, C, B, F, I, D, E, G, H, J, K는 canon 순서가 아니다. 동시에 critical 상황 최대 2개, `COMPAT` 쌍(A+C, A+F, A+H, A+I, C+F, C+H, C+I, F+H, F+I, G+H)만 겹치며, 화면을 점유하는 B/D/J/K는 다른 상황이 없을 때만 시작한다. 겹칠 수 없는 다음 상황은 기다린다. A/F/G 직후에는 다음 제안이 짧아(12/14/7초) A+C, F+I, G+H가 자연스럽게 겹친다.
+- L 분산: L은 상황이 아니다. 요청하지 않은 인증번호 3개가 3·6·9번째 상황이 시작될 때 도착한다. 1·2번째는 입력해도 "정확하지 않습니다". 세 번째를 안전 안내 문자에 입력하면 `[구조 작업 진행 중] [위치 확인 완료]`(남은 시간 표시 없음). 즉시 clear하지 않고 1~2개 상황(A/C/D 재발)을 더 넘긴 뒤 요원 도착 → 신호가 잠깐 끊김(블랙아웃 2.5초) → `[FIELD OBSERVATION COMPLETE]`.
+- 배터리: 시작 92%. 소모 대기 0.04 < 앱 +0.01 < 카메라 +0.03 < 손전등 +0.06~0.15 < 녹화 +0.2(%/초). 낮을수록 다음 상황까지 간격이 짧다(`interval`, 최대 165초·하한 12초). 사람처럼 상황마다 5초씩 읽고 판단하는 시뮬레이션 기준 12.8분·잔량 17%(목표 12~15분·15~30%). 0% = `SIGNAL LOST / NO DATA`(사망 아님). 충전 없음.
+- invariant: ⓪ E는 "확인된 비정상 상황 E. [해당 항목은 삭제되었습니다.]" 로그만. ① 실패 문장은 transcript 결과만(`canonFailures`), 그 외 "기록 중단". ② 후반 UI 흔들림(배터리 표시 깨짐, `--:--`, 같은 아이콘 앱)은 표시만 바뀌고 판정 state는 일관된다.
+- 진행도/저장: EP08 clear → EP09 해금, **EP09 clear → Field EP10 해금만**. 진행 중 스냅샷 없음. Save Code v5·v4 불변.
+- AUTHOR 훅: `onMajorEvent('EP09', id)` — A_MISSED_CALL … K_FAKE_AGENT, L_AUTH_CODE, RESCUE, RESCUE_DONE(재발은 `_REPEAT`), id만.
+- Story EP09 PDA(2026-10-10 정합): 3단계 흐름·정답·J 해금 경로는 그대로, 안내·결과 문구만 9화 수칙문서 원문으로 맞췄다.
+- 미해결/한계: 효과음은 WebAudio 합성만, 사람 실측 플레이 시간 미측정.
+
+## Field EP10 — 인어왕국 행복 공장: 인어왕자 한 구를 만드는 연속 생산라인 (2026-10-10)
+
+**EP10 = BUILD.** reviewed transcript는 만들지 않는다. 근거는 `docs/transcripts/raw/EP10_인어왕국_행복_공장_original.txt`(+ 원본 영상)이며 `10화.txt`를 이 원문으로 다시 썼다(아래). STT가 불명확한데 영상을 확인하지 못한 곳은 만들지 않았다: 홍보곡 가사는 표시하지 않고 `♪`만, 2·3번째 대사 정정 실패 결과는 원문에서 판독 불가라 "작업 기록 중단".
+
+- `10화.txt` 재작성(텍스트 매칭): 원문에 없던 `문서 번호: 완구회수-216-091호`, 개정/시행 일자/부착 위치/외부 게시 문구, "역관절", "양손이 잘려 나갑니다", "성대가 적출되어", "내려놓지 말고"(원문은 "그 자리에서 내려놓고"), "여덟 각"(원문 "8조각")을 고쳤다. 문서 번호는 원문 STT "완구 회수 다시 2026-09 15"에서 '다시'를 '-'로 읽어 `완구회수-2026-0915`로 두었다 — **영상으로 확인 필요**. 네 번째 비정상 대사는 프로젝트가 쓰던 `여기서 살아줄 거지`를 유지했다(STT "사라질/줄까지/세어 줄"과 발음이 맞음) — **영상으로 확인 필요**. `index.html` 문서 창, `story-data.js`(`EPISODE_DOCS[10]`, c10 인용문, 메신저 인용 "입을 다문 채"), `app.js` Story EP10 CCTV의 사망/생존 문구(흐름·정답·선택지 구조 불변)도 같이 맞췄다.
+- 파일: `field/ep10/ep10-data.js`(대사·머리/팔 배치·조정값·문구·실패 문구·관찰 기록), `ep10.js`(상태 머신), `ep10-ui.js`(작업자 번호→작업 카운터 HUD, 생산라인 띠, 공정 화면·완구 조립 상태, 통로), `tests/ep10_browser_smoke.py`.
+- 단일 toy state: `toy = { head, headInspection, voices[4], voiceCorrections, leftArm, rightArm, tail, tailComplete, finalFace, finalVoice, lamp }`. 머리 검수대에서 통과시킨 머리와 음성 시험대에서 남긴 대사 상태가 최종 검수 대상이다. 치아가 보이는 머리를 통과시키거나 틀린 대사를 정정하지 않고 넘어가면 즉사 대신 마지막 검수 등이 빨간색이 된다.
+- 흐름: 인어왕자 등 버튼 4회(4번째 "여기서 살아줄 거지.") → 탈의실(열린 사물함, 숫자 소리 내어 읽기, 열쇠 오른쪽 손목, 사복 → 하늘색 작업복·분홍색 앞치마·흰색 장갑, 홍보곡이 끝날 때까지 뒤 돌아보지 않기, 노래 뒤 잠그고 나가기) → 머리 검수(앞에서부터 들기·돌리기·눈/머리카락/입술, 입이 벌어지면 내려놓고 검지·중지 누르고 유지, 양 볼 스티커 → 빨간 상자) → 음성 시험(같은 몸체, 버튼 4회, 틀린 대사는 몸체를 마주 보고 정상 문장 입력, 천 끄는 소리·속삭임·턱 접촉 방해) → 팔 결합(같은 번호 한 쌍만, 따라 움직이는 손가락·소매 붙잡기·손등 더듬기는 정상, 다섯 손가락 모임·작업대 밖으로 뻗음만 압착 홈 + 은색 페달 → 파란 회수통 → 같은 번호 예비 팔) → 꼬리 봉합(비늘 아래, 손을 넣은 채 꿰매기, 홍보곡이 타이머이며 카운트다운 없음, 실이 꼬이면 실만 당기기) → 최종 조립(처음 완성된 인형, 눈/금발/치아, 버튼 3회 → 정적 → 4번째, 검수 중 소리 정지 → GREEN/RED) → GREEN이면 인형을 두고 출입문 → HUD 없는 통로에서 홍보곡·작업자 번호가 들려도 입을 다문 채 계속 걷기 → 문 닫힘 → `FIELD OBSERVATION 10 / 10` + 본부 관찰 기록(웃을 때 인어왕자와 같은 목소리, 오른쪽 손목 안쪽 네 자리 번호, 제거 사례 없음).
+- 작업자 번호: Story에 발급된 `GameSave.workerNo()`가 있으면 읽기만 하고, 없으면 run마다 4자리를 만든다(Story 번호를 쓰지 않음).
+- 진행도: EP09 clear → EP10 해금, **EP10 clear는 Field 10/10 기록만**. J/LOOP/Story/CLASSIFIED/AUTHOR 자동 변경 없음. TRUE END/CONGRATULATIONS 없음.
+- 미해결: 문서 번호·네 번째 대사·홍보곡 가사·2/3번째 정정 실패 결과는 영상 확인 필요. 사람 실측 플레이 시간 미측정.
 
 ## PLAYER TYPES / PUBLIC CLASSIFIED (2026-10-08, 이 섹션이 아래 옛 H01~H10 계획을 대체한다)
 
@@ -259,12 +279,13 @@ EP01(한 장소에서 밤을 버티는 관측형)과 달리 **움직이는 열�
 
 - 목표 총수 3, 구현 현황: **`classified-01`만 구현**. `classified-02`/`classified-03`은 **미정(undefined)** — EP07~EP10 reviewed canon을 확인하기 전에는 내용을 만들지 않는다. 향후 발견 방식도 서로 다르게 설계한다(01은 post-clear object reinspection; 나머지는 정상 진행과 무관한 특이 행동 / 후반부 cross-case 관찰 등 후보일 뿐 확정 아님).
 - 구조: `classified.js`(`CLASSIFIED_ENTRIES` 표, `CLASSIFIED_TOTAL=3`, `Classified` 상태 모듈). 저장은 **독립 키 `yuyeon98.classified.v1`**의 `{v:1, discovered:[], viewed:[]}`(알려진 id만 whitelist)이며 AUTHOR state와 섞지 않는다. `CLUES/DEDUCTIONS/ACHIEVEMENTS/SECRETS`(index-sensitive)는 건드리지 않았다. Save Code v5에는 **additive 계층 `classified`**가 추가되었다(없는 구 코드는 현재 상태를 보존하고, 있으면 whitelist 검증 후 교체). 명시적 "기록 초기화"(`GameSave.reset()`)는 CLASSIFIED도 초기화하며 AUTHOR reset 의미는 그대로다. 구 세이브에 키가 없으면 기본값(`discovered: [], viewed: []`)으로 정상 로드.
-- UI: 첫 발견 전에는 CLASSIFIED 메뉴/문구가 **어디에도 없다**. 첫 발견 뒤에만 사건수사노트에 `CLASSIFIED` 탭이 생기고 `[ CLASSIFIED ]` / `복구된 분류 보류 기록 1 / 3` / `■ 01 태양해안 기록 대조` / `□ [미확보]` 두 칸을 보여 준다(항목을 누르면 문서). AUTHOR 여부(`AUTHOR BONUS`, `AUTHOR ACCESS` 등)는 CLASSIFIED UI에 표시하지 않는다. 정상 진행 버튼처럼 보이는 UI(`[CLASSIFIED 찾기]` 등)는 만들지 않는다.
-- **classified-01 (EP06 × EP01 태양해안 기록 대조)**: 기존 canon만 사용한다. EP06(박예림, 2019, 부산광역시 기장군 태양해안 실종)과 EP01(부산광역시 태양해안, 문서 번호 `해안관리-2019-031`)이 **같은 장소를 가리킨다**는 사실만 보여 주며, 인과·동일 사건·동일 존재·은폐는 확정하지 않는다(문서의 마지막 문장은 `두 사건의 관계는 확인되지 않았습니다.`). 발견 조건: EP06 normal clear(→ EP07 unlock, CLASSIFIED 불필요) **후** 교실을 닫기 전의 post-clear free inspection에서 17번 자리를 다시 조사하면 contextual action `17번 자리를 다시 확인한다`가 생기고, 누르면 본부 기록 검색이 자동 대조하는 로그(`[기록 대조 중...]` → 학생명/사건 연도/실종 위치 → 동일 지역 기록 → 문서 번호 → `[자동 연계 실패]` → `열람 권한이 없습니다.`)가 흐른 뒤 `[CLASSIFIED TRACE RECOVERED]` 토스트(`CLASSIFIED 1/3`)가 뜬다. 새 괴이 물건은 만들지 않았고, 재조사는 중복 획득하지 않는다. 구현: `field/ep06/ep06-ui.js`의 post-clear 상태(clear 기록·EP07 unlock은 그대로, `FieldCore.refresh()`와 `[data-live]`로 clear 화면에서 17번 자리와 이 버튼만 활성).
+- UI: 첫 발견 전에는 CLASSIFIED 메뉴/문구가 **어디에도 없다**. 첫 발견 뒤에만 사건수사노트에 `CLASSIFIED` 탭이 생기고 `[ CLASSIFIED ]` / `복구된 분류 보류 기록 1 / 3` / `■ 01 태양해안 기록 대조`만 보여 준다(2026-10-10부터 미정의·미발견 칸 `□ [미확보]`는 표시하지 않는다). 3 / 3도 그 숫자만 바뀌고 다른 일은 일어나지 않는다. AUTHOR 여부(`AUTHOR BONUS`, `AUTHOR ACCESS` 등)는 CLASSIFIED UI에 표시하지 않는다. 정상 진행 버튼처럼 보이는 UI(`[CLASSIFIED 찾기]` 등)는 만들지 않는다.
+- **classified-01 (EP06 × EP01 태양해안 기록 대조)**: 기존 canon만 사용한다. EP06(박예림, 2019, 부산광역시 기장군 태양해안 실종)과 EP01(부산광역시 태양해안, 문서 번호 `해안관리-2019-031`)이 **같은 장소를 가리킨다**는 사실만 보여 주며, 인과·동일 사건·동일 존재·은폐는 확정하지 않는다(문서의 마지막 문장은 `두 사건의 관계는 확인되지 않았습니다.`). 발견 조건: EP06 normal clear(→ EP07 unlock, CLASSIFIED 불필요) **후** 교실을 닫기 전의 post-clear free inspection에서 17번 자리를 다시 조사하면 contextual action `17번 자리를 다시 확인한다`가 생기고, 누르면 **CROSS-REFERENCE** 창이 열린다(2026-10-10): 왼쪽 EP06 문장(`6화.txt` 원문 "2019년 청림고등학교 2학년 3반 17번 박예림 학생이 수학여행 부산광역시 기장군 태양해안 중 실종되었다."), 오른쪽 EP01 문장(`1화.txt` 원문 세 줄, `해안관리-2019-031`). 플레이어가 왼쪽 구절을 눌러 2019 / 부산광역시 / 기장군 / 태양해안을 직접 연결하면(다른 구절은 "대조 결과 없음") 결론 `두 사건의 관계는 확인되지 않았습니다.`가 나오고 `[CLASSIFIED TRACE RECOVERED]` 토스트(`CLASSIFIED 1 / 3`)가 뜬다. 같은 `crossRef` 데이터 형식으로 02/03을 추가할 수 있다. 새 괴이 물건은 만들지 않았고, 재조사는 중복 획득하지 않는다. 구현: `field/ep06/ep06-ui.js`의 post-clear 상태(clear 기록·EP07 unlock은 그대로, `FieldCore.refresh()`와 `[data-live]`로 clear 화면에서 17번 자리와 이 버튼만 활성).
 - **AUTHOR hash/입력**: `AUTHOR_SAVE_HASH`(`f7dda4fd…20ae`)는 기존 값과 동일해 변경 없음. 입력 처리는 trim → NFKC → UTF-8 → SHA-256, 대소문자 구분. **AUTHOR 코드의 평문은 소스·문서에 두지 않는다**(테스트는 환경변수 `AUTHOR_TEST_SECRET`으로 주입).
-- **AUTHOR + classified-01 반응**: `field/field-author.js`의 `AUTHOR_CLASSIFIED_REACTIONS` 표(`'classified-01': { authorTextAppend: 'HIDDEN을 전부 열었을까? 다음 문장은 말이야.' }`)가 **`[제작자에게.txt]`를 AUTHOR가 다시 열 때만** 본문 끝에 한 줄을 붙인다(조건: AUTHOR 해금 AND classified-01 발견; 순서 무관). 발견 순간 AUTHOR 팝업은 없고, 일반 플레이어에게는 파일/문구가 노출되지 않는다. 표만 확장하면 두 번째 AUTHOR 반응 대상(미정)을 추가할 수 있다.
+- **11 / 10 hook**(2026-10-10): `classified.js`의 `window.ElevenTen`. 모든 slot이 정의되고 발견되면(`completeAt` 기록, 팝업 없음) 그 뒤에 현장 관측 시스템을 **다시 열 때** 목록 아래에 `11 / 10` 행이 조용히 생긴다(`field-ui.js` catalog, `#field-dispatch-1110`). 지금은 02/03이 미정이라 도달할 수 없고, 내용은 `OBSERVATION DATA LOADING` 자리 표시만 있다. FieldSave를 건드리지 않아 10 / 10은 그대로이며 Story/J/LOOP gate가 아니다.
+- **AUTHOR + classified-01 반응**: `field/field-author.js`의 `AUTHOR_CLASSIFIED_REACTIONS` 표(`'classified-01': { authorTextAppend: '연결한 건 내가 아니야.' }`, 2026-10-10 교체)가 **`[제작자에게.txt]`를 AUTHOR가 다시 열 때만** 본문 끝에 한 줄을 붙인다(조건: AUTHOR 해금 AND classified-01 발견; 순서 무관). 발견 순간 AUTHOR 팝업은 없고, 일반 플레이어에게는 파일/문구가 노출되지 않는다. 표만 확장하면 두 번째 AUTHOR 반응 대상(미정)을 추가할 수 있다.
 
-**현재 AUTHOR 반응 CLASSIFIED**: classified-01 → "HIDDEN을 전부 열었을까? 다음 문장은 말이야." / **두 번째 AUTHOR 반응 CLASSIFIED: 미정** — reviewed canon이 생기기 전에는 만들지 않는다.
+**현재 AUTHOR 반응 CLASSIFIED**: classified-01 → "연결한 건 내가 아니야." / **두 번째 AUTHOR 반응 CLASSIFIED: 미정** — reviewed canon이 생기기 전에는 만들지 않는다.
 
 ## (대체됨) NORMAL / CLASSIFIED / Hidden — 옛 H01~H10 계획
 
@@ -282,7 +303,7 @@ EP01(한 장소에서 밤을 버티는 관측형)과 달리 **움직이는 열�
 
 별도 상태 예는 `authorAccessLevel`, `authorTraces`다. NORMAL / CLASSIFIED / AUTHOR 진행을 서로 구분한다. AUTHOR 콘텐츠는 정식 세계관이나 일반 엔딩을 대체하지 않는다. normalize는 trim → NFKC → UTF-8 → SHA-256이며 대소문자와 내부 공백을 구분한다. 사용자가 제공한 SHA-256 hash를 `AUTHOR_SAVE_HASH`에 적용했다. 실제 secret 평문은 제공받거나 저장하지 않았으며 비교에는 hash만 사용한다. `AuthorRoute.setHashOverride(hash)`는 개발/로컬 검수용 64자리 SHA-256 hex만 세션 메모리에 받으며 새로고침하면 사라진다. 평문 secret을 인수인계 문서나 JS/Git에 기록하지 않는다. 기존 Save Code 입력/정상 가져오기 경로는 보존한다. 브라우저 해시 비교는 프론트엔드 Easter Egg로만 취급한다.
 
-현재 `field/field-author.js`는 일반 script이며 Field 완료 상태를 읽지 않고 `AuthorRoute`를 제공한다. 기존 세이브 코드 [불러오기] UI에서 먼저 비동기 AUTHOR hash 검사를 하고, 불일치/미설정/Web Crypto 실패 시 입력 원문을 기존 GameSave parser에 전달한다. 일반 Save의 덮어쓰기 확인/새로고침/export 동작은 유지한다. AUTHOR 성공은 Story save를 교체하지 않고 `[UNKNOWN SAVE FORMAT] → [IDENTITY RECORD FOUND] → [RECORD RESTORED]`를 표시하며 입력 UI를 비운다. HTTPS 또는 localhost의 Web Crypto 사용이 필요하다.
+현재 `field/field-author.js`는 일반 script이며 Field 완료 상태를 읽지 않고 `AuthorRoute`를 제공한다. 기존 세이브 코드 [불러오기] UI에서 먼저 비동기 AUTHOR hash 검사를 하고, 불일치/미설정/Web Crypto 실패 시 입력 원문을 기존 GameSave parser에 전달한다. 일반 Save의 덮어쓰기 확인/새로고침/export 동작은 유지한다. AUTHOR 성공은 Story save를 교체하지 않고 입력 UI를 비운 뒤 **아무 문구 없이 사건수사노트 창을 닫는다**(2026-10-10, 이전의 `[UNKNOWN SAVE FORMAT] → … → [RECORD RESTORED]` 연출 제거). 이후 데스크톱에 `[제작자에게.txt]`가 생겨 있다. AUTHOR는 관리자/debug/정답 열람/Field skip/CLASSIFIED·11/10 자동 해금/J 우회 기능이 아니다. HTTPS 또는 localhost의 Web Crypto 사용이 필요하다.
 
 AUTHOR 상태는 독립 localStorage 키 `yuyeon98.author.v1`의 `{v:1, unlocked:false, authorAccessLevel:0, authorTraces:[]}`다. 현재 활성 단계는 1이며 trace ID는 `creator-note`, `ep01-observation` 두 개뿐이다. 신규 브라우저/기존 save에 AUTHOR 기록이 없으면 기본 false이며 구 Save의 Story import는 현재 AUTHOR·Field 기록을 삭제하지 않는다. 명시적인 `GameSave.reset()`/UI 기록 초기화는 Story·Field·AUTHOR 전체 진행을 초기화한다. 새 v5 Save Code는 별도 계층을 명시적으로 복원하며 v4 Story byte 형식 자체에는 AUTHOR 내용을 추가하지 않는다. 이 상태와 hash 비교는 사용자 수정이 가능한 frontend easter egg로서 인증/권한 기능이 아니다.
 
@@ -353,7 +374,7 @@ docs/transcripts/partial/
 | EP07 | (없음) | `reviewed/EP07_나눔_12시_편의점.txt` | REVIEWED |
 | EP08 | (없음) | `reviewed/EP08_유성_워터파크.txt` | REVIEWED |
 | EP09 | (없음) | `reviewed/EP09_안전_안내_문자.txt` | REVIEWED |
-| EP10 | `raw/EP10_인어왕국_행복_공장_original.txt` | (없음) | RAW (보관만, 미반영) |
+| EP10 | `raw/EP10_인어왕국_행복_공장_original.txt` | (없음) | RAW — reviewed를 만들지 않고 원문+영상 기준. 2026-10-10 `10화.txt`·Field EP10에 반영(영상 확인 필요 항목은 EP10 섹션) |
 | J 기록 | (없음) | `reviewed/JAY_요원_제이의_기록.txt` | REVIEWED (보관만, 미반영) |
 
 위 경로는 `docs/transcripts/` 기준이다. RAW 3개는 ZIP의 UTF-16 원본 바이트를 인코딩/줄바꿈 변환 없이 보존했다. 검수/부분 검수 자료 역시 ZIP 그대로 배치했다. EP01 검수본의 09:52 전화번호 미확정 표기도 그대로 유지한다.

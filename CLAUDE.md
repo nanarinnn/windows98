@@ -20,7 +20,7 @@
 ## 실행
 - `npm install` 후 `npm start` (Express 정적 서버, `server.js`)
 - 프레임워크/번들러 없음. 정적 HTML/CSS + 전역 JS 함수 구조를 유지한다.
-- 테스트: `tests/*.py` 브라우저 스모크 테스트(Express 서버를 켠 뒤 실행). 이 PC에서는 `CHROMIUM_PATH`(Playwright chromium의 chrome.exe)와 `PYTHONUTF8=1`을 설정하고 Python 3.12(`%LOCALAPPDATA%/Programs/Python/Python312/python.exe`)로 실행한다. 현재 7종: field, author, record_reset, save_progress, darkweb_ui, ep02, ep03. 테스트는 `/?devunlock=0`으로 접속해 실제 잠금 규칙을 검증한다.
+- 테스트: `tests/*.py` 브라우저 스모크 테스트(Express 서버를 켠 뒤 실행). 이 PC에서는 `CHROMIUM_PATH`(Playwright chromium의 chrome.exe)와 `PYTHONUTF8=1`을 설정하고 Python 3.12(`%LOCALAPPDATA%/Programs/Python/Python312/python.exe`)로 실행한다. 현재 16종: author, classified, darkweb_ui, ep02~ep10, field, jay_viewer, record_reset, save_progress. classified의 AUTHOR 반응 검사는 `AUTHOR_TEST_SECRET` 환경변수가 있을 때만 실행한다. 테스트는 `/?devunlock=0`으로 접속해 실제 잠금 규칙을 검증한다.
 - 개발 모드: localhost에서는 모든 Field 에피소드가 자동 개방된다(보기 전용, 저장 기록 불변). 실제 잠금을 보려면 URL에 `?devunlock=0`.
 
 ## Git 워크플로 (개발 중에는 커밋/푸시하지 않는다)

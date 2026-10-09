@@ -2,6 +2,97 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-10 — AUTHOR: 조용한 meta reaction layer로 정리
+
+- 목적: 사용자 지시(AUTHOR 7번). AUTHOR는 권한 시스템이 아니라 특정 한 사람에게 남긴 meta reaction이다.
+- 변경 파일: `notebook.js`(AUTHOR 입력 성공 시 문구 없이 입력을 비우고 노트 창을 닫음, 이전 `[UNKNOWN SAVE FORMAT] → [IDENTITY RECORD FOUND] → [RECORD RESTORED]` 제거), `field/field-author.js`(`AUTHOR_CLASSIFIED_REACTIONS['classified-01']` = `연결한 건 내가 아니야.`, 02/03 반응은 정의하지 않고 표만 확장 가능), `tests/author_browser_smoke.py`·`tests/record_reset_smoke.py`(성공 문구 대신 조용히 닫힘 확인), `tests/classified_browser_smoke.py`(13: 틀린 값·소문자·부분 입력 실패, 전각+공백 NFKC 정규화 성공, 소스 전체에 평문 없음).
+- 보존: 키 `yuyeon98.author.v1` 구조와 의미, hash `f7dda4fd…20ae`, trim → NFKC → UTF-8 → SHA-256, Save Code v5 semantics(구 save에 AUTHOR가 없어도 현재 상태 유지, 명시적 기록 초기화만 reset), `[제작자에게.txt]` 기본 본문. AUTHOR는 CLASSIFIED·11/10을 자동 해금하지 않고 Story/J/Field를 건너뛰지 않는다. 반응 문장은 AUTHOR 해금 AND classified-01 발견일 때만, 순서와 무관하게 한 번만 붙는다.
+- 검증: 전체 회귀 16종(author, classified, darkweb_ui, ep02~ep10, field, jay_viewer, record_reset, save_progress) ALL PASS. classified의 AUTHOR 반응 8~10·13번은 `AUTHOR_TEST_SECRET` 환경변수를 실행 중에만 넣어 별도 실행해 통과(파일에 저장하지 않음).
+- Git: dev 브랜치 커밋/푸시(사용자 선택), main/프로덕션 미배포.
+
+## 2026-10-10 — PUBLIC CLASSIFIED: CROSS-REFERENCE와 11 / 10 hook
+
+- 목적: 사용자 지시(CLASSIFIED 6번). 기존 사건 기록 사이의 연결점을 플레이어가 직접 교차 검증하는 층.
+- 변경 파일: `classified.js`(classified-01 `crossRef` 데이터와 `Classified.crossReference()` 렌더러, `CLASSIFIED_SLOTS`, ids 실시간 조회, 3/3 시 `completeAt`, `window.ElevenTen`), `field/ep06/ep06-ui.js`(17번 자리 재조사 → CROSS-REFERENCE), `notebook.js`(`□ [미확보]` 칸 제거), `field/field-ui.js`(목록 재방문 시 `11 / 10` 행 hook, `openedAt`), `field/field.css`(CROSS-REFERENCE 스타일), `tests/classified_browser_smoke.py`(연결 조작, 원문 인용 검사, 12: 3/3과 11/10 시뮬레이션).
+- 핵심: 왼쪽 EP06 문장(6화.txt 원문)과 오른쪽 EP01 세 줄(1화.txt 원문)을 나란히 보여 주고, 플레이어가 2019 / 부산광역시 / 기장군 / 태양해안을 눌러 연결해야 결론 `두 사건의 관계는 확인되지 않았습니다.`와 `[CLASSIFIED TRACE RECOVERED]`(`CLASSIFIED 1 / 3`)가 나온다. 인과·정체는 확정하지 않는다. 첫 발견 전에는 CLASSIFIED가 어디에도 없고, 이후에도 미정의 slot은 보이지 않는다. 3/3은 숫자만 바뀌며 팝업이 없다. 11/10 행은 3/3 이후 현장 관측 시스템을 다시 열 때만 조용히 생기며 FieldSave(10/10)를 건드리지 않는다. 02/03이 미정이라 지금은 도달 불가, 내용은 자리 표시뿐.
+- Save: `yuyeon98.classified.v1`에 `completeAt`(3/3일 때만) additive. AUTHOR와 독립, Story/J/LOOP gate 없음.
+- 검증: 전체 회귀 16종(author, classified, darkweb_ui, ep02~ep10, field, jay_viewer, record_reset, save_progress) ALL PASS. classified의 AUTHOR 반응 8~10·13번은 `AUTHOR_TEST_SECRET` 환경변수를 실행 중에만 넣어 별도 실행해 통과(파일에 저장하지 않음).
+- Git: dev 브랜치 커밋/푸시.
+- 미해결: CLASSIFIED 02/03 canon과 11/10 실제 연출은 미정.
+
+## 2026-10-10 — 제이의 기록: 읽을수록 무너지는 문서 표시 계층
+
+- 목적: 사용자 지시(J 5번). Field나 미니게임이 아니라 읽는 행위 자체가 경험이 되도록.
+- 변경 파일: 새 `jay-viewer.js`(표시 계층), `styles.css`(jv-* 스타일), `index.html`(스크립트 1줄), `vercel.json`(정적 배포 목록에 `jay-viewer.js`), 새 `tests/jay_viewer_smoke.py`.
+- 핵심: 본문은 `#jay-report-textarea` 그대로(원본 STT 파일로 교정·덮어쓰기 하지 않음, 향후 reviewed 본문은 textarea 내용만 교체). 스크롤 위치로 정상 → 관찰(`2019년 12월 6일.`) → 모방(`개체 D:`) → 동화(첫 `우리 병동`) 4단계. 잔상·메아리는 기록 자체의 문장만 사용. 줄 수·높이를 바꾸는 효과는 쓰지 않아(시험 중 line-height 변경이 끝까지 스크롤 판정을 깨뜨려 제거) 기존 끝까지 스크롤 → 4.5초 → `triggerLoopShutdown()`과 닫기 동작이 그대로다. 열 때마다 처음부터 같은 연출.
+- 보존: `jayUnlocked`·해금 조건·블루스크린/LOOP/`finaleSeen` semantics 불변, Field 10/10은 조건이 아님(시험으로 확인).
+- 검증: 전체 회귀 16종(author, classified, darkweb_ui, ep02~ep10, field, jay_viewer, record_reset, save_progress) ALL PASS. classified의 AUTHOR 반응 8~10·13번은 `AUTHOR_TEST_SECRET` 환경변수를 실행 중에만 넣어 별도 실행해 통과(파일에 저장하지 않음).
+- Git: dev 브랜치 커밋/푸시.
+
+## 2026-10-10 — Field EP10 인어왕국 행복 공장 구현 + 10화 수칙문서 원문 정합
+
+- 목적: 사용자 지시(EP10 4번)와 "웹 내부 텍스트 매칭" 정리. reviewed는 만들지 않고 원문 STT + 영상 기준.
+- 변경 파일: 새 `field/ep10/ep10-data.js`·`ep10-ui.js`·`ep10.js`, 새 `tests/ep10_browser_smoke.py`, `field/field.css`(EP10), `index.html`(스크립트 3줄, EP10 문서 창 본문), `10화.txt`(원문 기준 재작성), `story-data.js`(`EPISODE_DOCS[10]`, c10 인용, 메신저 인용), `app.js`(Story EP10 CCTV 문구만).
+- 10화 텍스트 매칭: 원문에 없던 문서 번호 `완구회수-216-091호`·개정/시행/부착 위치/외부 게시 문구·"역관절"·"양손이 잘려 나갑니다"·"성대가 적출"·"내려놓지 말고"·"여덟 각"을 원문대로 고침. 문서 번호는 STT "완구 회수 다시 2026-09 15" → `완구회수-2026-0915`, 네 번째 대사는 기존 `여기서 살아줄 거지` 유지(둘 다 영상 확인 필요). Story EP10 CCTV는 사망/생존/클리어 문구만 canon으로 교체(예: 번호가 "흡수되어 사라졌다" → "피부 안쪽으로 눌린 것처럼 남음, 제거 사례 없음"), 선택지 구조·정답·클리어 조건 불변.
+- Field: 단일 toy state가 탈의실 → 머리 → 음성 → 팔 → 꼬리 → 최종 조립 → 통로를 따라가며, 통과시킨 머리와 남긴 대사가 최종 GREEN/RED를 결정. 공정은 별도 페이지가 아니라 생산라인 띠로 이어지고 HUD는 `작업자 4817` → `4817 / 검수 완료 · 불량 회수`로 바뀌며 통로에서는 사라짐. 홍보곡이 타이머(카운트다운 없음, 가사는 원문에 없어 `♪`만). GREEN 뒤 바로 clear하지 않고 통로를 끝까지 걸어야 `FIELD OBSERVATION 10 / 10` + 본부 관찰 기록. TRUE END/CONGRATULATIONS 없음.
+- 보존: EP10 clear는 Field 기록만. J/LOOP/Story/CLASSIFIED/AUTHOR/Story 작업자 번호 불변(시험으로 확인). Story 작업자 번호가 있으면 읽기만 한다.
+- 검증: 전체 회귀 16종(author, classified, darkweb_ui, ep02~ep10, field, jay_viewer, record_reset, save_progress) ALL PASS. classified의 AUTHOR 반응 8~10·13번은 `AUTHOR_TEST_SECRET` 환경변수를 실행 중에만 넣어 별도 실행해 통과(파일에 저장하지 않음). EP10은 원문 문장 26개 대조, 금지 문구 부재, 공정별 정답/실패, 앞 공정 실수 → RED 2종, 재파견, Save v5, 390px.
+- Git: dev 브랜치 커밋/푸시.
+- 미해결: 문서 번호·네 번째 대사·홍보곡·2/3번째 대사 정정 실패 결과는 영상 확인 필요. 사람 실측 플레이 시간 미측정.
+
+## 2026-10-10 — Field EP09 리워크: 휴대폰을 관리하며 버티는 비동기 위기관리
+
+- 목적: 사용자 지시(EP09 3번). A~L을 순서대로 처리하는 체크리스트가 아니라, 휴대폰을 쓰는 도중 끼어드는 비동기 interrupt.
+- 변경 파일: `field/ep09/ep09-data.js`(제안 순서, `OVERLAY`/`COMPAT`/`maxActive`/`chainNext`/`codeAfter`, 배터리·간격 조정, 클리어 문구), `ep09.js`(단일 `d.ev` → `d.evs` 스케줄러, L을 상황에서 분리해 코드 3개를 3·6·9번째 상황 시작 때 발송, 구조 후 1~2개 상황을 더 넘긴 뒤 신호 끊김 → 블랙아웃 → clear), `ep09-ui.js`(다중 상황 표시), `field/field.css`(블랙아웃), `tests/ep09_browser_smoke.py`(비동기·호환 표·L 분산·페이싱·배터리 순서).
+- 핵심: 동시에 critical 최대 2개, 호환 쌍만 겹침, 화면 점유형 B/D/J/K는 단독. 배터리 소모 대기 < 앱 < 카메라 < 손전등 < 녹화, 낮을수록 간격 단축, 충전 없음. 상황마다 5초씩 읽는 시뮬레이션 기준 12.8분·잔량 17%(목표 12~15분·15~30%).
+- 보존: Story PDA 완전 분리, E는 삭제 표시만, canon 실패 문장 불변, EP09 clear → EP10 해금만.
+- 검증: 전체 회귀 16종(author, classified, darkweb_ui, ep02~ep10, field, jay_viewer, record_reset, save_progress) ALL PASS. classified의 AUTHOR 반응 8~10·13번은 `AUTHOR_TEST_SECRET` 환경변수를 실행 중에만 넣어 별도 실행해 통과(파일에 저장하지 않음).
+- Git: dev 브랜치 커밋/푸시.
+
+## 2026-10-10 — Field EP08 보강: 입장 손목 밴드 착용 + 페이싱
+
+- 목적: 사용자 지시(EP08 2번, 앞선 재설계에 "입장 → 손목밴드 → 탈의실"과 10~12분 권장 반영).
+- 변경 파일: `field/ep08/ep08-data.js`·`ep08.js`·`ep08-ui.js`(탈의실 앞 `전자 손목 밴드를 찬다` 단계, 배회 시계 20/15/12초당 1분), `tests/ep08_browser_smoke.py`.
+- 검증: 전체 회귀 16종(author, classified, darkweb_ui, ep02~ep10, field, jay_viewer, record_reset, save_progress) ALL PASS. classified의 AUTHOR 반응 8~10·13번은 `AUTHOR_TEST_SECRET` 환경변수를 실행 중에만 넣어 별도 실행해 통과(파일에 저장하지 않음). 즉시 행동 봇 기준 약 4.3분(사람 실측 미측정). "[플레이어 이름]"은 이름 체계가 없어 만들지 않았다.
+- Git: dev 브랜치 커밋/푸시.
+
+## 2026-10-10 — Field EP07 리워크: 야간 편의점 근무 시뮬레이션
+
+- 목적: 사용자 지시(EP07 1번). 고정 대기열 `N A N B N C N D N E N F → G`(체크리스트)를 실제 업무 루프로 교체.
+- 바꾼 방식: A~G를 단계가 아니라 정상 업무 루프(띵동 → 입장 → 계산대 → 결제기 보는 척 거울 → 스캔 → 신분증 → 결제 → 봉투 → 퇴장) 안에 끼어드는 interrupt로 바꿨다. 근무 일정(손님 11명 + 보이지 않는 띵동/결제, 화장실 급함, 03:00 폐기 알림, 06:00)이 손님 없는 시간에만 흐르는 시계로 진행되고, 후반일수록 손님이 줄어든다. 정답 버튼·상황 이름 없이 같은 UI 안에서 이상을 발견해야 한다(같은 "이거 얼마예요?"가 내 목소리와 겹칠 때만 말하면 실패, 거울은 손님이 이쪽을 볼 때 보면 들킴, 신분증은 드래그 속도, D는 상품명 칸 빈칸/코드).
+- 변경 파일: `field/ep07/ep07-data.js`·`ep07.js`·`ep07-ui.js`(전면 재작성), `field/field.css`(EP07), `field/field-ui.js`(공용 로그 갱신 버그: 80줄 한도에서 같은 문구가 반복되면 화면에 안 보이던 문제 → 마지막 항목 객체로 비교), `tests/ep07_browser_smoke.py`.
+- 핵심: 자동문 카운트는 화면 어디에도 표시하지 않고 플레이어가 메모(+/−)에 직접 기록. 보이지 않는 손님이 결제·퇴장하기 전 화장실(잠금 + 0명이어도) = canon E. 전 근무 폐기 기록이 처음부터 있고 같은 상품이 진열대에 돌아와 있음. 06:00 창밖 밤, 밖으로 나가면 canon G, 알바지옥 `근무 종료` 반복.
+- 보존: 영상 5개, 수칙 문서 단일 출처, 저장 훅, canon 실패 문장, EP07 clear → EP08만, Story/J/LOOP/AUTHOR/CLASSIFIED 불변.
+- 검증: 전체 회귀 16종(author, classified, darkweb_ui, ep02~ep10, field, jay_viewer, record_reset, save_progress) ALL PASS. classified의 AUTHOR 반응 8~10·13번은 `AUTHOR_TEST_SECRET` 환경변수를 실행 중에만 넣어 별도 실행해 통과(파일에 저장하지 않음). 즉시 행동 봇 기준 약 5분(사람 실측 미측정).
+- Git: dev 브랜치 커밋/푸시.
+
+## 2026-10-10 — Field EP08 재설계: 체크리스트형 일정 → 18:00 폐장까지의 연속 생존 run
+
+- 목적: 사용자 지시("EP08을 폐장 시간이 다가오는 워터파크에서 여러 수칙이 동시에 겹치는 연속 생존 게임으로 재설계"). 지시의 `D:\YUYEON\windows98`는 10-04 이후 갱신되지 않은 예전 클론이라 최신 `main` 작업 트리(`C:\Users\Ahn\windows98`)에서 작업했다. 지시의 `EP08_유성온천_reviewed.txt`는 없고 `docs/transcripts/reviewed/EP08_유성_워터파크.txt`를 최상위 canon으로 썼다.
+- 기존 구조에서 바꾼 것: 21단계 고정 일정(시설 도착 → 규칙 하나 → 정답 선택 → 다음 시설, 모든 시설 강제 방문, 다음 이용 안내 표시)을 제거하고 하나의 run으로 교체. 재사용: 영상 5개, 구역 개념·지도, 사물함/선베드/메뉴, canon 문구·실패 문구, `reportSelector`, `FieldCore`/`FieldSave` 훅, 스크립트 순서. 입구 단계·미아 인계·부상/수술실 안내 단계·사물함 회수는 뺐다.
+- 변경 파일: `field/ep08/ep08-data.js`, `field/ep08/ep08.js`, `field/ep08/ep08-ui.js`(전면 재작성), `field/field.css`(EP08 블록), `tests/ep08_browser_smoke.py`(재작성), `PROJECT_CONTEXT.md`, `CHANGELOG_AI.md`.
+- continuous survival: 11구역 지도(파도풀 허브, 인접 구역만 이동), 게임 시계 17:02 시작(canon 아님). 튜토리얼은 행동으로만 시간이 흐르고, 17:30 이후 배회 중 15/12/10초당 1분(후반 가속). 파도풀 core 전 17:14, 슬라이드 core 전 17:56에서 시계 정지로 core를 보장.
+- core / optional: CORE = 탈의실(숨 참기 press-and-hold + 이동 + 신고) / 파도풀(17:15 마른 사람, 17:30까지 정지) / 슬라이드(곡선 직접 세기, 암전 후 4번째, 팔·벽·감속·정지 + 긴급 버튼) / 폐장·정산. OPTIONAL 덱 = 파도풀 오버레이(성함 방송|요원대 있는 후루라기) + 이동형 2(밴드 헐거움·풀림 / 혼자 있는 아이 / 빈 요원대 후루라기) + 17:49 후반 중첩(혼자인 캐릭터 + 물이면 후루라기, 땅이면 성함 방송) + 시설 이상 2(스파 갈증 / 주문하지 않은 메뉴·수술 질문 / 빈 선베드). run당 발동 3~6개.
+- overlap scheduler: 장면 1 + 오버레이 1까지. `OVERLAP_RULES`(wave: 성함 방송·요원대 있는 후루라기 / character: 빈·있는 후루라기·성함 방송 / bath·food·sunbed: 성함 방송)에 있는 조합만 붙고, 각 조합에 두 수칙을 모두 지키는 행동이 있다(예: 캐릭터+빈 요원대 → 멈춤 → 요원대 확인 → 마주 본 채 뒷걸음질로 물 밖). 후루라기 처리 중에는 캐릭터 타이머 정지. 오버레이가 남아 있으면 새 위험을 시작하지 않는다.
+- 18:00 closing: 폐장 방송(17:50 이후 "환자 여러분") → 음악 정지 → "조금 더 놀고 가자." → 정중히 거절해도 막아섬 → 밴드 긴급 버튼 → 10초 동안 길이 열림(지체 시 재차단, 긴급 버튼 재사용 가능) → 출구.
+- settlement finale: 정산기 출력(실제 이용 + 쓰지 않은 시설 + 알 수 없는 내역 1줄, 금액은 canon 아님) → 결제/이의 제기/환불 요청/직원 호출. 이의·환불·직원에게 이의 = 실패, 직원 호출 후 "그대로 결제" 복귀 가능. 결제 → 밴드 반납 → 자동문 → 퇴장 → `[FIELD OBSERVATION COMPLETE]`.
+- 실패: `[CASE TERMINATED] … [퇴장 기록 없음]` 형식, canon 결과 8개(`canonFailures`)는 transcript 문장 그대로(LOCKER_BREATH·SUNBED 문장을 원문 어순으로 교정). 재파견은 현재 run만 초기화.
+- 검증: `node --check`(ep08 3개), `git diff --check` 통과. `tests/ep08_browser_smoke.py` ALL PASS(문서 동일성·canon 실패 문장 원문 대조, 잠금/해금, HUD 3개·인접 이동·스포일러 없음, CORE 4개 정답/실패, 실제 마우스 숨 참기 드래그, 파도풀+성함 방송/후루라기 중첩, 슬라이드 3→4곡선, optional 8종, 캐릭터+후루라기 중첩, 폐장·재차단, 정산 실패 3종/성공, EP09만 해금, Story 저장·J 플래그 불변, 불가능 조합 거부, 덱 4종 자연 진행 softlock 없음, 재파견, Save Code v5, 390px 터치). 회귀: author, classified, darkweb_ui, ep02~ep07, ep09, field, record_reset, save_progress 모두 통과. 즉시 행동 봇 기준 run 약 213~216초, 사람의 실제 플레이 시간은 측정하지 않았다.
+- 보존(save/Story compatibility): `FieldSave` 형식·EP08 clear 레코드·Save Code v5/v4 불변, 진행 중 스냅샷 없음(`PROGRESS_IDS` 불변). Story/J/블루스크린/LOOP 02/finale/AUTHOR/CLASSIFIED 코드 미변경, `8화.txt`·`index.html` 문서 창 미변경.
+- Git: 사용자 확인 전이라 commit/push하지 않았다(로컬 개발 서버에만 반영).
+- 미해결: 목표 8~12분은 사람 플레이로 실측 필요(필요 시 `TIME_PHASES.drift` 조정). 효과음 없음. 부상 접수/수술실 안내 규칙은 이번 run에 넣지 않았다.
+
+## 2026-10-10 — Story EP09 PDA·EP07 CCTV 문구를 새 수칙문서(canon)와 정합
+
+- 목적: 사용자 지시("Story PDA도 맞추는 게 낫다, 로컬에 반영"). 직전 EP09 항목의 미해결 2건(Story EP09 PDA 세부 불일치, Story EP07 CCTV `0050-0`) 해소.
+- 변경 파일: `app.js`(Story EP09 PDA `initPhonePhase1~3`·`resolvePhase2Success`·`triggerCallTrap`·`handlePhoneInputSubmit` 문자열, Story EP07 CCTV 선택지 2), `PROJECT_CONTEXT.md`(EP09 섹션), `CHANGELOG_AI.md`.
+- 핵심: A 안내를 "기재된 번호로 반드시 발신 / 연결되지 않더라도 발신 기록이 남는 것으로 충분"으로, B 안내를 "수신을 받지도 거절하지도 마시고 화면 속 남자의 눈을 계속 응시"로(입력창 예시 `STARE` 노출 제거, 입력 판정은 그대로), L 인증 번호 발신자를 `[본부]`에서 `웹발신`/`인증센터`/`Verify`(Field EP09와 동일)로, 지침을 "세 번째로 온 인증 번호를 본 안내 문자에 입력"으로 교정. 실패 문구 "테러리스트 세력의 격리 구역으로 강제 전송"(K를 오용한 비canon)을 단계별 canon 결과(A 결과 / B 결과 / L "인증 번호가 정확히 전송되어야만 구출 작업이 가능")로 교체. 클리어 문구 머리를 `[구출 작업 진행 중] [위치 확인 완료]`로. EP07 CCTV 선택지·로그의 `0050-0`을 `0050-0200`으로.
+- canonical 근거: `9화.txt`/`docs/transcripts/reviewed/EP09_안전_안내_문자.txt` 상황 A·B·K·L, `7화.txt`/`EP07_나눔_12시_편의점.txt` 상황(POS) "본부 0050-0200".
+- 검증: `node --check app.js`, `git diff --check` 통과. 서버 실행 후 `tests/ep09_browser_smoke.py`(Story PDA 1단계 `070-0813-0813`·placeholder 포함), `author_browser_smoke.py`·`field_browser_smoke.py`(PDA 3단계 `5264` → J/BSOD 경로), `ep07_browser_smoke.py` ALL PASS. 나머지 에피소드 테스트는 실행하지 않았다. PDA를 사람이 직접 끝까지 플레이해 보지는 않았다.
+- 보존: PDA 3단계 구조·정답(`070-0813-0813`, `5264`, `STARE`/`응시` 입력)·`GameProgress.onDeath/onClear(9)`·`ep9GoodEndingCleared`→J 해금, `index.html`의 `#mobile-phone-view` 마크업, Field EP09, Save Code 형식 불변.
+- Git: 사용자 확인 전이라 commit/push하지 않았다(로컬 개발 서버에만 반영).
+- 미해결: 없음.
+
 ## 2026-10-10 — Field EP09 안전 안내 문자: 휴대전화가 플레이 공간인 Field 구현 + 9화 수칙문서 원문 정합
 
 - 목적: 사용자 지시("EP09 구현, reviewed가 최상위 canon, A~L 순서 유지, E는 삭제 상태만, Story 스마트폰 불변, EP09 clear → EP10만 해금"). 원본(`9화-안전안내문자_original.txt`)은 gameplay 근거로 쓰지 않았다.
