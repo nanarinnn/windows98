@@ -1256,3 +1256,23 @@ input[type=range]::-webkit-slider-thumb:active {
 
 /* Darkweb explorer file icons: wide enough that "name.ext" labels do not break mid-extension. */
 #darkweb-desktop .desktop-file { width: 110px !important; }
+/* [요원 제이의 기록] presentation layer (jay-viewer.js). The textarea text is never altered; these only sit around it. */
+.jv-layer { position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+#jayReportWindow .jv-text { position:relative; z-index:1; background:transparent !important; transition:color 3s; }
+#jayReportWindow .window-content { background:#0d0d0d; }
+.jv-mark { position:absolute; right:18px; bottom:14px; font:bold 22px monospace; color:rgba(255,85,85,.07); transform:rotate(-8deg); transition:opacity 3s; }
+.jv-ghost { position:absolute; left:14px; right:24px; top:38%; font:12px/1.6 monospace; color:rgba(255,85,85,0); white-space:pre-wrap; transition:color 2s, transform .5s; }
+.jv-s2 .jv-ghost { color:rgba(255,85,85,.06); }
+.jv-s3 .jv-ghost { color:rgba(255,85,85,.09); }
+.jv-echo { position:absolute; left:28px; right:28px; bottom:22%; font:12px/1.6 monospace; color:rgba(255,120,120,0); white-space:pre-wrap; }
+.jv-echo.jv-show { animation:jv-echo 3.2s ease-out; }
+@keyframes jv-echo { 0% { color:rgba(255,120,120,0); } 25% { color:rgba(255,120,120,.22); } 100% { color:rgba(255,120,120,0); } }
+.jv-caret { position:absolute; left:13px; bottom:9px; width:7px; height:14px; background:#ff5555; opacity:0; }
+.jv-s2 .jv-caret, .jv-s3 .jv-caret { animation:jv-caret 1.1s steps(1) infinite; }
+@keyframes jv-caret { 0%, 50% { opacity:.55; } 51%, 100% { opacity:0; } }
+#jayReportWindow .jv-text.jv-double { text-shadow:0 1px 0 rgba(255,85,85,.55), 0 -9px 0 rgba(255,85,85,.18); }
+.jv-s4 .window-header span { opacity:.45; letter-spacing:.5px; transition:opacity 4s; }
+.jv-s4 .jv-mark { opacity:.25; }
+/* no layout change (line count/height stay identical, so the existing scroll-to-end trigger is never moved) */
+#jayReportWindow.jv-s4 .jv-text { text-align:justify; color:#e26a6a !important; }
+@media (prefers-reduced-motion: reduce) { .jv-s2 .jv-caret, .jv-s3 .jv-caret, .jv-echo.jv-show { animation:none; } .jv-ghost { transition:none; } }

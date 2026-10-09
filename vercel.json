@@ -9,6 +9,7 @@
     { "src": "story-data.js", "use": "@vercel/static" },
     { "src": "notebook.js", "use": "@vercel/static" },
     { "src": "terminal.js", "use": "@vercel/static" },
+    { "src": "jay-viewer.js", "use": "@vercel/static" },
     { "src": "field/**", "use": "@vercel/static" },
     { "src": "image/**", "use": "@vercel/static" },
     { "src": "movies/**", "use": "@vercel/static" },
