@@ -4148,12 +4148,12 @@ function triggerEventC_EP7() {
             }
         },
         {
-            text: "[선택지 2] 결제를 중단하고 즉시 유선 수화기를 들어 본부 긴급 신고 번호(0050-0)를 누른다.",
+            text: "[선택지 2] 결제를 중단하고 즉시 유선 수화기를 들어 본부 0050-0200을 누른다.",
             action: () => {
                 clearCCTVChoicesEP7();
                 const blackout = document.getElementById('cctv-blackout-ep7');
                 if (blackout) blackout.style.display = 'flex';
-                addCCTVLogEP7("[대응] 결제를 중단하고 유선 전화로 본부(0050-0)에 긴급 신고 접수 중...", false);
+                addCCTVLogEP7("[대응] 결제를 중단하고 유선 전화로 본부(0050-0200)에 긴급 신고 접수 중...", false);
                 
                 setTimeout(() => {
                     if (blackout) blackout.style.display = 'none';
@@ -5223,7 +5223,7 @@ const EPISODE_CONFIGS = {
                 choices: [
                     {
                         text: '[선택지 1] 누구인지 확인하기 위해 뒤를 돌아본다.',
-                        death: { reason: '호명 응답(뒤돌아봄)', desc: '사물함 안으로 빨려 들어가 8각으로 접혀 압축되었습니다.' }
+                        death: { reason: '호명 응답(뒤돌아봄)', desc: '노래가 끝나기 전에 뒤를 돌아본 작업자는 자신의 사물함 안에 8조각으로 접힌 채 발견되었습니다.' }
                     },
                     {
                         text: '[선택지 2] 노래가 끝날 때까지 사물함만 노려보며 묵묵히 옷을 갈아입는다.',
@@ -5240,11 +5240,11 @@ const EPISODE_CONFIGS = {
                 choices: [
                     {
                         text: '[선택지 1] 징그러워서 즉시 인형 머리를 불량품 상자에 집어 던진다.',
-                        death: { reason: '작업 지시 위반', desc: '작업 지시 위반. 기계 팔이 내려와 귀하의 목을 뽑아 컨베이어에 올렸습니다.' }
+                        death: { reason: '작업 지시 위반', desc: '입이 벌어진 머리를 그대로 던졌습니다. 작업 기록 중단.' }
                     },
                     {
-                        text: '[선택지 2] 벌어진 입술 사이에 귀하의 검지와 중지를 깊숙이 집어넣고 버틴다.',
-                        survive: '축축한 혀가 손가락을 핥다 입을 다물었습니다. 불량 상자에 폐기 성공.'
+                        text: '[선택지 2] 그 자리에서 내려놓고 입술 사이에 검지와 중지를 넣은 채 버틴다.',
+                        survive: '안쪽이 축축하고 혀가 손가락을 건드렸지만 빼지 않았습니다. 입이 처음 크기로 돌아왔습니다. 양쪽 볼에 불량 스티커를 붙여 빨간 상자에 넣었습니다.'
                     }
                 ]
             },
@@ -5253,7 +5253,7 @@ const EPISODE_CONFIGS = {
                 time: 'TIME: 23:40 (음성 시험)',
                 video: 'movies/ep10_event_voice.mp4',
                 fallback: '[FEED: CAM-VOICE VOICE_TEST_BENCH]',
-                log: '[경고] 4번째 버튼을 누르자 인형이 말합니다. "여기서 살아줄 거지?" — 돌발 미션: 마이크 모듈에 올바른 문장을 입력하여 정정하십시오.',
+                log: '[경고] 4번째 버튼을 누르자 인형이 말합니다. "여기서 살아줄 거지" — 몸체를 마주 본 채 정상 문장을 끝까지 말해 정정하십시오.',
                 choices: [
                     {
                         text: '[직접 입력] 올바른 문장으로 정정한다 (제한 시간 10초)',
@@ -5263,24 +5263,24 @@ const EPISODE_CONFIGS = {
                             seconds: 10,
                         },
                         survive: '귀에서 들리던 환청이 사라지고 음성 칩이 리셋되었습니다.',
-                        death: { reason: '음성 정정 실패', desc: '정정 실패. 성대가 강제로 적출되어 인형의 스피커 모듈에 이식되었습니다.' }
+                        death: { reason: '음성 정정 실패', desc: '음성 시험대 안쪽에 앉은 채 발견되었습니다. 입은 양쪽 귀 밑까지 찢어진 채 굳어 있었습니다. 그것은 작업자가 다가올 때마다 "여기서 살아줄 거지"라고 반복했습니다.' }
                     }
                 ]
             },
             {
-                cam: 'CH 04: CAM-ARM [팔 결합대 뷰] - 상황 D (손가락 모임 및 역관절)',
+                cam: 'CH 04: CAM-ARM [팔 결합대 뷰] - 상황 D (손가락 모임)',
                 time: 'TIME: 01:10 (팔 결합)',
                 video: 'movies/ep10_event_arm.mp4',
-                fallback: '[FEED: CAM-ARM ARM_ASSEMBLY_REVERSE_JOINT]',
+                fallback: '[FEED: CAM-ARM ARM_ASSEMBLY_FINGERS]',
                 log: '[경고] 집어 든 인형의 5개 손가락이 귀하를 향해 모여들며 소매를 붙잡습니다.',
                 choices: [
                     {
                         text: '[선택지 1] 무시하고 그대로 몸체에 핀을 밀어 넣어 결합을 시도한다.',
-                        death: { reason: '불량 부품 결합 시도', desc: '인형 팔에 끌려 들어가 양손이 작업대에 눌린 채 압착되었습니다.' }
+                        death: { reason: '불량 부품 결합 시도', desc: '압착하지 못한 팔에 붙잡힌 작업자는 양손이 작업대에 눌린 채 발견되었습니다. 손가락마다 작은 플라스틱 손이 하나씩 달려 있었습니다.' }
                     },
                     {
                         text: '[선택지 2] 즉시 인형 팔을 오른쪽 압착 홈에 넣고 은색 페달을 밟아 절단한다.',
-                        survive: '팔이 끊어져 나갔습니다. 예비 부품으로 결합을 완료합니다.'
+                        survive: '팔이 끊어져 나갔습니다. 파란 회수통에 버리고 같은 번호의 예비 팔로 결합을 완료합니다.'
                     }
                 ]
             },
@@ -5293,11 +5293,11 @@ const EPISODE_CONFIGS = {
                 choices: [
                     {
                         text: '[선택지 1] "끝났다!" 환호하며 뒤도 돌아보지 않고 출입문으로 뛰어나간다.',
-                        death: { reason: '미승인 음성 발생', desc: '미승인 음성 발생으로 검수등이 빨간색으로 변경되며 재작업실로 끌려갔습니다.' }
+                        death: { reason: '입을 다물지 않음', desc: '출입문을 나서며 입을 열었습니다. 작업 기록 중단.' }
                     },
                     {
                         text: '[선택지 2] 입을 굳게 다문 채 무표정으로 묵묵히 출입문을 향해 걸어 나간다.',
-                        survive: '[GOOD ENDING] 홍보곡이 다시 재생되는 공장 밖으로 무사히 탈출했습니다! (손목의 번호가 피부 안쪽으로 스며들어 사라졌습니다.)'
+                        survive: '[GOOD ENDING] 홍보곡이 다시 시작되고 작업자 번호를 부르는 소리가 들렸지만 입을 다문 채 걸음을 멈추지 않았습니다. 공장 밖으로 나왔습니다.'
                     }
                 ]
             }
@@ -5308,11 +5308,11 @@ const EPISODE_CONFIGS = {
             title: 'SHIFT COMPLETE',
             lines: [
                 '[SUCCESS] 인어왕자 인형 1구 최종 검수 통과.',
-                '[상태] 작업 번호 4자리 피부 안쪽으로 흡수 확인.',
+                '[상태] 오른쪽 손목 안쪽에 네 자리 사물함 번호가 피부 안쪽으로 눌린 것처럼 남음. 제거 사례 없음.',
                 '[조치] 공장 외부 구역으로 안전 복귀. 인어왕국 행복 공장을 재방문하지 마십시오.'
             ],
             workerNumber: true,
-            alert: '🧜 [인어왕국 행복 공장 퇴근]<br>축하합니다! 무표정으로 출입문을 통과해 공장 밖으로 무사히 탈출하셨습니다!'
+            alert: '🧜 [인어왕국 행복 공장 퇴근]<br>인형을 그대로 두고 출입문을 지나 공장 밖으로 나왔습니다.'
         }
     }
 };
@@ -5515,7 +5515,7 @@ function initPhonePhase1() {
     if (feed) feed.innerHTML = '';
     
     appendPhoneMessage("[긴급재난문자] 비상 통신망이 연결되었습니다. 지침에 따라 대응하십시오.", "warning");
-    appendPhoneMessage("[부재중 전화 알림]\n발신번호: 070-0813-0813 (발신자 표시제한)\n부재중 전화 1건이 도착했습니다.\n\n지침: 화면에 기재된 번호(070-0813-0813)로 회신 후 즉시 끊어 발신 로그를 생성하십시오.", "system");
+    appendPhoneMessage("[부재중 통화 안내]\n070-0813-0813 번호로 부재중 통화 1건이 있습니다.\n\n지침: 기재된 번호로 반드시 발신하십시오. 연결되지 않더라도 발신 기록이 남는 것으로 충분합니다. 상대가 통화를 받을 경우 아무 말도 하지 마시고 즉시 종료하여 주십시오.", "system");
     
     const input = document.getElementById('phone-input');
     if (input) {
@@ -5534,7 +5534,7 @@ function initPhonePhase2() {
     if (phoneCountdownInterval) clearInterval(phoneCountdownInterval);
     if (phoneTimer) clearTimeout(phoneTimer);
     
-    appendPhoneMessage("[경고] 강제 영상 통화 수신 중...\n화면 속 개체가 당신을 응시하고 있습니다.\n지침: 수신/거절 버튼을 누르지 말고, 입력창에 'STARE'를 치거나 5초간 버티십시오.", "warning");
+    appendPhoneMessage("[영상 통화 수신] 수신 화면에 영상이 이미 재생되고 있습니다.\n유리에 얼굴을 바짝 붙인 남성이 귀하를 응시하고 있습니다.\n지침: 수신을 받지도 거절하지도 마시고 화면 속 남자의 눈을 계속 응시하십시오.", "warning");
     
     const modal = document.getElementById('phone-video-call-modal');
     if (modal) modal.style.display = 'flex';
@@ -5549,7 +5549,7 @@ function initPhonePhase2() {
     if (input) {
         input.value = '';
         input.disabled = false;
-        input.placeholder = "대응 명령어 입력 (예: STARE)...";
+        input.placeholder = "시선을 돌리지 마십시오...";
         input.focus();
     }
     
@@ -5582,7 +5582,7 @@ function resolvePhase2Success() {
     const modal = document.getElementById('phone-video-call-modal');
     if (modal) modal.style.display = 'none';
     
-    appendPhoneMessage("> 시선 동기화 유지 성공. 비정상 통화가 강제 차단되었습니다.", "system");
+    appendPhoneMessage("> 끝까지 화면 속 남자의 눈을 응시했습니다. 영상 통화가 종료되었습니다.", "system");
     
     const input = document.getElementById('phone-input');
     if (input) input.disabled = true;
@@ -5604,8 +5604,8 @@ function triggerCallTrap(source) {
     const modal = document.getElementById('phone-video-call-modal');
     if (modal) modal.style.display = 'none';
     
-    appendPhoneMessage("시스템: [SYSTEM ERROR] 잘못된 대응 또는 인증 번호입니다.\n테러리스트 세력의 격리 구역으로 강제 전송되었습니다.\n[GAME OVER] 다시 시도하십시오.", "warning");
-    
+    appendPhoneMessage("시스템: [기록 중단] 화면 속 남자의 눈에서 시선을 거두었습니다.\n시선을 돌린 대상자는 어딜 봐도 그 남자의 얼굴이 보인다는 말을 반복하다, 원인 불명의 쇼크로 사망하는 사례가 확인되었습니다.\n[GAME OVER] 다시 시도하십시오.", "warning");
+
     const feed = document.getElementById('phone-message-feed');
     if (feed) {
         const retryBtn = document.createElement('button');
@@ -5634,14 +5634,14 @@ function initPhonePhase3() {
     const modal = document.getElementById('phone-video-call-modal');
     if (modal) modal.style.display = 'none';
     
-    appendPhoneMessage("[긴급 문자] 본인 인증 번호 폭탄 수신 중...", "warning");
-    
-    setTimeout(() => appendPhoneMessage("[본부] 본인 인증 번호 [ 7412 ]", "auth"), 400);
-    setTimeout(() => appendPhoneMessage("[본부] 본인 인증 번호 [ 9381 ]", "auth"), 800);
-    setTimeout(() => appendPhoneMessage("[본부] 본인 인증 번호 [ 5264 ]", "auth"), 1200);
-    
+    appendPhoneMessage("[알림] 요청한 적 없는 본인 인증 번호가 수신되고 있습니다.", "warning");
+
+    setTimeout(() => appendPhoneMessage("[웹발신] 본인 확인 인증번호 [ 7412 ]를 입력해 주세요.", "auth"), 400);
+    setTimeout(() => appendPhoneMessage("[인증센터] 본인 확인 인증번호 [ 9381 ]를 입력해 주세요.", "auth"), 800);
+    setTimeout(() => appendPhoneMessage("[Verify] 본인 확인 인증번호 [ 5264 ]를 입력해 주세요.", "auth"), 1200);
+
     setTimeout(() => {
-        appendPhoneMessage("지침: 지침서에 의거하여 [세 번째로 도착한 인증 번호]를 입력창에 전송하십시오.", "system");
+        appendPhoneMessage("지침: 세 번째로 온 인증 번호를 본 안내 문자에 입력하여 주십시오.", "system");
         const input = document.getElementById('phone-input');
         if (input) {
             input.value = '';
@@ -5668,13 +5668,13 @@ function handlePhoneInputSubmit() {
         const clean = val.toLowerCase().replace(/[-\s]/g, '');
         const raw = val.trim();
         if (raw === '070-0813-0813' || clean === '07008130813') {
-            appendPhoneMessage("> [070-0813-0813] 발신 연결 및 즉시 차단 완료. 발신 로그가 생성되었습니다.", "system");
+            appendPhoneMessage("> [070-0813-0813] 발신 완료. 발신 기록이 남았습니다.", "system");
             input.disabled = true;
             phoneTimer = setTimeout(() => {
                 initPhonePhase2();
             }, 1500);
         } else {
-            appendPhoneMessage("시스템: [SYSTEM ERROR] 잘못된 대응 또는 인증 번호입니다.\n테러리스트 세력의 격리 구역으로 강제 전송되었습니다.\n[GAME OVER] 다시 시도하십시오.", "warning");
+            appendPhoneMessage("시스템: [기록 중단] 기재된 번호로 발신하지 않았습니다.\n발신하지 않은 번호의 주인은 어떤 형태로든 익일 다양한 형태로 사망하는 사례가 다수 확인되었습니다.\n[GAME OVER] 다시 시도하십시오.", "warning");
             if (typeof GameProgress !== 'undefined') GameProgress.onDeath(9);
             input.disabled = true;
             const feed = document.getElementById('phone-message-feed');
@@ -5700,7 +5700,7 @@ function handlePhoneInputSubmit() {
             ep9GoodEndingCleared = true;
             if (typeof GameProgress !== 'undefined') GameProgress.onClear(9);
             unlockJayReport();
-            appendPhoneMessage("시스템: [본부 긴급 구출팀] 승인 완료.\n스마트폰 화면의 잠금이 해제되며 구출팀이 진입합니다.\n[GOOD ENDING] EP.09 변칙 통신 구역에서 무사히 생환했습니다!", "system");
+            appendPhoneMessage("시스템: [구출 작업 진행 중] [위치 확인 완료]\n스마트폰 화면의 잠금이 해제되며 구출팀이 진입합니다.\n[GOOD ENDING] EP.09 변칙 통신 구역에서 무사히 생환했습니다!", "system");
             input.disabled = true;
             
             const feed = document.getElementById('phone-message-feed');
@@ -5719,7 +5719,7 @@ function handlePhoneInputSubmit() {
                 feed.scrollTop = feed.scrollHeight;
             }
         } else {
-            appendPhoneMessage("시스템: [SYSTEM ERROR] 잘못된 대응 또는 인증 번호입니다.\n테러리스트 세력의 격리 구역으로 강제 전송되었습니다.\n[GAME OVER] 다시 시도하십시오.", "warning");
+            appendPhoneMessage("시스템: [안전 안내 문자] 인증 번호가 정확하지 않습니다.\n인증 번호가 정확히 전송되어야만 구출 작업이 가능합니다.\n[GAME OVER] 다시 시도하십시오.", "warning");
             if (typeof GameProgress !== 'undefined') GameProgress.onDeath(9);
             input.disabled = true;
             const feed = document.getElementById('phone-message-feed');
