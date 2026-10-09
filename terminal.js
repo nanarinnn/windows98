@@ -137,7 +137,7 @@ function runSearch(query) {
 function runHq() {
     const a = hasClue('c07-hq'), b = hasClue('c09-fake');
     if (!a && !b) return { lines: ['> 열람 권한이 없습니다.'], color: TERM_DIM };
-    const lines = ['> 검색어: 0050-0 (본부 번호)'];
+    const lines = ['> 검색어: 0050-0200 (본부 번호)'];
     if (a) lines.push(`> [7화] ${clueById('c07-hq').quote}`);
     if (b) lines.push(`> [9화] ${clueById('c09-fake').quote}`);
     if (a && b) {
@@ -232,7 +232,7 @@ function runReport() {
 function runEpisode(n) {
     if (!EPISODE_TITLES[n] || n < 1 || n > 10) return null;
     const list = foundClues().filter(c => c.ep === n);
-    const lines = [`> EP.${pad2(n)} ${EPISODE_TITLES[n]} · 문서 ${EPISODE_DOCS[n]}`];
+    const lines = [`> EP.${pad2(n)} ${EPISODE_TITLES[n]}${EPISODE_DOCS[n] ? ` · 문서 ${EPISODE_DOCS[n]}` : ''}`];
     const total = CLUES.filter(c => c.ep === n).length;
     if (!list.length) {
         lines.push('> 열람 권한이 없습니다.');
@@ -257,7 +257,7 @@ function runLinks() {
 
 const TERMINAL_SPECIAL = [
     { keys: ['연결', '연결기록', '연결된기록', '추리'], run: runLinks },
-    { keys: ['0050-0', '00500', '본부번호', '본부전화'], run: runHq },
+    { keys: ['0050-0200', '00500200', '0050-0', '00500', '본부번호', '본부전화'], run: runHq },
     { keys: ['우리병동', '우리식단', '주어'], run: runWard },
     { keys: ['13명', '26명', '수학여행', '버스'], run: runBus },
     { keys: ['내기록', '기록', '나의기록', '현황', 'status'], run: runRecordSummary },

@@ -139,3 +139,65 @@
 #f7-pos[hidden] { display:none; }
 #f7-hq button, #f7-disposal button, #f7-app button { display:block; width:100%; margin-bottom:6px; text-align:left; }
 #f7-disposal p, #f7-app p { margin:4px 0 10px; }
+/* EP08 (water park): facility scene with an optional settlement panel; right column holds the 12-zone map and the wristband. */
+.f8-scene { height:220px; background:#07131a; }
+#f8-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.7; }
+#f8-text { position:absolute; left:0; right:0; top:0; z-index:2; padding:6px 10px; font-size:12px; color:#d8f4ff; background:rgba(0,0,0,.55); }
+#f8-panel { position:absolute; left:0; right:0; bottom:0; z-index:2; margin:0; padding:6px 10px; font:12px/1.5 monospace; color:#ffcc00; background:rgba(0,0,0,.8); white-space:pre; overflow-x:auto; }
+#f8-panel[hidden] { display:none; }
+.f8-map { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:4px; margin-bottom:8px; }
+.f8-map button[aria-pressed="true"] { outline:2px solid #00ff00; }
+#f8-band button { display:block; width:100%; margin-bottom:6px; text-align:left; }
+#f8-band p { margin:4px 0 8px; }
+/* EP09 (safety text): a generic smartphone is the play space; the aside holds surroundings, phone direction and the log. */
+.f9-grid { grid-template-columns:minmax(0, 1fr) minmax(220px, 1fr); }
+.f9-wrap { display:flex; justify-content:center; min-width:0; }
+.f9-phone { position:relative; width:min(340px, 100%); height:560px; display:flex; flex-direction:column; background:#0a0a0a; border:2px solid #444; border-radius:22px; overflow:hidden; box-shadow:0 0 0 4px #161616; }
+.f9-status { display:flex; justify-content:space-between; gap:6px; padding:6px 14px 4px; font-size:11px; color:#ccc; background:#000; }
+.f9-low { color:#ff3030; animation:blink 1s infinite; }
+.f9-screen { flex:1; overflow:auto; padding:8px 10px; color:#ddd; font-size:12px; }
+.f9-screen.f9-dark { background:#020202; }
+.f9-screen h4 { margin:2px 0 8px; font-size:13px; color:#fff; }
+.f9-screen h5 { margin:10px 0 4px; font-size:11px; color:#888; }
+.f9-apps { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+#fieldWindow .f9-app { position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 2px; color:#ddd; border-color:#333; background:#151515; font-size:11px; overflow:hidden; text-overflow:ellipsis; }
+.f9-icon { font-size:22px; }
+.f9-badge { display:inline-block; min-width:14px; padding:0 4px; border-radius:8px; background:#ff3030; color:#000; font-style:normal; font-size:10px; }
+.f9-app .f9-badge { position:absolute; top:4px; right:6px; }
+#fieldWindow .f9-banner { width:100%; margin-bottom:8px; color:#ddd; border-color:#555; text-align:left; }
+.f9-dim { color:#777; font-size:11px; }
+.f9-row { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; }
+.f9-col { display:flex; flex-direction:column; gap:6px; margin:6px 0; }
+.f9-keypad { display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; margin:6px 0; }
+#f9-dial, #f9-reply { flex:1; min-width:0; width:100%; box-sizing:border-box; padding:6px; font:13px monospace; color:#0f0; background:#000; border:1px solid #444; }
+.f9-list { list-style:none; margin:0; padding:0; }
+.f9-list li { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid #222; }
+#fieldWindow .f9-thread { display:block; width:100%; margin-bottom:4px; text-align:left; color:#ddd; border-color:#333; }
+.f9-msgs { display:flex; flex-direction:column; gap:6px; }
+.f9-msg { align-self:flex-start; max-width:92%; padding:6px 8px; background:#1b1b1b; border:1px solid #333; border-radius:8px; white-space:pre-wrap; }
+.f9-msg button { display:block; margin-top:6px; }
+.f9-mine { align-self:flex-end; background:#0b2a0b; }
+.f9-doc { max-height:none; margin:0; padding:8px; background:#111; border:1px solid #333; font-size:11px; }
+.f9-photo { margin-top:6px; padding:18px 6px; text-align:center; color:#aaa; background:linear-gradient(135deg, #222, #050505); filter:blur(.3px); }
+.f9-photo-3 { color:#ccc; background:linear-gradient(135deg, #332222, #050505); }
+.f9-view { position:relative; min-height:120px; padding:10px; margin:6px 0; background:#111; border:1px solid #333; display:flex; flex-direction:column; gap:6px; }
+.f9-view.f9-dark { background:#000; color:#555; }
+.f9-gallery { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
+.f9-cell button { width:100%; margin-bottom:2px; padding:4px; font-size:10px; }
+.f9-suspect button:first-child { filter:blur(.4px) contrast(1.4); }
+.f9-overlay { position:absolute; inset:24px 0 34px; z-index:5; padding:12px; overflow:auto; background:rgba(0,0,0,.94); color:#eee; font-size:12px; }
+.f9-overlay[hidden] { display:none; }
+.f9-caller { font-size:16px; text-align:center; color:#fff; margin:8px 0; }
+.f9-vc { position:relative; height:220px; background:#000; border:1px solid #333; overflow:hidden; display:grid; place-items:center; }
+.f9-vc video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.f9-jvid { color:#d8ffd8; padding:10px; text-align:center; background:repeating-linear-gradient(0deg, #0a0a0a 0 2px, #111 2px 4px); }
+#fieldWindow .f9-stare { width:100%; margin:8px 0; padding:12px; touch-action:none; }
+.f9-callbtns { justify-content:space-around; }
+.f9-big { font-size:20px; text-align:center; color:#ff5050; margin:24px 0; }
+.f9-nav { display:flex; justify-content:space-around; padding:4px; background:#000; border-top:1px solid #222; }
+#fieldWindow .f9-nav button { color:#ccc; border-color:#333; padding:4px 18px; }
+.f9-env { white-space:pre-wrap; font-size:12px; line-height:1.6; min-height:60px; }
+.f9-face { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; }
+.f9-glitch .f9-status { animation:f9-jit .4s steps(2) infinite; }
+@keyframes f9-jit { 0% { transform:translateX(0); } 50% { transform:translateX(1px); filter:hue-rotate(40deg); } 100% { transform:translateX(0); } }
+@media (max-width:700px) { .f9-phone { height:520px; } }

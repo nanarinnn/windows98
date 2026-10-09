@@ -27,8 +27,8 @@ const EPISODE_DOCS = {
     5: '2024-06-02',
     6: '2021-05-20',
     7: '2026-07-19',
-    8: '워터파크-2021-08-YWP',
-    9: '긴급통신-2026-EMERGENCY-SMS',
+    8: '',   // the reviewed EP08 source states no document number
+    9: '',   // the reviewed EP09 source states no document number
     10: '완구회수-216-091호'
     // 요원 제이의 기록은 문서 번호가 없는 일기다 (HQ-JAY-2019-FINAL 은 원문에 없는 사이트 창작 번호였음)
 };
@@ -115,17 +115,17 @@ const CLUES = [
     { id: 'c08-surgery', ep: 8, when: 'read', tags: ['수술'],
       quote: "도착 지점이 아닌 지하 수술실로 이송되었으며 마취 없이 개복된 상태로 발견된 사례가 확인되었습니다." },
     { id: 'c08-ask', ep: 8, when: 'clear', tags: ['수술'],
-      quote: "식사 도중 직원이 다가와 \"언제 수술이십니까?\"라고 묻는 경우 반드시 \"오늘은 아닙니다\"라고만 답하십시오." },
+      quote: "식사 도중 직원이 다가와 “언제 수술이십니까?”라고 묻는 경우 반드시 “오늘은 아닙니다.”라고만 답하십시오." },
     { id: 'c08-character', ep: 8, when: 'clear', tags: [],
       quote: "인솔 직원 없이 혼자 돌아다니는 캐릭터를 발견하셨다면 절대 접근하지 마십시오." },
 
     // ---- EP.09 ----
     { id: 'c09-all', ep: 9, when: 'read', tags: ['비정상 개체로 간주'],
-      quote: "이후 본 문자를 제외한 휴대 전화로 연락이 오는 모든 것을 비정상 개체로 간주합니다." },
-    { id: 'c09-fake', ep: 9, when: 'read', tags: ['본부(0050-0)', '요원'],
-      quote: "본부의 전화번호 0050-0으로 요원이라 하며 귀하의 위치를 물어오는 경우 본부는 대상자가 된 이들의 현재 위치를 즉시 파악 가능한 시스템을 구축하여 항시 대비하고 있습니다." },
+      quote: "이후 본 안내 문자를 제외한 휴대전화로 연락이 오는 모든 것을 비정상 개체로 간주합니다." },
+    { id: 'c09-fake', ep: 9, when: 'read', tags: ['본부(0050-0200)', '요원'],
+      quote: "본부의 전화번호 0050-0200으로 요원이라 하며 귀하의 위치를 물어온다." },
     { id: 'c09-rescue', ep: 9, when: 'clear', tags: ['구출'],
-      quote: "인증번호가 정확히 전송되어야만 구출 작업이 가능합니다." },
+      quote: "인증 번호가 정확히 전송되어야만 구출 작업이 가능합니다." },
 
     // ---- EP.10 ----
     { id: 'c10-purpose', ep: 10, when: 'read', tags: [],
@@ -177,7 +177,7 @@ const DEDUCTIONS = [
     { id: 'd07', pair: ['c03-meri', 'cJ-visit'], link: "병원" },
     { id: 'd08', pair: ['c03-rescue', 'cJ-hq'], link: "요원" },
     { id: 'd09', pair: ['c09-fake', 'cJ-hq'], link: "본부 · 요원" },
-    { id: 'd10', pair: ['c07-hq', 'c09-fake'], link: "본부(0050-0)" },
+    { id: 'd10', pair: ['c07-hq', 'c09-fake'], link: "본부(0050-0200)" },
     { id: 'd11', pair: ['c03-pill', 'c05-red'], link: "빨간 알약" },
     { id: 'd12', pair: ['c04-voice', 'c10-name'], link: "이름을 부르는 소리" },
     { id: 'd13', pair: ['c04-mirror', 'c07-mirror'], link: "거울" },

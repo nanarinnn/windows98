@@ -199,7 +199,7 @@ def run():
         s = state(); assert s['status'] == 'cleared', (s['status'], s.get('reason'), data())
         assert page.evaluate("FieldSave.get().cleared.includes('EP07') && FieldSave.unlocked('EP08')")
         assert not page.evaluate("FieldSave.get().cleared.includes('EP08')") and not page.evaluate("FieldSave.unlocked('EP09')")
-        click('field-list'); assert page.locator('#field-dispatch-EP08').inner_text() == '연결 준비 중' and page.locator('#field-dispatch-EP08').is_disabled()
+        click('field-list'); assert page.locator('#field-dispatch-EP08').inner_text() == '파견 가능' and not page.locator('#field-dispatch-EP08').is_disabled()  # EP08 is implemented now
         assert page.evaluate(f"localStorage.getItem('{STORY_KEY}')") == story_before, 'Story save must be untouched'
         assert page.evaluate("!FieldSave.get().progress?.EP07"), 'EP07 does not persist mid-run snapshots'
         hooks = page.evaluate('window.__hooks')

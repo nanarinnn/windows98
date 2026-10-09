@@ -25,10 +25,11 @@ window.FieldCore = (() => {
         const mission = missions.get(run.id);
         if (mission.persist) { FieldSave.saveProgress(run.id, mission.snapshot(run)); lastPersist = performance.now(); }
     }
-    function die(reason, code) {
+    // logText: optional replacement for the death log line (EP09 battery 0% is an unknown outcome, not a death).
+    function die(reason, code, logText) {
         if (!run || run.status !== 'active') return;
         run.status = 'dead'; run.reason = reason; run.code = code || '';
-        log(`생체 신호 소실 — ${reason}`);
+        log(logText || `생체 신호 소실 — ${reason}`);
         stop(); FieldSave.death(run.id);
     }
     function clear() {
