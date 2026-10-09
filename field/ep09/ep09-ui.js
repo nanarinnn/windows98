@@ -107,8 +107,10 @@ window.FieldEP09UI = (() => {
             <div class="f9-row"><input id="f9-reply" autocomplete="off" aria-label="답장 입력" placeholder="${d.arg === 'safety' ? '안내 문자에 입력' : '메시지'}">${b('보내기', 'reply', d.arg, 'f9-reply-send')}</div>`;
     }
 
+    const evOf = (d, kind) => d.evs.find(e => e.kind === kind) || null;
+
     function pay(d) {
-        const e = d.ev && d.ev.kind === 'C' ? d.ev : null;
+        const e = evOf(d, 'C');
         if (!e) return `<h4>요금 납부</h4><p class="f9-dim">납부할 요금이 없습니다.</p>`;
         return `<h4>요금 납부</h4><p>미납 금액 <b>${e.amount.toLocaleString()}원</b></p><p>납부 기한 <b id="f9-pay-left"></b></p>${b('결제', 'pay', undefined, 'f9-pay')}`;
     }
@@ -122,11 +124,11 @@ window.FieldEP09UI = (() => {
     }
 
     function viewfinder(d) {
-        const e = d.ev;
+        const e = evOf(d, 'H');
         if (d.dark) return d.entity && d.light.on && d.facing === d.entity.dir && T.reach[d.light.level] >= d.entity.dist
             ? '빛이 닿은 바닥에 무언가 웅크린 채 멈춰 있다.' : d.light.on ? '손전등 빛 너머는 어둡다.' : '아무것도 보이지 않는다.';
         if (d.cam.lens === 'front') return '화면에 내 얼굴이 보인다.';
-        return e && e.kind === 'H' ? '방 안. 이상한 것은 보이지 않는다.' : '방 안.';
+        return e ? '방 안. 이상한 것은 보이지 않는다.' : '방 안.';
     }
 
     function camera(d) {
@@ -177,7 +179,7 @@ window.FieldEP09UI = (() => {
     }
 
     function overlay(d) {
-        const e = d.ev;
+        const e = d.overlay === 'call' ? (evOf(d, 'K') || evOf(d, 'A')) : evOf(d, 'J');
         if (d.overlay === 'videoCall') return `<p class="f9-caller">영상 통화</p><div class="f9-vc"><video id="f9-vc-video" src="${data.video.b}" autoplay loop muted playsinline></video></div>
             <button type="button" class="f9-stare" id="f9-stare" data-hold="1">남자의 눈을 응시한다 · 누르고 유지</button>
             <div class="f9-row f9-callbtns">${b('수신', 'answer', undefined, 'f9-answer')}${b('거절', 'reject', undefined, 'f9-reject')}</div>`;
@@ -196,20 +198,20 @@ window.FieldEP09UI = (() => {
     }
 
     function env(d) {
-        const e = d.ev, parts = [];
+        const parts = [], eI = evOf(d, 'I'), eD = evOf(d, 'D');
         parts.push(d.dark ? '불이 꺼진 방. 조명이 하나도 없다.' : '방 안. 휴대전화 화면만 밝다.');
         if (d.light.on) parts.push(`손전등 ON (강도 ${d.light.level}) — ${data.dirs[d.facing]}을 비추는 중.`);
         if (d.entity) {
             const near = d.entity.dist >= 5 ? '멀리서' : d.entity.dist >= 3 ? '가까이에서' : '바로 근처에서';
             parts.push(`${data.dirs[d.entity.dir]} ${near} 무언가 기어오는 소리.`);
         }
-        if (e && e.kind === 'I') parts.push('찰칵. 찰칵. 셔터 소리가 계속 들린다.');
-        if (e && e.kind === 'D') parts.push(e.phase === 'scream' ? '휴대전화에서 비명이 울린다.' : '……');
+        if (eI) parts.push('찰칵. 찰칵. 셔터 소리가 계속 들린다.');
+        if (eD) parts.push(eD.phase === 'scream' ? '휴대전화에서 비명이 울린다.' : '……');
         return parts.join('\n');
     }
 
     function sound(d) {
-        const e = d.ev; if (!audio || audio.state !== 'running' || !e) return;
+        const e = evOf(d, 'D') || evOf(d, 'I'); if (!audio || audio.state !== 'running' || !e) return;
         const key = e.kind === 'D' ? `D${e.n}${e.phase}` : e.kind === 'I' ? `I${Math.floor(e.shutterT * 10) > 15 ? d.items.length : ''}` : '';
         if (!key || key === lastSound) return; lastSound = key;
         if (e.kind === 'D' && e.phase !== 'scream') return;
@@ -221,7 +223,7 @@ window.FieldEP09UI = (() => {
     }
 
     function volatile(s) {
-        const d = s.data, e = d.ev;
+        const d = s.data, eC = evOf(d, 'C'), eD = evOf(d, 'D'), eJ = evOf(d, 'J');
         const glitch = d.battery < 30 && Math.floor(s.elapsed * 2) % 9 === 0;
         $('f9-time').textContent = d.stageNo >= 8 && Math.floor(s.elapsed) % 13 === 0 ? '--:--' : d.clock;
         $('f9-battery').textContent = glitch ? '▒▒%' : `${Math.ceil(d.battery)}%`;
@@ -232,22 +234,22 @@ window.FieldEP09UI = (() => {
         $('f9-rescue').textContent = d.rescue === 'inProgress' ? '[구조 작업 진행 중] [위치 확인 완료]' : d.rescue === 'arrived' ? '구출 완료' : '관리 대상자';
         $('f9-env').textContent = env(d);
         const left = $('f9-pay-left');
-        if (left && e && e.kind === 'C') { const v = Math.max(0, Math.ceil(e.t * 180 / T.billLimit)); left.textContent = `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`; }
+        if (left && eC) { const v = Math.max(0, Math.ceil(eC.t * 180 / T.billLimit)); left.textContent = `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}`; }
         const rec = $('f9-rec-time'); if (rec) rec.textContent = d.cam.rec ? ` ● ${FieldCore.mission('EP09').fmtRec(d.cam.rec.t)}` : '';
         const big = $('f9-big-clock'); if (big) big.textContent = d.clock;
-        const scream = $('f9-scream'); if (scream && e && e.kind === 'D') scream.textContent = e.phase === 'scream' ? (e.n === 5 ? '아아아아악—!! (익숙한 목소리)' : '아아아악—!!') : '……';
-        const jl = $('f9-j-line'); if (jl && e && e.kind === 'J') jl.textContent = data.jRequests[e.req].text(e.who);
+        const scream = $('f9-scream'); if (scream && eD) scream.textContent = eD.phase === 'scream' ? (eD.n === 5 ? '아아아아악—!! (익숙한 목소리)' : '아아아악—!!') : '……';
+        const jl = $('f9-j-line'); if (jl && eJ) jl.textContent = data.jRequests[eJ.req].text(eJ.who);
         for (const dir of Object.keys(data.dirs)) $('f9-face-' + dir)?.setAttribute('aria-pressed', String(d.facing === dir));
         $('f9-quick-light').setAttribute('aria-pressed', String(d.light.on));
     }
 
     function render(s) {
         if (!s || !$('f9-screen')) return;
-        const d = s.data, e = d.ev;
-        const evSig = e ? [e.kind, e.phase, e.n, e.req, e.open, e.paid, e.kind === 'G' ? e.wasLit : 0] : null;
+        const d = s.data;
+        const evSig = d.evs.map(e => [e.kind, e.phase, e.n, e.req, e.open, e.paid, e.kind === 'G' ? e.wasLit : 0]);
         const next = JSON.stringify([d.app, d.arg, d.overlay, evSig, d.threadOrder, Object.values(d.threads).map(t => [t.msgs.length, t.unread]),
             d.items.map(i => i.id), d.apps.map(a => [a.id, Object.values(a.perms)]), d.light, d.facing, d.dark, d.entity && d.entity.dist,
-            [d.cam.mode, d.cam.lens, d.cam.zoom, !!d.cam.rec], d.calls.length, d.rescue, d.stageNo, s.status, ghostSeen]);
+            [d.cam.mode, d.cam.lens, d.cam.zoom, !!d.cam.rec], d.calls.length, d.rescue, d.stageNo, s.status, ghostSeen, d.ending > 0, d.codesSent]);
         if (next !== sig) {
             sig = next;
             const keepReply = $('f9-reply')?.value || '';
@@ -258,6 +260,7 @@ window.FieldEP09UI = (() => {
             box.hidden = !ov;
             $('f9-screen').classList.toggle('f9-dark', d.dark);
             $('f9-phone').classList.toggle('f9-glitch', d.stageNo >= 9 || d.battery < 15);
+            $('f9-phone').classList.toggle('f9-off', d.ending > 0 || s.status === 'cleared');
             if (s.status !== 'active') { const v = $('f9-vc-video'); if (v) v.pause(); }
         }
         volatile(s);

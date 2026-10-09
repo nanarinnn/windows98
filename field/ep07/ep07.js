@@ -1,190 +1,256 @@
-// EP07 mission: night-shift convenience-store counter duty. A fixed queue of customers (normal visits interleaved
-// with the seven reviewed situations A-G) plays out. Every customer is first checked in the security mirror (A shows
-// the endless corridor); the register is never left while a customer is inside, while the door-chime / exit count
-// is off, or without locking the auto door. Story, J record, blue screen and LOOP 02 are never touched here.
-// Only outcomes the reviewed transcript states are described as consequences; SPOKE_FIRST/LEAVE_WITH_CUSTOMER/
-// F_BAREHAND get a minimal "record interrupted" result since the transcript gives no specific consequence for them.
+// EP07 mission: one night shift at the counter (22:00 -> 06:00). The core loop is ordinary work — door chime, a
+// customer walks in, a covert mirror glance, scanning, ID for tobacco/alcohol, payment, bag, exit — and A-G arrive
+// as interrupts inside that loop (FieldEP07Data.schedule), never labeled. The player keeps their own chime/exit tally;
+// the game never shows the real counts. Story, J record, blue screen, LOOP 02, AUTHOR and CLASSIFIED are never touched;
+// clear unlocks Field EP08 only. Only outcomes the reviewed transcript states are described (canonFailures).
 (() => {
     const data = FieldEP07Data;
-    const T = data.tuning;
-    const X = data.text;
-    const rnd = name => data.random(name);
+    const T = data.tuning, X = data.text;
 
-    function pickIndex(name, list) {
-        const v = rnd(name);
-        if (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < list.length) return v;
-        if (typeof v === 'string' && /^\d+$/.test(v) && Number(v) < list.length) return Number(v);
-        const roll = typeof v === 'number' ? v : 0.5;
-        return Math.min(list.length - 1, Math.floor(roll * list.length));
+    function pick(name, n, fallback) {
+        const v = data.random(name);
+        if (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < n) return v;
+        if (typeof v === 'number' && v >= 0 && v < 1) return Math.floor(v * n);
+        return fallback;
     }
 
     function fail(s, api, code) {
-        s.data.failCode = code;
-        const raw = data.failures[code];
-        const message = typeof raw === 'function' ? raw(s) : raw;
-        api.die(`${code} — ${message}`, code);
-    }
-
-    function enterVisit(s, api, code) {
         const d = s.data;
-        d.visit = code; d.customerPresent = false;
-        d.mirrorState = ''; d.mirrorTimer = 0;   // every customer is checked in the mirror first: '' -> clear | corridor -> away
-        d.idRevealed = false; d.idTimer = 0;
-        d.dTier = null; d.dTimer = 0; d.dReported = false;
-        d.ePhase = ''; d.eElapsed = 0;
-        d.fStage = '';
-        d.gPresses = 0; d.gNeeded = 0; d.appOpen = false;
-        if (code === 'N') {
-            d.nItem = data.items.normal[pickIndex('nItem', data.items.normal)];
-            d.customerPresent = true; d.chimes += 1; api.log(X.arriveNormal(d.nItem));
-        } else if (code === 'A') {
-            // looks exactly like a normal visit until the mirror is checked
-            d.nItem = data.items.normal[pickIndex('nItem', data.items.normal)];
-            d.customerPresent = true; d.chimes += 1; api.log(X.arriveNormal(d.nItem)); api.majorEvent('A_MIRROR');
-        } else if (code === 'B') {
-            d.customerPresent = true; d.chimes += 1; api.log(X.arriveB); api.majorEvent('B_ID');
-        } else if (code === 'C') {
-            d.customerPresent = true; d.chimes += 1; api.log(X.arriveC); api.majorEvent('C_VOICE');
-        } else if (code === 'D') {
-            const tier = data.items.ghostTiers[pickIndex('dTier', data.items.ghostTiers)];
-            d.dTier = tier; d.dTimer = T.dReportDeadline; d.customerPresent = true; d.chimes += 1;
-            api.log(X.arriveD); api.majorEvent('D_GHOST_ITEM');   // the barcode is scanned (and the timer runs) after the mirror check
-        } else if (code === 'E') {
-            d.ePhase = 'waiting'; d.eElapsed = 0; d.chimes += 1; api.log(X.arriveE); api.majorEvent('E_CHIME');
-        } else if (code === 'F') {
-            d.fStage = ''; api.log(X.arriveF(T.prevDiscardItem)); api.majorEvent('F_RETURNED');
-        } else if (code === 'G') {
-            const [lo, hi] = T.gPressesRange;
-            const v = rnd('endPresses');
-            d.gNeeded = (typeof v === 'number' && Number.isInteger(v) && v >= 1) ? v : lo + Math.floor((typeof v === 'number' ? v : 0.5) * (hi - lo + 1));
-            d.gPresses = 0; d.appOpen = false;
-            api.log(X.gArrive); api.majorEvent('G_DAWN_DELAY');
+        let text = data.failures[code];
+        if (code === 'D_UNREPORTED' && d.cust) {
+            const g = d.cust.items.find(i => i.ghost);
+            text += ` 신고하지 못한 채 손님이 매장을 벗어난 경우 결제 금액에 따라 피해가 발생한 사례가 확인되었습니다. 결제 금액 ${g.price.toLocaleString()}원 — ${g.part}.`;
         }
+        const kind = data.failureKind[code] || '근무 기록';
+        d.failCode = code; d.glance = null;
+        api.die(`${code} — [${kind}] ${text} [근무 기록 중단]`, code, `[${kind}] ${FieldCore.time(d.clock)} 나눔 12시 편의점 계산대 — 근무 기록 중단`);
     }
 
-    function advance(s, api) {
-        const d = s.data;
-        d.queueIdx += 1;
-        if (d.queueIdx < data.queue.length) enterVisit(s, api, data.queue[d.queueIdx]);
-        else enterVisit(s, api, 'G');
+    function newCustomer(spec) {
+        const items = spec.items.map(key => {
+            if (key === 'ghost') {
+                const tier = data.ghostTiers[pick('dTier', data.ghostTiers.length, 2)];
+                return { key, name: '', code: pick('ghostCode', 2, 1) ? data.ghostCode : '', price: tier.price, part: tier.part, ghost: true };
+            }
+            return { key, name: data.products[key].name, price: data.products[key].price };
+        });
+        return {
+            items, pay: spec.pay, id: spec.id || null, bag: !!spec.bag, ask: !!spec.ask, voice: !!spec.voice, mirror: spec.mirror || 'normal',
+            phase: 'browse', t: T.browse, gaze: 'away', gazeT: 0, mirrored: false, scanned: [], q: spec.ask ? 'wait' : 'none',
+            idStage: spec.id ? 'none' : null, blink: spec.id === 'blink', blinked: false, blinkT: 0, holdT: 0, takeMs: 0,
+            reported: false, ghostScanned: false, bagged: false, paid: false
+        };
     }
 
     function init(s, api) {
+        const [lo, hi] = T.endPressesRange;
+        const v = data.random('endPresses');
         s.data = {
-            queueIdx: -1, visit: '', chimes: 0, exits: 0,
-            customerPresent: false, nItem: '', doorLocked: false,
-            mirrorState: '', mirrorTimer: 0,
-            idRevealed: false, idTimer: 0,
-            dTier: null, dTimer: 0, dReported: false,
-            ePhase: '', eElapsed: 0,
-            fStage: '',
-            gPresses: 0, gNeeded: 0, appOpen: false,
-            failCode: ''
+            clock: 0, sched: 0, cust: null, phantom: '', chimes: 0, exits: 0, doorLocked: false,
+            urge: false, urgeWarned: false, glance: null, shelfOpen: false, f: '', wasteAlert: false, wasteDone: [],
+            dawn: false, appOpen: false, presses: 0,
+            need: (typeof v === 'number' && Number.isInteger(v) && v >= 1) ? v : lo + Math.floor((typeof v === 'number' ? v : 0.5) * (hi - lo + 1)),
+            tally: { chime: 0, exit: 0 }, failCode: ''
         };
-        api.log(X.prevDiscard(T.prevDiscardItem));
-        advance(s, api);
+        api.log(`[POS] 전 근무 폐기 내역: ${data.prevWaste.item} ${data.prevWaste.at}`);
+    }
+
+    function customerLeaves(s, api, paid) {
+        const d = s.data, c = d.cust;
+        if (c.items.some(i => i.ghost) && !c.reported) return fail(s, api, 'D_UNREPORTED');
+        d.exits += 1; d.cust = null; d.clock = Math.min(480, d.clock + T.txMinutes);
+        api.log(paid === false ? X.idRefusedNormal : X.exit);
+    }
+
+    function fireNext(s, api) {
+        const d = s.data, ev = data.schedule[d.sched];
+        if (!ev || ev.at > d.clock) return;
+        if (ev.customer) {
+            if (d.doorLocked) return;   // nobody comes in while the door is locked
+            d.chimes += 1; d.shelfOpen = false; d.cust = newCustomer(ev.customer);
+            api.log(X.chime); api.log(X.enter);
+        } else if (ev.phantom === 'enter') {
+            if (d.doorLocked) return;
+            d.chimes += 1; d.phantom = 'inside'; api.log(X.chime); api.log(X.nobody); api.majorEvent('E_CHIME');
+        } else if (ev.phantom === 'pay') {
+            if (d.phantom === 'inside') { d.exits += 1; d.phantom = 'gone'; api.log(X.phantomPay); api.log(X.phantomExit); }
+        } else if (ev.urge) { d.urge = true; api.log(X.urge); }
+        else if (ev.waste) { d.wasteAlert = true; api.log(X.wasteAlert); }
+        else if (ev.dawn) { d.clock = 480; d.dawn = true; api.log(X.dawn); api.majorEvent('G_DAWN_DELAY'); }
+        d.sched += 1;
     }
 
     function tick(s, dt, api) {
         const d = s.data;
         if (s.status !== 'active') return;
-        if (d.visit === 'A' && d.mirrorState === 'corridor') {
-            d.mirrorTimer -= dt; if (d.mirrorTimer <= 0) return fail(s, api, 'MIRROR_LOCKED');
-        } else if (d.visit === 'B' && d.idRevealed) {
-            d.idTimer -= dt; if (d.idTimer <= 0) { d.idReason = '신분증 반환이 지연되었습니다'; return fail(s, api, 'ID_FAIL'); }
-        } else if (d.visit === 'D' && d.dTier && mirrorDone(d)) {
-            d.dTimer -= dt;
-            if (d.dTimer <= 0) {
-                if (d.dReported) { d.exits += 1; api.log(X.dDone); return advance(s, api); }
-                return fail(s, api, 'D_UNREPORTED');
+        const c = d.cust;
+        if (d.glance) {
+            d.glance.t += dt;
+            if (c && c.phase === 'counter' && c.gaze === 'watch') return fail(s, api, 'MIRROR_LOCKED');   // caught looking
+            if (d.glance.corridor && d.glance.t > T.corridorMax) return fail(s, api, 'MIRROR_LOCKED');
+            if (c && d.glance.t > T.glanceMax) return fail(s, api, 'MIRROR_LOCKED');
+        }
+        if (c) {
+            if (c.phase === 'browse') {
+                c.t -= dt;
+                if (c.t <= 0) {
+                    c.phase = 'counter'; c.gaze = 'watch'; c.gazeT = T.gazeWatch;
+                    api.log(X.atCounter(c.items.map(i => i.name || '포장된 상품').join(', ')));
+                    if (c.q === 'wait') { c.q = 'pending'; api.log(c.voice ? X.askOverlap : X.ask); if (c.voice) api.majorEvent('C_VOICE'); }
+                    if (c.bag) api.log(X.bagRequest);
+                }
+            } else if (c.phase === 'counter') {
+                c.gazeT -= dt;
+                if (c.gazeT <= 0) { c.gaze = c.gaze === 'watch' ? 'away' : 'watch'; c.gazeT = c.gaze === 'watch' ? T.gazeWatch : T.gazeAway; }
+                if (c.id && c.mirrored && c.idStage === 'none') { c.idStage = 'handed'; api.log(X.idHanded); }
+                if (c.idStage === 'taken' && c.blink) {
+                    c.blinkT += dt;
+                    if (!c.blinked && c.blinkT >= T.blinkAfter) { c.blinked = true; api.log(X.idBlink); api.majorEvent('B_ID'); }
+                    if (c.blinked) { c.holdT += dt; if (c.holdT > T.idHold) return fail(s, api, 'ID_FAIL'); }
+                }
+            } else if (c.phase === 'paid') {
+                if (c.bag && !c.bagged) return;
+                c.t -= dt; if (c.t <= 0) return customerLeaves(s, api, true);
             }
-        } else if (d.visit === 'E') {
-            d.eElapsed += dt;
-            if (d.ePhase === 'waiting' && d.eElapsed >= T.eChimeAt) { d.ePhase = 'phantom'; api.log(X.ePhantom); }
-            else if (d.ePhase === 'phantom' && d.eElapsed >= T.eExitAt) {
-                d.exits += 1; d.ePhase = 'resolved'; api.log(X.eResolved); return advance(s, api);
-            }
-        }
-    }
-
-    const mirrorDone = d => d.mirrorState === 'clear' || d.mirrorState === 'away';
-
-    function action(s, name, value, api) {
-        const d = s.data;
-        if (s.status !== 'active') return;
-        if (name === 'speakFirst') { if (d.customerPresent) return fail(s, api, 'SPOKE_FIRST'); return; }
-        if (name === 'lockDoor') {
-            if (d.doorLocked) return;
-            if (d.customerPresent) return api.log(X.lockRefused);
-            d.doorLocked = true; return api.log(X.lockOk);   // an unseen customer (E mismatch) is not detected here: counting is the player's job
-        }
-        if (name === 'leaveCounter') {
-            if (d.customerPresent) return fail(s, api, 'LEAVE_WITH_CUSTOMER');
-            if (d.chimes !== d.exits) return fail(s, api, 'E_LEFT_DURING_MISMATCH');
-            if (!d.doorLocked) return fail(s, api, 'DOOR_UNLOCKED');
-            d.doorLocked = false; return api.log(X.leaveOk);
-        }
-        if (d.customerPresent && name === 'mirrorCheck' && d.mirrorState === '') {
-            api.log(X.mirrorCheck);
-            if (d.visit === 'A') { d.mirrorState = 'corridor'; d.mirrorTimer = T.mirrorWindow; return api.log(X.mirrorCorridor); }
-            d.mirrorState = 'clear'; api.log(X.mirrorNormal);
-            if (d.visit === 'D') api.log(X.dScan);
             return;
         }
-        if (d.visit === 'A' && name === 'mirrorAway' && d.mirrorState === 'corridor') { d.mirrorState = 'away'; return api.log(X.mirrorAway); }
-        if (d.customerPresent && !mirrorDone(d)) return;   // nothing else happens at the counter before the mirror check
-        switch (d.visit) {
-            case 'N':
-                if (name === 'payNormal') { d.exits += 1; api.log(X.payNormal); return advance(s, api); }
+        if (d.dawn) return;
+        d.clock = Math.min(480, d.clock + dt / T.idleSecondsPerMinute);
+        if (d.urge) {
+            if (!d.urgeWarned && d.clock >= T.urgeUntil - 60) { d.urgeWarned = true; api.log(X.urgeWorse); }
+            if (d.clock >= T.urgeUntil) return fail(s, api, 'URGE');
+        }
+        fireNext(s, api);
+    }
+
+    const ready = c => c.scanned.length === c.items.length && c.q !== 'pending' && (!c.id || c.idStage === 'returned');
+
+    function action(s, name, value, api) {
+        const d = s.data, c = d.cust;
+        if (s.status !== 'active') return;
+        switch (name) {
+            case 'tally': {   // the player's own memo; never checked against the real counts
+                const row = value && value.row === 'exit' ? 'exit' : 'chime';
+                d.tally[row] = Math.max(0, d.tally[row] + (value && value.delta < 0 ? -1 : 1));
                 return;
-            case 'A':
-                if (name === 'payA') { d.exits += 1; api.log(X.payA); return advance(s, api); }
-                return;
-            case 'B':
-                if (name === 'idCheck' && !d.idRevealed) { d.idRevealed = true; d.idTimer = T.idDeadline; return api.log(X.idCheck); }
-                if (name === 'idRefuse') { d.idReason = '사진과 실물이 다르다는 이유로 판매를 거절했습니다'; return fail(s, api, 'ID_FAIL'); }
-                if (!d.idRevealed) return;
-                if (name === 'idReturnSame') { d.exits += 1; api.log(X.idReturned); return advance(s, api); }
-                if (name === 'idReturnStartled') { d.idReason = '신분증 사진이 눈을 깜빡이는 것을 보고 놀란 기색을 보였습니다'; return fail(s, api, 'ID_FAIL'); }
-                if (name === 'idReturnWrongSpeed') { d.idReason = '건네받았을 때와 다른 손짓과 속도로 돌려주었습니다'; return fail(s, api, 'ID_FAIL'); }
-                return;
-            case 'C':
-                if (name === 'cPointPrice' || name === 'cPointScreen') { d.exits += 1; api.log(X.cPoint); return advance(s, api); }
-                if (name === 'cAnswerAloud') return fail(s, api, 'VOICE_LOST');
-                return;
-            case 'D':
-                if (name === 'hqCall' && d.dTier && !d.dReported) { d.dReported = true; return api.log(X.dReported(d.dTier.price)); }
-                return;
-            case 'F':
-                if (name === 'fBarehand') return fail(s, api, 'F_BAREHAND');
-                if (name === 'fReregister') return fail(s, api, 'F_REREGISTER');
-                if (name === 'fTongs' && d.fStage === '') { d.fStage = 'tongs'; return api.log(X.fTongs); }
-                if (name === 'fContained' && d.fStage === 'tongs') { d.fStage = 'contained'; return api.log(X.fContained); }
-                if (name === 'hqCall' && d.fStage === 'contained') { d.fStage = 'done'; api.log(X.fReported); return advance(s, api); }
-                return;
-            case 'G':
-                if (name === 'goOutside') return fail(s, api, 'G_OUTSIDE');
-                if (name === 'openApp') { d.appOpen = true; return api.log(X.gAppOpen); }
-                if (name === 'pressEnd' && d.appOpen) {
-                    d.gPresses += 1;
-                    if (d.gPresses < d.gNeeded) return api.log(X.gPressFail);
-                    api.log(X.gPressDone);
-                    return api.win(data.clearText, { patrols: {}, elapsed: s.elapsed, injuries: [] });
+            }
+            case 'glance':
+                if (value) {
+                    if (d.glance) return;
+                    if (!c) { api.log(X.glanceEmpty); d.glance = null; return; }
+                    if (c.phase === 'counter' && c.gaze === 'watch') return fail(s, api, 'MIRROR_LOCKED');
+                    d.glance = { t: 0, corridor: c.mirror === 'corridor' };
+                    if (d.glance.corridor) { api.log(X.mirrorCorridor); api.majorEvent('A_MIRROR'); }
+                } else if (d.glance) {
+                    const g = d.glance; d.glance = null;
+                    if (!c) return;
+                    if (g.t >= T.glanceMin) { c.mirrored = true; api.log(g.corridor ? X.mirrorAway : X.mirrorNormal); }
+                    else api.log('[방범거울] 제대로 보지 못했다.');
                 }
                 return;
+            case 'greet': if (c) return fail(s, api, 'SPOKE_FIRST'); return api.log(X.spoke);
+            case 'scan': {
+                if (!c || c.phase !== 'counter') return;
+                if (!c.mirrored) return fail(s, api, 'MIRROR_SKIPPED');
+                const i = Number(value); const item = c.items[i];
+                if (!item || c.scanned.includes(i)) return;
+                c.scanned.push(i);
+                if (item.ghost) { c.ghostScanned = true; api.log(X.scannedGhost(item.price)); api.majorEvent('D_GHOST_ITEM'); }
+                else api.log(X.scanned(item.name, item.price));
+                return;
+            }
+            case 'answer': case 'pointPrice': case 'pointScreen':
+                if (!c || c.q !== 'pending') return;
+                if (name === 'answer') { if (c.voice) return fail(s, api, 'VOICE_LOST'); api.log(X.answeredAloud(c.items[0].price)); }
+                else api.log(X.pointed(name === 'pointPrice' ? '가격표' : 'POS 화면'));
+                c.q = 'done'; return;
+            case 'idTake':
+                if (!c || c.idStage !== 'handed') return;
+                c.idStage = 'taken'; c.takeMs = Math.max(1, Number(value) || 1); c.blinkT = 0; c.holdT = 0; api.log(X.idTaken); return;
+            case 'idLook':
+                if (!c || c.idStage !== 'taken') return;
+                if (c.blinked) return fail(s, api, 'ID_FAIL');
+                return api.log(X.idLooked);
+            case 'idReturn': {
+                if (!c || c.idStage !== 'taken') return;
+                const ms = Math.max(1, Number(value) || 1);
+                if (c.blinked && Math.abs(ms - c.takeMs) / c.takeMs > T.idTolerance) return fail(s, api, 'ID_FAIL');
+                c.idStage = 'returned'; return api.log(X.idReturned);
+            }
+            case 'refuse':
+                if (!c || !c.id || c.idStage === 'returned') return;
+                if (c.blink) return fail(s, api, 'ID_FAIL');
+                return customerLeaves(s, api, false);
+            case 'pay':
+                if (!c || c.phase !== 'counter') return;
+                if (!c.mirrored) return fail(s, api, 'MIRROR_SKIPPED');
+                if (!ready(c)) return api.log(X.notReady);
+                if (value !== c.pay) return api.log(X.wrongMethod(c.pay));
+                c.phase = 'paid'; c.paid = true; c.t = T.leave;
+                return api.log(X.paid(c.pay === 'card' ? '카드' : '현금', c.items.reduce((a, i) => a + i.price, 0)));
+            case 'bag':
+                if (c && c.bag && !c.bagged && c.phase !== 'browse') { c.bagged = true; api.log(X.bagged); }
+                return;
+            case 'hq':
+                if (c && c.ghostScanned && !c.reported) { c.reported = true; return api.log(X.hqGhost); }
+                if (d.f === 'contained') { d.f = 'done'; return api.log(X.hqWaste); }
+                return api.log(X.hqDummy);
+            case 'lockDoor':
+                if (d.doorLocked) return;
+                if (c) return api.log(X.lockRefused);
+                d.doorLocked = true; return api.log(X.lock);   // an unseen customer is not detected here: counting is the player's job
+            case 'unlockDoor':
+                if (d.doorLocked) { d.doorLocked = false; api.log(X.unlock); }
+                return;
+            case 'leave':
+                if (c) return fail(s, api, 'LEAVE_WITH_CUSTOMER');
+                if (d.chimes !== d.exits) return fail(s, api, 'E_LEFT_DURING_MISMATCH');
+                if (!d.doorLocked) return fail(s, api, 'DOOR_UNLOCKED');
+                d.urge = false; d.doorLocked = false; d.clock = Math.min(480, d.clock + T.restMinutes); return api.log(X.rest);
+            case 'goOutside':
+                if (d.dawn) return fail(s, api, 'G_OUTSIDE');
+                if (c) return fail(s, api, 'LEAVE_WITH_CUSTOMER');
+                if (d.chimes !== d.exits) return fail(s, api, 'E_LEFT_DURING_MISMATCH');
+                return fail(s, api, 'DOOR_UNLOCKED');
+            case 'shelf':
+                if (value === false) { d.shelfOpen = false; return; }
+                if (c) return api.log(X.notNow);
+                d.shelfOpen = true; return api.log(X.shelfOpen);
+            case 'registerWaste': case 'barehand': case 'tongs': {
+                if (!d.shelfOpen || c) return;
+                const item = data.shelf.find(i => i.id === value); if (!item) return;
+                if (item.returned) {
+                    if (name === 'registerWaste') return fail(s, api, 'F_REREGISTER');
+                    if (name === 'barehand') return fail(s, api, 'F_BAREHAND');
+                    if (d.f === '') { d.f = 'tongs'; api.log(X.tongs); api.majorEvent('F_RETURNED'); }
+                    return;
+                }
+                if (name === 'tongs') return api.log(X.tongsNormal);
+                if (name === 'barehand') return api.log(X.tidy(item.name));
+                if (!item.expired || !d.wasteAlert) return api.log('[POS] 아직 폐기 대상이 아니다.');
+                if (!d.wasteDone.includes(item.id)) { d.wasteDone.push(item.id); api.log(X.wasteRegistered(item.name)); }
+                return;
+            }
+            case 'contain':
+                if (d.f === 'tongs') { d.f = 'contained'; api.log(X.contained); }
+                return;
+            case 'openApp': d.appOpen = true; return api.log(X.appOpen);
+            case 'endShift':
+                if (!d.appOpen) return;
+                if (!d.dawn) return api.log(X.endEarly);
+                d.presses += 1;
+                if (d.presses < d.need) return api.log(X.endFail);
+                d.exterior = 'light'; api.log(X.endDone);
+                return api.win(data.clearText, { patrols: {}, elapsed: s.elapsed, injuries: [] });
         }
     }
 
     FieldCore.register({
         id: data.id, data, init, tick, action, scene: () => '',
-        logTag: run => {
-            const total = data.queue.length + 1; // +1 for the final G phase
-            const idx = Math.min(total, Math.max(0, run.data.queueIdx + 1));
-            return FieldCore.time(Math.round((idx / total) * 480));
-        },
+        logTag: run => FieldCore.time(run.data.clock),
         stamp: log => log.tag || '',
         manualClock: true, startLog: data.startLog,
-        release() { /* nothing is held: losing focus never changes the situation */ },
+        release() { if (FieldCore.get()?.data?.glance) FieldCore.action('glance', false); },   // losing focus ends a glance
         get ui() { return window.FieldEP07UI; }
     });
 })();

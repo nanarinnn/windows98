@@ -17,23 +17,32 @@ window.FieldEP09Data = {
     // bill (tier index 0-4), fApp, fIcon, gDir, h1/h2/h3 (photo angle index), jWho, code1/code2/code3, rescue, repeat.
     random: name => Math.random(),
     startLog: '[안전 안내 문자] 특별재난관리본부. 귀하는 금일 수신한 통화로 관리 대상자로 분류되었습니다.',
-    clearText: '구출 완료 · 요원 도착 확인. EP.10 연결 권한 갱신. 다음 현장은 연결 준비 중입니다.',
-    order: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'],
+    clearText: '[FIELD OBSERVATION COMPLETE] EP09 안전 안내 문자 — 구조 완료. EP.10 연결 권한 갱신.',
+    // A~L are not stages: they interrupt whatever the player is doing on the phone. The deck below is the order situations
+    // are *offered*; the scheduler lets a compatible one start while another is still running (see COMPAT). L is not in the
+    // deck: its three verification codes arrive spread across the run (codeAfter = situations started so far).
+    order: ['A', 'C', 'B', 'F', 'I', 'D', 'E', 'G', 'H', 'J', 'K'],
+    OVERLAY: ['B', 'D', 'J', 'K'],           // take over the screen: they only start when nothing else is active
+    COMPAT: [['A', 'C'], ['A', 'F'], ['A', 'H'], ['A', 'I'], ['C', 'F'], ['C', 'H'], ['C', 'I'], ['F', 'H'], ['F', 'I'], ['G', 'H']],
+    maxActive: 2,
+    chainNext: { A: 12, F: 14, G: 7 },      // seconds until the next offer after these start (makes A+C, F+I, G+H overlap)
+    codeAfter: [3, 6, 9],
     // While the rescue is under way the existing rules keep applying: these situations can come back.
     repeatPool: ['A', 'C', 'D'],
     tuning: {
-        startBattery: 72, drainIdle: 0.12, drainLight: [0, 0.12, 0.24, 0.4], drainRecord: 0.2,
-        gapMax: 9, gapMinRatio: 0.3, gapFloor: 2, firstGap: 3,
-        callbackLimit: 25, ringBeforeAnswer: 2, noAnswerRing: 3, hangupLimit: 4,
-        stareStart: 3, stareHold: 6, lookAwayGrace: 0.6,
-        billLimit: 30,
+        // Battery is pressure, not a countdown: waiting < any app open < camera < flashlight < recording (%/s).
+        startBattery: 92, drainIdle: 0.04, drainApp: 0.01, drainCamera: 0.03, drainLight: [0, 0.06, 0.1, 0.15], drainRecord: 0.2,
+        gapMax: 165, gapMinRatio: 0.35, gapFloor: 12, firstGap: 8, afterResolve: 6,
+        callbackLimit: 40, ringBeforeAnswer: 2, noAnswerRing: 3, hangupLimit: 4,
+        stareStart: 4, stareHold: 6, lookAwayGrace: 0.6,
+        billLimit: 45,
         screamLen: 1.4, screamGap: 1.6,
-        permLimit: 45,
-        crawlStep: 2.5, startDistance: 6, reach: [0, 2, 4, 6],
-        photoGap: 12, zoomNeeded: 2,
-        shutterGap: 2, iStartLimit: 40, selfieLen: 12,
-        jLen: 16, kRing: 8, kSmsWait: 8, codeGap: 4,
-        rescueMin: 18, rescueMax: 36
+        permLimit: 60,
+        crawlStep: 3, startDistance: 6, reach: [0, 2, 4, 6],
+        photoGap: 18, zoomNeeded: 2,
+        shutterGap: 2, iStartLimit: 45, selfieLen: 12,
+        jLen: 20, kRing: 10, kSmsWait: 10,
+        rescueMin: 25, rescueMax: 45, blackout: 2.5
     },
     clockStart: 23 * 60 + 12,   // phone clock at dispatch (presentation)
     secondsPerMinute: 5,
@@ -118,6 +127,8 @@ window.FieldEP09Data = {
         rescueStart: '[안전 안내 문자] [구조 작업 진행 중] [위치 확인 완료]',
         rescueKeep: '[안전 안내 문자] 요원이 도착할 때까지 위 사항을 계속하여 지켜 주십시오.',
         rescued: '[안전 안내 문자] 특별재난관리본부. 요원이 도착했습니다. 구출 작업을 완료합니다.',
+        signalCut: '[신호] 신호가 잠깐 끊겼다. 화면이 꺼진다.',
+        codeKept: '[문자] 인증번호 문자가 수신함에 남아 있다.',
         replySent: '[문자] 답장을 보냈다.',
         lowBattery: n => `[배터리] 잔량 ${n}%.`
     },

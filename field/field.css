@@ -132,21 +132,61 @@
 .f6-iso #f6-board, .f6-iso #f6-speaker, .f6-iso #f6-clock, .f6-iso #f6-podium, .f6-iso .f6-seats { display:none; }
 @media (max-width:700px) { #f6-card { left:6%; width:88%; } .f6-room { height:360px; } }
 /* EP07 (convenience store): counter duty; POS/customer text overlays the scene, right panel holds HQ/disposal/app. */
-.f7-store { height:220px; background:#0d1210; }
+.f7-store { height:230px; background:#0d1210; }
 #f7-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.75; }
 #f7-text { position:absolute; left:0; right:0; top:0; z-index:2; padding:6px 10px; font-size:12px; color:#d8ffd8; background:rgba(0,0,0,.55); }
-#f7-pos { position:absolute; left:0; right:0; bottom:0; z-index:2; padding:6px 10px; font-size:12px; color:#ffcc00; background:rgba(0,0,0,.75); font-family:monospace; }
-#f7-pos[hidden] { display:none; }
-#f7-hq button, #f7-disposal button, #f7-app button { display:block; width:100%; margin-bottom:6px; text-align:left; }
-#f7-disposal p, #f7-app p { margin:4px 0 10px; }
-/* EP08 (water park): facility scene with an optional settlement panel; right column holds the 12-zone map and the wristband. */
-.f8-scene { height:220px; background:#07131a; }
-#f8-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.7; }
-#f8-text { position:absolute; left:0; right:0; top:0; z-index:2; padding:6px 10px; font-size:12px; color:#d8f4ff; background:rgba(0,0,0,.55); }
-#f8-panel { position:absolute; left:0; right:0; bottom:0; z-index:2; margin:0; padding:6px 10px; font:12px/1.5 monospace; color:#ffcc00; background:rgba(0,0,0,.8); white-space:pre; overflow-x:auto; }
-#f8-panel[hidden] { display:none; }
-.f8-map { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:4px; margin-bottom:8px; }
+#f7-window { position:absolute; left:8px; top:36px; z-index:2; padding:2px 6px; font-size:10px; color:#8aa; background:#000; border:1px solid #233; }
+#f7-window.f7-light { color:#000; background:#cfe6ff; transition:background 3s; }
+#f7-mirror { position:absolute; right:10px; top:36px; z-index:3; width:120px; height:80px; border-radius:50%; border:3px solid #999; background:radial-gradient(circle, #3a4a45, #121816); color:#cfd; font-size:10px; display:grid; place-items:center; text-align:center; }
+#f7-mirror.f7-corridor { background:repeating-radial-gradient(circle, #0b0f0e 0 6px, #6f7d78 6px 8px); }
+#f7-pos { position:absolute; left:0; right:0; bottom:0; z-index:2; padding:6px 10px; font:12px/1.4 monospace; color:#ffcc00; background:rgba(0,0,0,.8); white-space:pre; }
+#f7-pos[hidden], #f7-mirror[hidden], #f7-id[hidden] { display:none; }
+#f7-id { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.f7-zone { min-height:74px; border:1px dashed #555; padding:4px; display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+.f7-zone small { margin:0 !important; }
+#fieldWindow button.f7-card { display:flex; gap:6px; align-items:center; padding:4px 8px; color:#111; background:#e8e2cf; border:1px solid #888; touch-action:none; text-align:left; font-size:10px; }
+.f7-photo { position:relative; width:30px; height:38px; background:#b9a98e; display:block; }
+.f7-photo i { position:absolute; top:13px; width:5px; height:3px; background:#222; border-radius:50%; }
+.f7-photo i:first-child { left:8px; } .f7-photo i:last-child { right:8px; }
+.f7-card.f7-blink .f7-photo i { animation:f7-blink 1.6s infinite; }
+@keyframes f7-blink { 0%, 88%, 100% { transform:scaleY(1); } 92% { transform:scaleY(.1); } }
+#fieldWindow button.f7-hold { touch-action:none; user-select:none; -webkit-user-select:none; }
+.f7-tally-row { display:flex; align-items:center; gap:4px; margin-bottom:4px; }
+.f7-marks { flex:1; font:13px monospace; color:#e6e6c8; background:#1d1d14; padding:2px 6px; border:1px solid #333; }
+#fieldWindow .f7-tally-row button { padding:2px 8px; }
+#f7-desk button, #f7-app button, #f7-shelf > button { display:block; width:100%; margin-bottom:6px; text-align:left; }
+.f7-shelf-item { border-top:1px solid #333; padding:4px 0; }
+.f7-shelf-item p { margin:2px 0 4px; color:#ccc; font-size:11px; }
+#fieldWindow .f7-shelf-item button { padding:2px 6px; margin:0 2px 2px 0; }
+/* EP08 (water park): one continuous run. Bright summer scene that drains after 17:50; crowd line after the wave, a
+   pseudo-first-person slide tunnel, the settlement printout. Map = park layout grid, only adjacent areas walkable. */
+.f8-scene { height:240px; background:linear-gradient(180deg, #1aa7d8 0%, #0b5f86 60%, #06304a 100%); transition:filter 2s; }
+.f8-scene.f8-z-locker, .f8-scene.f8-z-desk, .f8-scene.f8-z-exit { background:linear-gradient(180deg, #31424e, #141c22); }
+.f8-scene.f8-z-spa { background:linear-gradient(180deg, #9fb7b0, #3c5a55 70%, #1d2c2a); }
+.f8-scene.f8-z-food, .f8-scene.f8-z-sunbed, .f8-scene.f8-z-photo { background:linear-gradient(180deg, #ffd27a, #e08b3a 60%, #6b3a17); }
+.f8-scene.f8-late { filter:saturate(.45) brightness(.85); }
+.f8-scene.f8-closed { filter:saturate(.1) brightness(.6); }
+.f8-tint { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 120%, rgba(255,255,255,.18), transparent 60%); pointer-events:none; }
+#f8-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.55; mix-blend-mode:luminosity; }
+#f8-text { position:absolute; left:0; right:0; top:0; z-index:2; padding:6px 10px; font-size:12px; color:#e9f8ff; background:rgba(0,0,0,.5); }
+#f8-alert { position:absolute; left:8px; right:8px; top:38px; z-index:3; padding:6px 10px; font-size:12px; color:#000; background:#ffcc00; border:1px solid #000; animation:blink 1.2s infinite; }
+#f8-crowd { position:absolute; left:8px; right:8px; bottom:8px; z-index:2; padding:6px 8px; font-size:11px; line-height:1.6; color:#d8f4ff; background:rgba(0,20,30,.7); }
+#f8-panel { position:absolute; left:0; right:0; bottom:0; top:30px; z-index:2; margin:0; padding:8px 12px; font:12px/1.5 monospace; color:#ffcc00; background:rgba(0,0,0,.88); white-space:pre; overflow:auto; }
+#f8-alert[hidden], #f8-crowd[hidden], #f8-panel[hidden], #f8-tunnel[hidden] { display:none; }
+#f8-tunnel { position:absolute; inset:30px 0 0; z-index:1; overflow:hidden; perspective:300px; background:radial-gradient(circle at 50% 55%, #9fe6ff 0 6%, #0a6f9a 18%, #04263a 60%); transition:transform .5s; }
+#f8-tunnel i { position:absolute; left:50%; top:55%; width:30px; height:30px; margin:-15px 0 0 -15px; border:3px solid rgba(255,255,255,.55); border-radius:50%; animation:f8-ring 1.2s linear infinite; }
+#f8-tunnel i:nth-child(2) { animation-delay:.3s; } #f8-tunnel i:nth-child(3) { animation-delay:.6s; } #f8-tunnel i:nth-child(4) { animation-delay:.9s; }
+#f8-tunnel.f8-swerve-l { transform:rotate(-14deg) translateX(-18px); }
+#f8-tunnel.f8-swerve-r { transform:rotate(14deg) translateX(18px); }
+#f8-tunnel.f8-dark { background:#000; }
+#f8-tunnel.f8-dark i { border-color:rgba(255,255,255,.06); }
+#f8-tunnel.f8-stopped i { animation-play-state:paused; }
+#f8-count-view { position:absolute; right:12px; bottom:8px; font:bold 28px monospace; color:#fff; text-shadow:0 0 6px #000; }
+@keyframes f8-ring { from { transform:scale(.2); opacity:0; } 30% { opacity:1; } to { transform:scale(14); opacity:0; } }
+.f8-map { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:4px; margin-bottom:8px; }
+#fieldWindow .f8-map button { padding:4px 2px; white-space:normal; word-break:keep-all; }
 .f8-map button[aria-pressed="true"] { outline:2px solid #00ff00; }
+#fieldWindow button.f8-hold { touch-action:none; user-select:none; -webkit-user-select:none; }
 #f8-band button { display:block; width:100%; margin-bottom:6px; text-align:left; }
 #f8-band p { margin:4px 0 8px; }
 /* EP09 (safety text): a generic smartphone is the play space; the aside holds surroundings, phone direction and the log. */
@@ -199,5 +239,42 @@
 .f9-env { white-space:pre-wrap; font-size:12px; line-height:1.6; min-height:60px; }
 .f9-face { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; }
 .f9-glitch .f9-status { animation:f9-jit .4s steps(2) infinite; }
+.f9-phone.f9-off::after { content:''; position:absolute; inset:0; z-index:30; background:#000; transition:opacity 1s; }
 @keyframes f9-jit { 0% { transform:translateX(0); } 50% { transform:translateX(1px); filter:hue-rotate(40deg); } 100% { transform:translateX(0); } }
 @media (max-width:700px) { .f9-phone { height:520px; } }
+/* EP10 (happy factory): one production line. The line strip fades the stations behind you; the toy as built so far; in the corridor the HUD is gone. */
+.f10-line { display:flex; flex-wrap:wrap; align-items:center; gap:4px; margin-top:6px; font-size:11px; color:#666; }
+.f10-line[hidden] { display:none; }
+.f10-line i { color:#333; font-style:normal; }
+.f10-line .f10-past { color:#3a3a3a; text-decoration:line-through; }
+.f10-line .f10-here { color:#ffcc00; font-weight:bold; }
+.f10-stage { height:240px; background:linear-gradient(180deg, #f6d6e4 0%, #bfe3f5 55%, #7fb7c9 100%); }
+.f10-stage.f10-silent { filter:saturate(.3); }
+.f10-stage.f10-corridor { background:linear-gradient(90deg, #050505, #1c1c1c 50%, #050505); }
+#f10-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.6; }
+#f10-text { position:absolute; left:0; right:0; top:0; z-index:2; padding:6px 10px; font-size:12px; color:#fff; background:rgba(0,0,0,.5); }
+#f10-toy { position:absolute; left:10px; bottom:10px; z-index:2; display:flex; flex-wrap:wrap; gap:4px; max-width:70%; }
+#f10-toy[hidden], #f10-epilogue[hidden], #f10-hud[hidden] { display:none; }
+#f10-toy span { padding:3px 6px; font-size:11px; color:#103; background:rgba(255,255,255,.85); border:1px solid #9bc; border-radius:3px; }
+#f10-toy .f10-head { background:#ffe9a8; } #f10-toy .f10-head.f10-open { background:#ffb3b3; }
+#f10-toy .f10-tail { background:#b8efc6; } #f10-toy .f10-body { background:#cdeeff; }
+#f10-toy.f10-whole { outline:2px solid #ffcc00; padding:4px; background:rgba(0,0,0,.35); }
+#f10-toy[data-lamp="green"] { outline-color:#00ff66; } #f10-toy[data-lamp="red"] { outline-color:#ff2222; }
+#f10-status.f10-lamp-green { color:#00ff66; } #f10-status.f10-lamp-red { color:#ff2222; }
+#f10-epilogue { position:absolute; inset:0; z-index:3; display:grid; place-items:center; padding:16px; white-space:pre-line; text-align:center; font-size:12px; color:#bbb; background:#000; }
+.f10-say { display:flex; gap:6px; width:100%; }
+.f10-say input { flex:1; min-width:0; font:12px monospace; color:#0f0; background:#000; border:1px solid #444; padding:4px 6px; }
+#fieldWindow button.f10-hold { touch-action:none; user-select:none; -webkit-user-select:none; }
+#fieldWindow button.f10-big { padding:10px 28px; font-size:13px; }
+/* PUBLIC CLASSIFIED CROSS-REFERENCE (classified.js): two existing records side by side; the player links the shared elements. */
+.xref { margin-top:10px; border:1px solid #550000; background:#0a0000; padding:8px; }
+.xref-head { color:#ff3333; font-weight:bold; font-size:12px; letter-spacing:2px; margin-bottom:6px; }
+.xref-cols { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.xref-col { border:1px solid #333; padding:6px; font-size:12px; line-height:1.7; color:#cfcfcf; }
+.xref-col b { display:block; color:#888; font-size:11px; margin-bottom:4px; }
+#fieldWindow button.xref-tok { padding:0 2px; font-size:12px; color:#cfcfcf; background:none; border:none; border-bottom:1px dotted #777; }
+#fieldWindow button.xref-tok.xref-on, .xref-hit.xref-on { color:#000; background:#ffcc00; }
+#fieldWindow button.xref-tok.xref-miss { color:#666; }
+.xref-foot { margin-top:6px; min-height:14px; font-size:11px; color:#888; }
+.xref-end { margin-top:8px; color:#ff5555; font-size:12px; }
+@media (max-width:700px) { .xref-cols { grid-template-columns:1fr; } }

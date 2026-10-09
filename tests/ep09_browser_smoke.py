@@ -36,7 +36,11 @@ def run():
         def has(id): return page.locator('#' + id).count() > 0
         def state(): return page.evaluate('FieldCore.get()')
         def data(): return state()['data']
-        def ev(): return data()['ev'] or {}
+        CUR = ['']
+        def evs(): return data()['evs']
+        def ev(kind=None):
+            k = kind or CUR[0]
+            return next((e for e in evs() if e['kind'] == k), {}) if k else (evs()[0] if evs() else {})
         def log_text(): return page.locator('#field-log').inner_text()
         def step(seconds): page.evaluate('(n) => { let left = n; while (left > 0 && FieldCore.get().status === "active") { FieldCore.step(Math.min(.25, left)); left -= .25; } }', seconds)
         def fresh(**force):
@@ -62,23 +66,26 @@ def run():
         def camera(mode='photo', lens='rear', zoom=1):
             open_app('camera'); click('f9-mode-' + mode); click('f9-lens-' + lens); click('f9-zoom-%d' % zoom)
 
-        def solve_one():
-            """Resolve the current situation correctly through the phone UI."""
-            e, d = ev(), data()
-            k = e.get('kind')
+        def hold(): page.evaluate('FieldCore.get().data.nextIn = 9999')   # no further offers while a timeout is tested
+        def solve_kind(k):
+            """Resolve one running situation of kind k correctly through the phone UI."""
+            e = ev(k)
+            if not e: return
             if k == 'A':
                 if e['phase'] == 'wait': dial(e['number'])
+                elif e['phase'] == 'ringing': step(.5)
                 else: click('f9-hangup')
             elif k == 'B':
                 page.locator('#f9-stare').focus(); page.keyboard.down(' '); step(T['stareHold'] + .3); page.keyboard.up(' ')
             elif k == 'C':
                 open_thread('carrier'); page.locator('[id^=f9-pay-open-]').last.click(); click('f9-pay')
             elif k == 'D':
-                while not (ev().get('n') == 5 and ev().get('phase') == 'cut'): step(.25)
+                while not (ev('D').get('n') == 5 and ev('D').get('phase') == 'cut'): step(.25)
                 click('f9-reject')
             elif k == 'F':
                 open_app('settings'); click('f9-settings-apps'); click('f9-appinfo-strange')
-                for i in range(5): click('f9-perm-%d' % i)
+                for i in range(5):
+                    if ev('F'): click('f9-perm-%d' % i)
             elif k == 'G':
                 open_app('flashlight'); click('f9-level-3')
                 if not data()['light']['on']: click('f9-light')
@@ -93,22 +100,27 @@ def run():
                 if e['phase'] == 'ringing': click('f9-reject')
                 elif e['phase'] == 'sms': step(T['kSmsWait'] + .3)
                 else: click('f9-hangup')
-            elif k == 'L':
-                while ev().get('n', 0) < 3: step(.25)
-                open_thread('safety'); page.locator('#f9-reply').fill(ev()['codes'][2]); click('f9-reply-send')
-            else: raise AssertionError('no solver for %r' % k)
             assert state()['status'] in ('active', 'cleared'), (k, state().get('reason'))
 
+        def solve_one():
+            """Resolve something that is running (screen-taking ones first, then the most urgent)."""
+            running = [e['kind'] for e in evs()]
+            if not running: return step(.25)
+            order = ['B', 'D', 'J', 'K', 'G', 'A', 'H', 'C', 'I', 'F']
+            solve_kind(sorted(running, key=order.index)[0])
+
         def to(kind, **force):
-            """Play every earlier situation correctly and arrive at `kind` (just started)."""
-            fresh(**force)
+            """Play correctly until `kind` starts; everything else running beside it is resolved first."""
+            fresh(**force); CUR[0] = kind
             n = 0
-            while True:
-                n += 1; assert n < 400, 'not reached: ' + kind
-                k = ev().get('kind')
-                if k == kind: return
-                if k: solve_one()
-                else: step(.25)
+            while not ev(kind):
+                n += 1; assert n < 8000, 'not reached: ' + kind
+                solve_one() if evs() else step(.25)
+            n = 0
+            while any(e['kind'] != kind for e in evs()):
+                n += 1; assert n < 50
+                solve_kind([e['kind'] for e in evs() if e['kind'] != kind][0])
+            if kind == 'A' and ev('A').get('phase') != 'wait': raise AssertionError('A already handled')
 
         story_before = page.evaluate(f"localStorage.getItem('{STORY_KEY}')")
         story_phone_before = page.evaluate("document.getElementById('mobile-phone-view').outerHTML")
@@ -185,7 +197,7 @@ def run():
         # --- A ---------------------------------------------------------------------------------------------------------------
         to('A'); assert ev()['number'] == D['missed'][0] and '부재중' in log_text()
         dial(ev()['number']); assert ev()['phase'] == 'ringing' and data()['calls'][0]['dir'] == 'out'
-        step(T['noAnswerRing'] + .3); assert ev().get('kind') != 'A' and 'A' in data()['resolved'] and state()['status'] == 'active'
+        step(T['noAnswerRing'] + .3); assert not ev('A') and 'A' in data()['resolved'] and state()['status'] == 'active'
         to('A', aAnswer=.1); dial(ev()['number']); step(T['ringBeforeAnswer'] + .1); assert ev()['phase'] == 'answered'
         click('f9-hangup'); assert 'A' in data()['resolved']
         to('A', aAnswer=.1); dial(ev()['number']); step(T['ringBeforeAnswer'] + .1); click('f9-speak'); dead('A_SPOKE')
@@ -236,29 +248,29 @@ def run():
         print('PASS D: reject exactly when the fifth scream cuts; answering, rejecting early (incl. during the 5th) or hearing the 6th fail')
 
         # --- E ---------------------------------------------------------------------------------------------------------------
-        to('F'); assert 'E' in data()['resolved'] and '확인된 비정상 상황 E.\n[해당 항목은 삭제되었습니다.]' in page.evaluate("FieldCore.get().logs.map(l => l.message).join('\\n')")
+        to('G'); assert 'E' in data()['resolved'] and '확인된 비정상 상황 E.\n[해당 항목은 삭제되었습니다.]' in page.evaluate("FieldCore.get().logs.map(l => l.message).join('\\n')")
         assert page.evaluate("Object.keys(FieldEP09Data.failures).every(k => !k.startsWith('E_'))") and page.evaluate("!('E' in FieldEP09Data.text)")
         print('PASS E: only shown as deleted (no event, no failure, no mechanic)')
 
         # --- F ---------------------------------------------------------------------------------------------------------------
-        home()
+        to('F'); home()
         apps = page.evaluate("FieldCore.get().data.apps.map(a => [a.id, a.icon, a.name])")
         strange = [a for a in apps if a[0] == 'strange'][0]
         assert any(a[1] == strange[1] and a[0] != 'strange' for a in apps), 'the unknown app shares an icon with a normal app'
         assert re.search(r'[0-9]', strange[2]) and re.search(r'[A-Za-z]', strange[2])
-        page.locator('#f9-app-strange').click(); assert ev()['kind'] == 'F', 'opening it does nothing'
+        page.locator('#f9-app-strange').click(); assert ev('F'), 'opening it does nothing'
         open_app('settings'); click('f9-settings-apps'); click('f9-appinfo-camera'); click('f9-uninstall'); assert state()['status'] == 'active'
         click('f9-back'); click('f9-appinfo-strange'); click('f9-uninstall'); dead('F_DELETE')
-        to('F'); step(T['permLimit'] + .3); assert '실종되는 사례' in dead('F_KEPT')
+        to('F'); hold(); step(T['permLimit'] + .3); assert '실종되는 사례' in dead('F_KEPT')
         to('F'); open_app('settings'); click('f9-settings-apps'); click('f9-appinfo-strange')
         for i in range(4): click('f9-perm-%d' % i)
-        assert ev().get('kind') == 'F', 'every permission must be revoked'
+        assert ev('F'), 'every permission must be revoked'
         click('f9-perm-4'); assert 'F' in data()['resolved'] and state()['status'] == 'active'
         print('PASS F: same-icon twin, name is the tell; deleting fails, keeping permissions fails, revoking all permissions in Settings passes')
 
         # --- G ---------------------------------------------------------------------------------------------------------------
         to('G', gDir=1); assert data()['dark'] and data()['entity']['dir'] == 'left' and '왼쪽' in page.locator('#f9-env').inner_text()
-        camera(); click('f9-shutter'); assert ev()['kind'] == 'G' and '어둠만 찍혔다' in log_text()
+        camera(); click('f9-shutter'); assert ev('G') and '어둠만 찍혔다' in log_text()
         open_app('flashlight'); click('f9-level-1'); click('f9-light'); click('f9-face-left')
         dist = data()['entity']['dist']; step(T['crawlStep'] + .3); assert data()['entity']['dist'] == dist - 1, 'level-1 light does not reach that far'
         click('f9-level-3'); dist = data()['entity']['dist']; step(T['crawlStep'] * 2); assert data()['entity']['dist'] == dist, 'lit: it cannot move'
@@ -269,8 +281,8 @@ def run():
 
         # --- H ---------------------------------------------------------------------------------------------------------------
         to('H', h1=0, h2=1, h3=2); assert ev()['angle'] == 'back' and '뒤에서 찍은 사진' in log_text()
-        click('f9-face-back'); camera(zoom=2); click('f9-shutter'); assert ev()['kind'] == 'H' and '아무것도 찍히지 않았다' in log_text()
-        click('f9-face-front'); click('f9-zoom-1'); click('f9-shutter'); assert ev()['kind'] == 'H', 'it must be a zoomed shot'
+        click('f9-face-back'); camera(zoom=2); click('f9-shutter'); assert ev('H') and '아무것도 찍히지 않았다' in log_text()
+        click('f9-face-front'); click('f9-zoom-1'); click('f9-shutter'); assert ev('H'), 'it must be a zoomed shot'
         step(T['photoGap'] + .1); assert ev()['n'] == 2 and ev()['angle'] == 'left'
         click('f9-face-right'); click('f9-zoom-2'); click('f9-shutter'); assert 'H' in data()['resolved']
         fixed = [i for i in data()['items'] if i.get('fixed')]; assert len(fixed) == 1
@@ -284,8 +296,8 @@ def run():
         auto = [i for i in data()['items'] if i.get('iFile')][0]
         open_app('photos'); click('f9-item-' + auto['id']); dead('I_VIEWED')
         to('I'); step(T['iStartLimit'] + .3); dead('I_NO_VIDEO')
-        to('I'); camera('video', 'rear'); click('f9-record'); step(T['selfieLen'] + .3); assert ev()['kind'] == 'I', 'rear camera: no face'
-        click('f9-record'); click('f9-lens-front'); click('f9-record'); step(T['selfieLen'] / 2); click('f9-record'); assert ev()['kind'] == 'I', 'stopped early'
+        to('I'); camera('video', 'rear'); click('f9-record'); step(T['selfieLen'] + .3); assert ev('I'), 'rear camera: no face'
+        click('f9-record'); click('f9-lens-front'); click('f9-record'); step(T['selfieLen'] / 2); click('f9-record'); assert ev('I'), 'stopped early'
         click('f9-record'); step(T['selfieLen'] / 2)
         assert page.locator('#f9-rec-time').inner_text().strip().startswith('● 02:'), page.locator('#f9-rec-time').inner_text()
         step(T['selfieLen'] / 2 + .3); assert 'I' in data()['resolved']
@@ -315,52 +327,91 @@ def run():
         to('K'); click('f9-reject'); step(T['kSmsWait'] + .3); assert 'K' in data()['resolved'] and state()['status'] == 'active'
         print('PASS K: 0050-0200 "agent" asking for the location; telling/sharing/sending it fails; hanging up silently or ignoring passes')
 
-        # --- L + rescue + battery ------------------------------------------------------------------------------------------
-        to('L')
-        while ev().get('n', 0) < 3: step(.25)
-        codes = ev()['codes']; assert len(set(codes)) == 3
-        open_thread('safety')
-        for wrong in codes[:2]:
-            page.locator('#f9-reply').fill(wrong); click('f9-reply-send')
-            assert ev().get('kind') == 'L' and data()['rescue'] == 'none' and state()['status'] == 'active', 'first/second code is not accepted'
-        assert '인증 번호가 정확하지 않습니다' in log_text()
-        page.evaluate("FieldCore.get().data.battery = 80")
+        # --- async: two situations at once, compat table, never a screen-taker beside another --------------------------
+        fresh(); CUR[0] = ''
+        n = 0
+        while not ev('C'):
+            n += 1; assert n < 400
+            if ev('A') and ev('A')['phase'] != 'wait': solve_kind('A')
+            step(.25)
+        assert ev('A') and ev('A')['phase'] == 'wait' and len(evs()) == 2, 'C arrives while the A callback is still pending'
+        dial(ev('A')['number']); step(T['noAnswerRing'] + .3); assert not ev('A') and ev('C')
+        open_thread('carrier'); page.locator('[id^=f9-pay-open-]').last.click(); click('f9-pay'); assert not evs() and state()['status'] == 'active'
+        M = 'FieldCore.mission("EP09")'
+        for kind, others, ok in [('B', [], True), ('B', ['A'], False), ('D', ['C'], False), ('C', ['A'], True), ('H', ['G'], True), ('I', ['G'], False),
+                                 ('C', ['A', 'F'], False), ('A', ['J'], False), ('F', ['C'], True)]:
+            got = page.evaluate(f"(o) => {M}.canStart({{ evs: o.map(k => ({{ kind: k }})) }}, '{kind}')", others)
+            assert got == ok, (kind, others, got)
+        print('PASS async: A callback + C bill run together; at most two, only compatible pairs, screen-taking ones only alone')
+
+        # --- L spread over the run + rescue ---------------------------------------------------------------------------------
+        fresh(); CUR[0] = ''
+        codes = data()['codes']; assert len(set(codes)) == 3 and data()['codesSent'] == 0
+        def play_until(cond, limit=9000):
+            n = 0
+            while not cond():
+                n += 1; assert n < limit and state()['status'] == 'active', (state().get('reason'), evs())
+                solve_one() if evs() else step(.25)
+        play_until(lambda: data()['codesSent'] >= 1 and not data()['overlay']); assert data()['stageNo'] >= 3 and 'code1' in data()['threads']
+        open_thread('safety'); page.locator('#f9-reply').fill(codes[0]); click('f9-reply-send')
+        assert data()['rescue'] == 'none' and '인증 번호가 정확하지 않습니다' in log_text() and state()['status'] == 'active'
+        play_until(lambda: data()['codesSent'] >= 2); s2 = data()['stageNo']
+        play_until(lambda: data()['codesSent'] >= 3 and not data()['overlay']); assert data()['stageNo'] > s2
+        open_thread('safety'); page.locator('#f9-reply').fill(codes[1]); click('f9-reply-send'); assert data()['rescue'] == 'none'
         page.locator('#f9-reply').fill(codes[2]); click('f9-reply-send')
-        d = data(); assert d['rescue'] == 'inProgress' and 'L' in d['resolved']
+        d = data(); assert d['rescue'] == 'inProgress' and state()['status'] == 'active'
         hud = page.locator('#f9-rescue').inner_text(); assert hud == '[구조 작업 진행 중] [위치 확인 완료]', hud
         rescue_ui = page.locator('.field-hud').inner_text() + '\n' + '\n'.join(page.locator('.f9-msg').all_inner_texts())
         assert not re.search(r'\d+\s*(초|분)|남은|ETA', rescue_ui), 'no fixed countdown: ' + rescue_ui
-        i80 = page.evaluate('FieldCore.mission("EP09").interval(80)'); i20 = page.evaluate('FieldCore.mission("EP09").interval(20)')
-        assert i20 < i80 and abs(d['nextIn'] - i80) < .3, (i20, i80, d['nextIn'])
-        # the existing rules keep applying until the agent arrives
-        step(d['nextIn'] + .1); assert ev().get('kind') in ('A', 'C', 'D') and state()['status'] == 'active'
-        page.evaluate("FieldCore.get().data.battery = 20"); solve_one()
-        while ev().get('kind'): step(.25)
-        d = data(); expected = page.evaluate('(b) => FieldCore.mission("EP09").interval(b)', d['battery'])
-        assert d['nextIn'] < i80 - 2 and abs(d['nextIn'] - expected) < .3 and abs(expected - i20) < .5, ('lower battery -> shorter interval', d['nextIn'], expected, i20)
-        guard = 0
-        while state()['status'] == 'active':
-            guard += 1; assert guard < 400
-            solve_one() if ev().get('kind') else step(.25)
-        s = state(); assert s['status'] == 'cleared' and data()['repeats'] >= 1, (s['status'], s.get('reason'))
+        page.evaluate("FieldCore.get().data.rescueLeft = 0")
+        step(.5); assert state()['status'] == 'active' and data()['rescue'] == 'inProgress', 'no instant clear: more situations come first'
+        play_until(lambda: data()['rescue'] == 'arrived')
+        assert data()['rescueResolved'] >= data()['rescueNeed'] >= 1 and '신호가 잠깐 끊겼다' in log_text()
+        assert 'f9-off' in page.locator('#f9-phone').get_attribute('class') and state()['status'] == 'active'
+        step(T['blackout'] + .3); s = state(); assert s['status'] == 'cleared', s.get('reason')
+        assert '[FIELD OBSERVATION COMPLETE]' in page.locator('#field-outcome').inner_text()
         save = page.evaluate('FieldSave.get()')
         assert 'EP09' in save['cleared'] and page.evaluate("FieldSave.unlocked('EP10')") and 'EP10' not in save['cleared']
-        click('field-list'); assert page.locator('#field-dispatch-EP10').inner_text() == '연결 준비 중', 'EP10 unlocked, not implemented yet'
+        click('field-list'); assert page.locator('#field-dispatch-EP10').inner_text() in ('연결 준비 중', '파견 가능')
         assert page.evaluate(f"localStorage.getItem('{STORY_KEY}')") == story_before, 'Story save untouched'
         hooks = page.evaluate('window.__hooks')
         assert ['onEpisodeClear', 'EP09'] in hooks and all(len(h) <= 3 and all(isinstance(x, str) for x in h) for h in hooks)
         assert {'A_MISSED_CALL', 'B_VIDEO_CALL', 'L_AUTH_CODE', 'RESCUE'} <= {h[2] for h in hooks if h[0] == 'onMajorEvent'}
-        print('PASS L: 1st/2nd code rejected, 3rd code in the safety text starts the rescue ([구조 작업 진행 중] [위치 확인 완료], no countdown); rules keep applying; agent arrives -> EP09 clear, EP10 only')
+        print('PASS L: three unrequested codes arrive spread over the run; 1st/2nd rejected; the 3rd starts [구조 작업 진행 중] (no countdown), more situations still come, then signal cut -> blackout -> clear; EP10 only')
+
+        # --- pacing: a "normal" run with human-like reaction delays -------------------------------------------------------
+        fresh(); CUR[0] = ''
+        seen = set(); n = 0
+        while state()['status'] == 'active':
+            n += 1; assert n < 12000, (evs(), data()['battery'])
+            if data()['codesSent'] >= 3 and data()['rescue'] == 'none' and not data()['overlay']:
+                step(5); open_thread('safety'); page.locator('#f9-reply').fill(data()['codes'][2]); click('f9-reply-send'); continue
+            new = [e['kind'] + str(id(0)) for e in evs()]
+            fresh_kinds = [e['kind'] for e in evs() if (e['kind'], data()['stageNo']) not in seen]
+            if fresh_kinds:
+                for e in evs(): seen.add((e['kind'], data()['stageNo']))
+                if not any(k in ('B', 'D') for k in fresh_kinds): step(5)   # reading / deciding
+            solve_one() if evs() else step(.5)
+        s = state(); assert s['status'] == 'cleared', s.get('reason')
+        mins = s['elapsed'] / 60; left = data()['battery']
+        print('  pacing: %.1f min, battery left %.0f%%' % (mins, left))
+        assert 11 <= mins <= 16, mins
+        assert 12 <= left <= 32, left
+        print('PASS pacing: a careful run lasts %.1f min and ends with %.0f%% battery (target 12-15 min, 15-30%%)' % (mins, left))
 
         # battery: drain, flashlight cost, interval curve, 0% = unknown outcome
-        fresh(); b0 = data()['battery']; step(10); idle = b0 - data()['battery']
-        assert abs(idle - T['drainIdle'] * 10) < .05, idle
-        open_app('flashlight'); click('f9-level-3'); click('f9-light'); b1 = data()['battery']; step(10); assert b1 - data()['battery'] > idle * 2
+        fresh(); b0 = data()['battery']; step(5); idle = b0 - data()['battery']
+        assert abs(idle - T['drainIdle'] * 5) < .05, idle
+        open_app('memo'); b1 = data()['battery']; step(5); app = b1 - data()['battery']
+        open_app('camera'); b2 = data()['battery']; step(5); cam = b2 - data()['battery']
+        open_app('flashlight'); click('f9-level-3'); click('f9-light'); b3 = data()['battery']; step(5); light = b3 - data()['battery']
+        click('f9-light'); camera('video', 'front'); click('f9-record'); b4 = data()['battery']; step(5); rec = b4 - data()['battery']
+        assert idle < app < cam < light < rec, (idle, app, cam, light, rec)
         assert [round(page.evaluate(f'FieldCore.mission("EP09").interval({b})'), 2) for b in (100, 60, 30, 0)] == sorted([round(page.evaluate(f'FieldCore.mission("EP09").interval({b})'), 2) for b in (100, 60, 30, 0)], reverse=True)
-        page.evaluate("FieldCore.get().data.battery = 0.05"); step(1)
+        click('f9-record'); page.evaluate("FieldCore.get().data.battery = 0.05"); step(1)
         reason = dead('NO_DATA'); assert reason.startswith('SIGNAL LOST') and 'NO DATA' in reason and '사망' not in reason
         assert 'SIGNAL LOST / NO DATA' in log_text() and '생체 신호 소실' not in log_text()
-        print('PASS battery: real-time drain (flashlight costs more), lower battery -> shorter interval, 0% -> SIGNAL LOST / NO DATA (not a death)')
+        print('PASS battery: waiting < app < camera < flashlight < recording; lower battery -> shorter interval, 0% -> SIGNAL LOST / NO DATA (not a death)')
 
         # save round trip
         code = page.evaluate('GameSave.exportCode()'); story_code = page.evaluate('GameSave.exportStoryCode()')
