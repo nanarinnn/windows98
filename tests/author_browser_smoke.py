@@ -88,8 +88,8 @@ def run():
         }''')
         code = page.evaluate("'　' + Array.from(testAuthorInput, c => String.fromCharCode(c.charCodeAt(0)+0xFEE0)).join('') + '　'")
         import_ui(code)
-        page.wait_for_function("document.getElementById('save-code-import') && !document.getElementById('save-code-import').disabled && document.getElementById('save-code-status').textContent === '[RECORD RESTORED]'")
-        assert page.evaluate('authorMessages') == ['[UNKNOWN SAVE FORMAT]', '[IDENTITY RECORD FOUND]', '[RECORD RESTORED]']
+        page.wait_for_function("AuthorRoute.get().unlocked && document.getElementById('notebookWindow').style.display === 'none'")
+        assert all(m == '' for m in page.evaluate('authorMessages')), 'no AUTHOR message: the notebook simply closes'
         assert page.locator('#save-code-input').input_value() == ''
         assert page.evaluate('AuthorRoute.get().unlocked && AuthorRoute.get().authorAccessLevel === 1')
         assert page.evaluate('JSON.stringify(GameSave.get())') == story_before

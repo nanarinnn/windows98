@@ -93,9 +93,11 @@ window.addEventListener('load', () => {
     closeControl.setAttribute('role', 'button'); closeControl.setAttribute('aria-label', '닫기'); closeControl.tabIndex = 0;
     const text = win.querySelector('textarea'); text.id = 'author-note-text';
     // AUTHOR-only meta reactions to PUBLIC CLASSIFIED discoveries. Every CLASSIFIED is open to everyone and AUTHOR must discover
-    // it in the game like anyone else; this table only appends text to this file when the AUTHOR re-opens it. Extendable per id.
+    // it in the game like anyone else; this table only appends one line to this file when AUTHOR is unlocked AND the entry is
+    // discovered (either order, appended once). Extendable per id: a reaction for classified-02 or -03 may be added here
+    // later — none is defined now, and no sentence is written for them in advance.
     const AUTHOR_CLASSIFIED_REACTIONS = {
-        'classified-01': { authorTextAppend: 'HIDDEN을 전부 열었을까? 다음 문장은 말이야.' }
+        'classified-01': { authorTextAppend: '연결한 건 내가 아니야.' }
     };
     const BASE_NOTE = '누군가 이 창을 다시 열어 주었다.\n남겨 둔 문장 하나는, 여기까지 읽어 준 사람에게.\n\n영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께';
     const noteText = () => {

@@ -9,10 +9,9 @@ window.FieldEP06UI = (() => {
     const $ = id => document.getElementById(id);
     let sig = '', lastVideo = '', view = '', lastPhase = '', last = null;
     // After the day is cleared (EP07 is already unlocked) the classroom stays open for a free inspection. Looking at desk 17 again
-    // offers a contextual action; it runs the records search that can recover PUBLIC CLASSIFIED 01. Nothing here affects the clear.
-    const post = { inspected: false, running: false, token: 0, delay: 700 };
-    const POST_LINES = ['[기록 대조 중...]', '학생명       박예림', '사건 연도    2019', '실종 위치    부산광역시 기장군 태양해안', '동일 지역 기록이 발견되었습니다.',
-        '문서 번호    해안관리-2019-031', '[자동 연계 실패]', '열람 권한이 없습니다.'];
+    // offers a contextual action; it opens a CROSS-REFERENCE of two existing records (EP06 / EP01) that the player links
+    // themselves, which can recover PUBLIC CLASSIFIED 01. Nothing here affects the clear.
+    const post = { inspected: false, running: false, token: 0 };
     function postLog(message) { if (FieldCore.get()?.id === 'EP06') { FieldCore.log(message); FieldCore.refresh(); } }
     function postInspect() {
         if (post.inspected) return;
@@ -22,15 +21,15 @@ window.FieldEP06UI = (() => {
     function postReinspect() {
         if (post.running) return;
         if (window.Classified?.has('classified-01')) { postLog('[17번 자리] 이미 대조한 기록이다.'); return; }
-        post.running = true; const token = ++post.token; let i = 0;
-        const step = () => {
-            if (token !== post.token || FieldCore.get()?.id !== 'EP06') { post.running = false; return; }
-            if (i < POST_LINES.length) { postLog(POST_LINES[i++]); setTimeout(step, post.delay); return; }
-            post.running = false;
-            window.Classified?.discover('classified-01');
-            FieldCore.refresh();
-        };
-        step();
+        const host = document.getElementById('field-content'); if (!host || !window.Classified) return;
+        post.running = true; const token = ++post.token;
+        postLog('[기록 대조 중...]');
+        window.Classified.crossReference('classified-01', host, () => {
+            if (token !== post.token || FieldCore.get()?.id !== 'EP06') return;
+            postLog('[자동 연계 실패] 열람 권한이 없습니다.');
+            window.Classified.discover('classified-01');
+            post.running = false; FieldCore.refresh();
+        })?.scrollIntoView({ block: 'nearest' });
     }
 
     function mount(root) {

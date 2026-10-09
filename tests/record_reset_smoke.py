@@ -37,7 +37,7 @@ def run():
             }''')
             page.locator('#save-code-input').fill(value)
             page.locator('#save-code-import').click()
-            page.wait_for_function("document.getElementById('save-code-status').textContent==='[RECORD RESTORED]' && !document.getElementById('save-code-import').disabled")
+            page.wait_for_function("AuthorRoute.get().unlocked && document.getElementById('notebookWindow').style.display === 'none'")
             assert page.locator('#author-note-icon').is_visible()
 
         def open_note():

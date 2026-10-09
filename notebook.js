@@ -402,7 +402,7 @@ function renderClassified(root) {
             root.appendChild(doc);
         }
     });
-    for (let i = found; i < total; i++) root.appendChild(h('div', `color: ${NB_DIM}; font-size: 12px; margin-bottom: 6px;`, '□ [미확보]'));
+    // undefined / undiscovered slots are never listed (no locked rows); 3 / 3 is shown as just that, nothing else happens
 }
 
 function copyText(text, onDone) {
@@ -461,12 +461,10 @@ function renderRecord(root) {
             try {
                 // AUTHOR is separate browser metadata; it never replaces a Story save.
                 if (window.AuthorRoute && await AuthorRoute.tryImport(code)) {
-                    inp.value = ''; // Do not retain the author input in the UI.
-                    for (const message of ['[UNKNOWN SAVE FORMAT]', '[IDENTITY RECORD FOUND]', '[RECORD RESTORED]']) {
-                        msg2.textContent = message;
-                        await new Promise(resolve => setTimeout(resolve, 350));
-                    }
-                    if (AuthorRoute.storageError()) msg2.textContent += ' · 기록 저장 실패';
+                    // Nothing is announced: the input is cleared and the notebook simply closes, as if nothing happened.
+                    // ([제작자에게.txt] is there the next time the player looks at the desktop.)
+                    inp.value = ''; msg2.textContent = '';
+                    closeNotebook();
                     return;
                 }
                 if (!confirm('현재 진행 기록을 덮어씁니다. 계속할까요?')) return;

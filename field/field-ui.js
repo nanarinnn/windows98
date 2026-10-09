@@ -1,6 +1,6 @@
 // Shared headquarters shell; episode-specific controls are described below.
 window.FieldUI = (() => {
-    let win, content, video, audio, activeMission = 'EP01', lastVideo = '', lastInventory = '', lastEvent = '', logLength = 0;
+    let win, content, video, audio, activeMission = 'EP01', lastVideo = '', lastInventory = '', lastEvent = '', logLength = 0, openedAt = 0;
     const $ = id => document.getElementById(id);
     const mission = () => FieldCore.mission(activeMission);
     const button = (label, action, value, id) => {
@@ -10,6 +10,7 @@ window.FieldUI = (() => {
     };
     function focus() { win.style.zIndex = ++highestZIndex; updateDarkWebTaskbar(); }
     function open() {
+        if (win.style.display === 'none' || !openedAt) openedAt = Date.now();   // one "visit" of the Field Observation system
         win.style.display = 'flex'; focus();
         if (!FieldCore.get()) catalog();
     }
@@ -55,6 +56,14 @@ window.FieldUI = (() => {
             }
             content.append(row);
             const record = document.createElement('small'); record.textContent = `${save.cleared.includes(id) ? '생환 기록 있음' : '생환 기록 없음'} / 연결 소실 ${save.deaths[id] || 0}회`; content.append(record);
+        }
+        // 11 / 10: never announced; appears only after every CLASSIFIED trace exists and the list is opened again later
+        if (window.ElevenTen && window.ElevenTen.visible(openedAt)) {
+            const row = document.createElement('div'); row.className = 'field-case field-case-1110';
+            const label = document.createElement('span'); label.textContent = '11 / 10'; row.append(label);
+            const btn = document.createElement('button'); btn.id = 'field-dispatch-1110'; btn.textContent = '—';
+            btn.onclick = () => { content.replaceChildren(); const p = document.createElement('p'); content.append(p); window.ElevenTen.open(p); };
+            row.append(btn); content.append(row);
         }
         if (FieldSave.devUnlock) { const dev = document.createElement('p'); dev.textContent = '[개발 모드] localhost에서는 모든 에피소드가 개방됩니다. 저장 기록에는 영향이 없습니다.'; content.append(dev); }
         const note = document.createElement('p'); note.textContent = '근무 기록은 이 브라우저에 별도 저장됩니다. 사건수사노트의 [기록] 탭에서 세이브 코드로 함께 옮길 수 있습니다.'; content.append(note);
@@ -132,10 +141,12 @@ window.FieldUI = (() => {
 
     function renderLog(s) {
         const log = $('field-log'); if (!log) return;
-        if (logLength !== s.logs.length || log.dataset.last !== s.logs.at(-1)?.message) {
+        // compare the last entry object itself: at the 80-line cap the length stays the same and a repeated message
+        // (e.g. a button that has to be pressed again) has the same text
+        if (logLength !== s.logs.length || log._lastEntry !== s.logs.at(-1)) {
             const stamp = mission().stamp || (entry => FieldCore.time(entry.minute));
             logLength = s.logs.length; log.textContent = s.logs.map(entry => `[${stamp(entry)}] ${entry.message}`).join('\n');
-            log.dataset.last = s.logs.at(-1)?.message || ''; log.scrollTop = log.scrollHeight;
+            log._lastEntry = s.logs.at(-1); log.scrollTop = log.scrollHeight;
         }
     }
     function render(s) {

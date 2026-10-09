@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE = os.environ.get('FIELD_TEST_URL', 'http://127.0.0.1:3000')
 SECRET = os.environ.get('AUTHOR_TEST_SECRET', '')
 STORY_KEY = 'yuyeon98.save.v1'
-SENTENCE = 'HIDDEN을 전부 열었을까? 다음 문장은 말이야.'
+SENTENCE = '연결한 건 내가 아니야.'
 
 
 def run():
@@ -86,22 +86,31 @@ def run():
         click('f6-seat-17')
         assert '책상과 의자가 깨끗하게 정돈되어 있다' in log_text() and has('f6-recheck-17') and page.locator('#f6-recheck-17').inner_text() == '17번 자리를 다시 확인한다'
         assert classified_state()['discovered'] == []
-        click('f6-recheck-17'); page.wait_for_function("Classified.has('classified-01')")
+        click('f6-recheck-17'); assert has('xref-classified-01') and 'CROSS-REFERENCE' in page.locator('#xref-classified-01').inner_text()
+        xr = page.evaluate("CLASSIFIED_ENTRIES[0].crossRef")
+        doc6 = (ROOT / '6화.txt').read_text(encoding='utf-8'); doc1 = (ROOT / '1화.txt').read_text(encoding='utf-8')
+        assert xr['left']['text'] in doc6 and all(line in doc1 for line in xr['right']['text'].split(chr(10))), 'both records are quoted verbatim'
+        click('xref-tok-3'); assert '대조 결과 없음' in page.locator('#xref-foot').inner_text() and classified_state()['discovered'] == []
+        for i in [0, 5, 6]: click('xref-tok-%d' % i)
+        assert classified_state()['discovered'] == [], 'the player has to link every shared element'
+        click('xref-tok-7'); page.wait_for_function("Classified.has('classified-01')")
+        assert page.locator('#xref-classified-01 .xref-end').inner_text() == '두 사건의 관계는 확인되지 않았습니다.'
+        assert page.locator('#xref-classified-01 .xref-hit.xref-on').count() >= 4
         log = log_text()
-        for line in ['[기록 대조 중...]', '박예림', '2019', '부산광역시 기장군 태양해안', '동일 지역 기록이 발견되었습니다.', '해안관리-2019-031', '[자동 연계 실패]', '열람 권한이 없습니다.']:
+        for line in ['[기록 대조 중...]', '[자동 연계 실패] 열람 권한이 없습니다.']:
             assert line in log, line
         toast = page.locator('.classified-toast').inner_text()
-        assert '[CLASSIFIED TRACE RECOVERED]' in toast and '연결되지 않아야 할 두 기록이' in toast and '같은 위치를 가리키고 있습니다.' in toast and 'CLASSIFIED 1/3' in toast
+        assert '[CLASSIFIED TRACE RECOVERED]' in toast and '연결되지 않아야 할 두 기록이' in toast and '같은 위치를 가리키고 있습니다.' in toast and 'CLASSIFIED 1 / 3' in toast
         assert classified_state()['discovered'] == ['classified-01'] and page.evaluate("FieldSave.get().cleared.includes('EP06')")
         click('f6-recheck-17'); step(0)
         assert classified_state()['discovered'] == ['classified-01'] and log_text().count('[기록 대조 중...]') == 1 and '이미 대조한 기록이다' in log_text()
-        print('PASS 3 desk 17 re-inspection after the clear -> records search -> [CLASSIFIED TRACE RECOVERED] 1/3; repeated inspection grants nothing twice')
+        print('PASS 3 desk 17 re-inspection after the clear -> CROSS-REFERENCE (player links 2019 / 부산광역시 / 기장군 / 태양해안) -> [CLASSIFIED TRACE RECOVERED] 1 / 3; repeated inspection grants nothing twice')
 
         # --- 4. Notebook ------------------------------------------------------------------------------------------------------------------
         assert tabs()[-1] == 'CLASSIFIED'
         page.locator('.nb-tab', has_text='CLASSIFIED').click()
         body = re.sub(r'[ 	]+', ' ', page.locator('#notebook-body').inner_text())
-        assert '[ CLASSIFIED ]' in body and '복구된 분류 보류 기록 1 / 3' in body and '■ 01 태양해안 기록 대조' in body and body.count('□ [미확보]') == 2
+        assert '[ CLASSIFIED ]' in body and '복구된 분류 보류 기록 1 / 3' in body and '■ 01 태양해안 기록 대조' in body and '미확보' not in body and '02' not in body and '03' not in body
         assert 'AUTHOR' not in body and '제작자' not in body
         page.locator('.nb-classified-entry').click()
         doc = page.locator('#classified-document').inner_text()
@@ -110,7 +119,7 @@ def run():
         for forbidden in ['원인', '은폐', '동일 사건', '동일 존재', '때문에']:
             assert forbidden not in doc, forbidden
         assert doc.rstrip().endswith('두 사건의 관계는 확인되지 않았습니다.') and classified_state()['viewed'] == ['classified-01']
-        print('PASS 4 notebook: CLASSIFIED section appears after the first discovery (1 / 3, two [미확보] slots); the document keeps "두 사건의 관계는 확인되지 않았습니다." and states no cause')
+        print('PASS 4 notebook: CLASSIFIED section appears after the first discovery (1 / 3; undefined slots are not listed); the document keeps "두 사건의 관계는 확인되지 않았습니다." and states no cause')
 
         # --- 5. Reload, Save Code, old save ---------------------------------------------------------------------------------------------------
         page.reload(wait_until='load'); boot()
@@ -167,13 +176,15 @@ def run():
             assert 'CLASSIFIED' not in ' '.join(tabs()), 'AUTHOR still has no CLASSIFIED menu before discovering one'
             page.evaluate("for (const id of ['EP01', 'EP02', 'EP03', 'EP04', 'EP05']) FieldSave.clear(id, { patrols: {}, elapsed: 700, injuries: [] })")
             click('field-open'); play_ep06_to_clear(); page.evaluate("FieldEP06UI.post.delay = 0")
-            click('f6-seat-17'); click('f6-recheck-17'); page.wait_for_function("Classified.has('classified-01')")
+            click('f6-seat-17'); click('f6-recheck-17')
+            for i in [0, 5, 6, 7]: click('xref-tok-%d' % i)
+            page.wait_for_function("Classified.has('classified-01')")
             toast = page.locator('.classified-toast').inner_text()
             assert 'AUTHOR' not in toast and SENTENCE not in toast and not page.evaluate("(s) => document.getElementById('author-note-text').value.includes(s)", SENTENCE), 'no AUTHOR popup on discovery'
             body = page.evaluate("openNotebook('classified'), document.getElementById('notebook-body').innerText")
             assert 'AUTHOR' not in body and 'BONUS' not in body and 'ACCESS' not in body
             assert author_note() == BASE_NOTE + '\n\n' + SENTENCE, 'reopened after the discovery: the sentence is appended'
-            assert page.evaluate("document.getElementById('author-note-text').value.endsWith('HIDDEN을 전부 열었을까? 다음 문장은 말이야.')")
+            assert page.evaluate("document.getElementById('author-note-text').value.endsWith('연결한 건 내가 아니야.')")
             page.evaluate("Classified.reset()"); assert author_note() == BASE_NOTE
             print('PASS 8 AUTHOR first -> CLASSIFIED 01 discovered in-game -> re-opening the file appends the sentence (no popup); before the discovery only the base text')
             # --- 9. Case B: CLASSIFIED first, AUTHOR later --------------------------------------------------------------------------------------
@@ -193,6 +204,34 @@ def run():
             print('PASS 10 reaction table architecture; unlocking AUTHOR never discovers a CLASSIFIED')
         else:
             print('SKIP 8-10 AUTHOR reaction cases (set AUTHOR_TEST_SECRET)')
+
+        # --- 12. 3 / 3 and the 11 / 10 hook (simulated: 02/03 are undefined in the game) --------------------------------------------------
+        page.evaluate("GameSave.reset()"); boot()
+        assert page.evaluate("ElevenTen.ready()") is False and page.evaluate("CLASSIFIED_ENTRIES.length") == 1, 'today 3 / 3 is unreachable'
+        field_before = page.evaluate("JSON.stringify(FieldSave.get())")
+        page.evaluate("""for (const n of ['02', '03']) CLASSIFIED_ENTRIES.push({ id: 'classified-' + n, number: n, title: 'TEST', document: 'TEST', announce: ['TEST'] })""")
+        click('field-open'); assert not has('field-dispatch-1110')
+        for n in ['01', '02', '03']: page.evaluate("(id) => Classified.discover(id, { announce: false })", 'classified-' + n)
+        assert page.evaluate("Classified.count()") == 3 and page.evaluate("Classified.completeAt()") > 0
+        assert page.locator('text=SECRET COMPLETE').count() == 0 and page.locator('text=11/10 UNLOCKED').count() == 0, 'no popup at 3 / 3'
+        page.evaluate("FieldUI.close(); FieldUI.open()")
+        page.wait_for_timeout(5); page.evaluate("FieldUI.close(); FieldUI.open()")
+        assert has('field-dispatch-1110') and '11 / 10' in page.locator('.field-case-1110').inner_text(), 'the row appears quietly on a later visit'
+        body = re.sub(r'[ \t]+', ' ', page.evaluate("openNotebook('classified'), document.getElementById('notebook-body').innerText"))
+        assert '3 / 3' in body and 'COMPLETE' not in body
+        assert page.evaluate("JSON.stringify(FieldSave.get())") == field_before, '11 / 10 never touches the Field record (10 / 10 stays 10 / 10)'
+        page.evaluate("closeNotebook(); FieldUI.close(); CLASSIFIED_ENTRIES.splice(1); Classified.reset()")
+        print('PASS 12 3 / 3 quietly; 11 / 10 row only on a later Field Observation visit; Field record untouched; unreachable with 02/03 undefined')
+
+        # --- 13. AUTHOR input handling (exact secret only from the environment) -------------------------------------------------------
+        if SECRET:
+            for wrong in [SECRET.lower(), SECRET + 'x', SECRET.replace('-', ''), '']:
+                assert page.evaluate("async (s) => AuthorRoute.matches(s)", wrong) is False, 'case-sensitive, exact'
+            width = ''.join(chr(ord(c) + 0xFEE0) if '!' <= c <= '~' else c for c in SECRET)
+            assert page.evaluate("async (s) => AuthorRoute.matches(s)", '  ' + width + '\n') is True, 'trim -> NFKC'
+            for path in list(ROOT.glob('*.js')) + list(ROOT.glob('field/**/*.js')) + list(ROOT.glob('*.html')) + list(ROOT.glob('*.md')) + list(ROOT.glob('tests/*.py')):
+                assert SECRET not in path.read_text(encoding='utf-8', errors='ignore'), 'plaintext secret in ' + str(path)
+            print('PASS 13 AUTHOR: wrong / lower-case / partial fail, full-width + spaces normalize, no plaintext secret anywhere in the source')
 
         # --- 11. Story / Field independence ---------------------------------------------------------------------------------------------------
         assert page.evaluate("!GameSave.get().flags.finaleSeen && !GameSave.get().flags.jayUnlocked")
