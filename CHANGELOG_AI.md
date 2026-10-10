@@ -2,6 +2,130 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-10 — 단서 전부 지급(개발 서버), 현장 관측 시스템 뒤로가기, AUTHOR 추가 문구 삭제
+
+- 목적: 사용자 지시("단서도 전부 열어 줘", "현장 관측 시스템에 뒤로가기", "AUTHOR 추가 문구는 기본 본문만 남기고 삭제").
+- 변경 파일: `field/field-dev.js`(`?devseed=clues` — 단서 45개 전부 `GameSave.addClue`, 토스트·플래그 없음, `all`과 쉼표로 조합), `index.html`(Field 창 제목 표시줄 `◀` 버튼), `field/field-ui.js`(`back()`: 진행 중 근무는 확인창 후 중단, 비임무 화면 정리, 관측 목록), `field/field.css`(버튼 간격), `field/field-author.js`(`AUTHOR_CLASSIFIED_REACTIONS`와 덧붙이기 로직 삭제, 항상 기본 본문), `tests/classified_browser_smoke.py`(8~10: 01/02/03 발견 후에도 기본 본문만, 소스에 삭제 문구 없음; 10b 삭제), `PROJECT_CONTEXT.md`.
+- 보존: AUTHOR hash·정규화·조용한 성공·아이콘/트레이스, CLASSIFIED 발견 흐름, 연결 종료(✕) 동작.
+- 검증: `node --check`. classified·author·field·record_reset 스모크 PASS. 브라우저에서 `?devseed=clues` → 단서 45/45, jayUnlocked false, 주소창 정리; `◀`: 근무 중 취소 시 유지 / 확인 시 목록, 이용 안내문 화면에서 목록 복귀, 페이지 오류 없음.
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — 개발 서버: 6화 완료 시점에서 바로 시작 (`?devclear=6` 내부망 허용, `devseed`와 함께 사용)
+
+- 목적: 사용자 지시("6화 완료 시점부터 시작할 수 있도록").
+- 변경 파일: `field/field-dev.js`(`?devclear=6` 허용 호스트를 localhost/127.0.0.1 → `FieldSave.devUnlock` 기준(localhost·내부망, `?devunlock=0` 제외)으로), `PROJECT_CONTEXT.md`.
+- 사용: `http://localhost:3000/?devseed=all&devclear=6` → 생환 기록 10개 + CLASSIFIED 비움 후 EP06 하루를 실제 행동으로 자동 진행해 클리어 화면(17번 자리 재조사 가능)에서 멈춘다. devseed는 적용 후 주소에서 제거되고 devclear는 남는다(새로고침하면 EP06 클리어 화면부터 다시).
+- 검증: `node --check`. 브라우저에서 EP06 cleared 화면, 생환 10개, CLASSIFIED 0, `17번 자리를 다시 확인한다` 버튼 등장, 페이지 오류 없음 확인.
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — 개발 서버 `?devseed=all`: 생환 기록 10개 + CLASSIFIED 처음부터
+
+- 목적: 사용자 지시("생환 기록 살리고, CLASSIFIED 전부 해금 플레이할 수 있도록"). 테스트 버튼은 삭제된 상태를 유지하고 URL 파라미터로만 제공.
+- 변경 파일: `field/field-dev.js`(load 시 `?devseed=all` 처리), `PROJECT_CONTEXT.md`.
+- 동작: EP01~EP10 생환 기록(사망 수 유지) 기록, `Classified.reset()`(01·02·03 미발견, 11/10 기록 없음), 주소창에서 파라미터 제거. Story 저장 키 불변 확인.
+- 검증: `node --check`. 브라우저에서 생환 10개·CLASSIFIED 비어 있음·01/02/03 발견 자격 true·Story 저장 불변, `?devunlock=0`에서는 무시됨을 확인.
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — 개발 서버 테스트 상태 버튼 삭제
+
+- 목적: 사용자 지시("마지막 테스트하는 거 제거하고 원래 플레이하는 상태처럼"; 선택지 중 "테스트 버튼 완전 삭제").
+- 변경 파일: `field/field-dev.js`(`FieldDev` 프리셋 4개 삭제, `?devclear=6` 단축은 유지), `field/field-ui.js`(패널 호출 제거), `field/field.css`(`.field-dev-panel` 스타일 제거), `tests/classified_browser_smoke.py`(패널이 없음을 확인), `PROJECT_CONTEXT.md`.
+- 보존: `[개발 모드]` 안내 문구와 개발 서버 에피소드 전체 개방(보기 전용), 이미 이 브라우저에 적용된 기록은 그대로(되돌리려면 기록 초기화).
+- 검증: `node --check`, `tests/classified_browser_smoke.py` ALL PASS.
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — Field EP10 팔 결합: 직전 변경 되돌림 + 압착 시간만 연장
+
+- 목적: 사용자 지시("그 부분 원래대로 해 주고, 시간만 좀 늘려 줘").
+- 변경 파일: `field/ep10/ep10.js`·`ep10-ui.js`(반응 전 조작 무시/대기 표시 제거 = 원래 동작), `field/ep10/ep10-data.js`(`armReveal` 0.8초 원래 값, `armDanger` 8 → 12초), `tests/ep10_browser_smoke.py`(이른 핀 무시 검사 제거), `PROJECT_CONTEXT.md`.
+- 검증: `tests/ep10_browser_smoke.py` ALL PASS.
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — Field EP10 팔 결합: 반응이 보이기 전 조작으로 즉사하던 문제 수정
+
+- 목적: 사용자 지시("팔 결합 핀 꽂는 중간에 타이밍이 겹쳐서 대사가 안 나오는데도 자꾸 실패").
+- 원인: 팔을 들고 0.8초 뒤에 반응 문구가 나오는데, 그 전에 결합 핀을 누르면 위험한 팔(converge/reach)은 문구 없이 바로 ARM_GRABBED로 실패했다.
+- 변경 파일: `field/ep10/ep10.js`(반응이 보이기 전 pin/shake/crush는 무시하고 "아직 지켜보는 중" 안내), `field/ep10/ep10-ui.js`(반응 전에는 `움직임을 지켜본다…` + 내려놓기만 표시), `field/ep10/ep10-data.js`(`armReveal` 1.2초 신설, 위험 판정 기준도 이 값 기준), `tests/ep10_browser_smoke.py`(조정값 기준 대기, 이른 핀 무시 검사), `PROJECT_CONTEXT.md`.
+- 보존: 같은 번호 한 쌍, 위험한 팔 압착 → 예비 팔, 뿌리치기/다른 번호 결합 실패, canon 실패 문장 불변.
+- 검증: `tests/ep10_browser_smoke.py` ALL PASS.
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — Field EP10 꼬리 봉합 홍보곡 40 → 60초
+
+- 목적: 사용자 지시("5번 꼬리 봉합에서 노래 안에 못 넣어서 죽음, 시간 늘려 줘").
+- 변경 파일: `field/ep10/ep10-data.js`(`tuning.sewSong` 40 → 60초, 3번째 땀에서 시작), `PROJECT_CONTEXT.md`.
+- 검증: `tests/ep10_browser_smoke.py` ALL PASS.
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — PUBLIC CLASSIFIED 02/03 + 11 / 10 실제 콘텐츠 + 개발 서버 테스트 상태
+
+- 목적: 사용자 지시(CLASSIFIED 02/03과 11 / 10 실제 구현, "개발 서버에서는 전부 해 볼 수 있도록 클리어 상태로 마지막만 진행할 수 있게"). commit/push/배포 없음.
+- 변경 파일: `classified.js`(02/03 항목·`pairRef`, `pairReference()` 구절 쌍 대조, `eligible()`, 세 번째 발견 토스트 생략, additive `eleven` 저장·`completeEleven()`, `ElevenTen.open` → 장면 모듈), 새 `field/field-records.js`(EP08 이용 안내문 재열람·관련 문구 조회·C02 진입), 새 `field/field-1110.js`(11 / 10 장면 5개), `terminal.js`(현장 생환 기록 검색·원문 열기·관련 용어·문장 대조), `field/field-ui.js`(EP08 기록 줄 `이용 안내문`, EP08 종료 화면 `이용 안내문 다시 열기`, 11/10 행, 비임무 화면 정리 `stopViews`, 개발 패널 훅, `FieldUI.catalog`), `field/field-author.js`(classified-03 반응), `field/field-dev.js`(`FieldDev` 테스트 상태 버튼), `field/field.css`(pref/frec/trec/e11 스타일), `index.html`(스크립트 2줄), `tests/classified_browser_smoke.py`(옛 12번 시뮬레이션 → 12·12b·14·15·16·17 + AUTHOR 10b), `PROJECT_CONTEXT.md`.
+- 발견 경로: C02 = 실제 EP08 생환 → 종료 화면 또는 본부 기록 줄에서 이용 안내문 → 환자/병원 문장 선택 → `관련 문구 조회` → `[EP.03] 현장 생환 기록` `기록 열기`(실제 EP03 생환) → PAIR CROSS-REFERENCE. C03 = 기밀터미널 일반 검색(구조 요원/개인 정보/위치 …) → 실제 생환한 EP03·EP09 원문 기록 → 둘 다 `원문 열기` → `문장 대조`. 검색·조회·기존 추리만으로는 발견되지 않고, devUnlock은 자격이 아니다(`Classified.eligible` = `FieldSave.cleared`).
+- canonical 근거: EP08 “치료 프로세스에 … 명심하여 주십시오.” / “탕 안에서 수분을 섭취한 고객은 수술 대상으로 분류됩니다.” / “날짜를 특정하여 … 확인하였습니다.”, EP03 “베리 해피 종합병원에 편입되는 환자는 수술이 예정된 국내 모든 입원 환자 중 무작위로 편입된다.” / “귀하의 첫 수술은 … 이미 지정되어 있습니다.” / “정부에서 투입되는 구조 요원들은 … 요구하지 않습니다.” / “면회는 각 병동 1층 면회실에서 진행됩니다.”(오답 구절), EP09 “본부의 전화번호 0050-0200으로 요원이라 하며 귀하의 위치를 물어오는 경우.” / “본부는 대상자가 된 이들의 현재 위치를 … 대비하고 있습니다.” / “안전 안내 문자. 특별재난관리본부.” / “귀하는 금일 수신한 통화로 관리 대상자로 분류되었습니다.” — 모두 `docs/transcripts/reviewed` 원문 그대로(테스트로 대조). 조사 결과 문구는 요청 문구 그대로 `[조사 결과]` 블록에 분리. 수칙문서 원문은 바꾸지 않았다.
+- 11 / 10: ① 사건 정보 없는 로딩 ② EP08 영상 위 EP03 문장, 출처 확인, EP09 수신 화면 겹침(`[수신음]`, 실제 EP07 생환 시에만 `[자동문 알림음]`) ③ 출처 표 → 기록 대조 → 관측 대상 = 이번 11/10 안의 행동과 실제 시각 ④ 꺼졌다 켜진 화면 안의 재구성 창(비활성 DOM)이 출처 표를 늦게 따라오다 한 번 먼저 접힘 ⑤ 잔여 기록 → 관측 목록. 완료 후 `관측 대상 미지정.txt` / 다시 보기. 미검수 EP10 문구 미사용, 실제 캡처·권한 요청·외부 전송 없음.
+- 개발 서버 테스트 상태: devUnlock일 때만 관측 목록에 `생환 기록 EP01~EP10 적용` / `CLASSIFIED 02·03 직전`(전 생환 + 01) / `11 / 10 직전`(전 생환 + 01·02·03) / `CLASSIFIED · 11/10 기록만 초기화`. 확인창 후 이 브라우저의 실제 기록을 쓰고 관측 시스템을 다시 연다. `?devunlock=0`과 프로덕션 도메인에는 나타나지 않는다.
+- 보존: classified-01 조건·인용·결론, 1·2번째 발견 토스트, Story/J/블루스크린/LOOP/finaleSeen, FieldSave(EP11 없음, 10/10·사망 수 불변), AUTHOR hash·정규화·조용한 성공, Save Code v5(구 코드는 classified 계층 없으면 현재 상태 유지), 기존 터미널 응답(기록/현황 명령 출력은 그대로, 다른 검색은 결과 뒤에 생환 기록만 덧붙임).
+- 검증: `node --check`(수정·신규 JS 전부), `git diff --check`. `tests/classified_browser_smoke.py` ALL PASS(AUTHOR_TEST_SECRET 실행 중에만 주입한 경우와 없는 경우 모두): C02 조건·문장 선택·조회·오답·중단·발견·재열람, EP08 종료 화면 진입, C03 터미널 조회·한 기록만 열기·대조·오답(반대 의미 구절 연결 불가)·발견, 세 번째 발견 무토스트 3/3, 열린 목록 미삽입·재방문 시 11/10(reload·Save Code 후 포함), 11/10 전 장면·중도 종료 무저장·재진입·완료·잔여 파일·다시 보기 기록 비증가·리셋 시 정지·늦은 타이머 없음, EP07 미생환 시 알림음 없음, devUnlock만으로 기록/조회/발견 불가, 390px 위아래 배치, AUTHOR 03 반응(순서 무관·1회·02 없음·일반 플레이어 비노출). 전체 회귀 16종(author, classified, darkweb_ui, ep02~ep10, field, jay_viewer, record_reset, save_progress) ALL PASS(EP10 수정 포함). 실제 브라우저(1366px) 스크린샷으로 C02·C03·11/10 장면 확인.
+- 미실행: 실제 태블릿 기기·저사양 기기 확인, 사람 실측 소요 시간(11/10 목표 3~5분), prefers-reduced-motion 환경 육안 확인.
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — Field EP10: 음성 정정 입력칸 끊김 수정 + 제한 시간 완화
+
+- 목적: 사용자 지시("10화 자꾸 뻑나는데 다시 확인, 시간이 너무 타이트하니 늘려 줘").
+- 원인: 음성 정정 중 4·8·13초의 천/속삭임/손가락 이벤트가 상태 signature를 바꿔 버튼 목록을 다시 그렸고, 그때마다 입력칸이 새로 만들어져 포커스와 한글 조합이 끊겼다(값은 복사되지만 입력 중이던 글자/포커스 유실).
+- 변경 파일: `field/ep10/ep10-ui.js`(cloth/whisper/touch를 재구성 signature에서 제외, 입력칸 자동 포커스, Enter 제출), `field/ep10/ep10.js`(입 벌어짐 대응 시간 하드코딩 3초 → `mouthOpenTime`), `field/ep10/ep10-data.js`(mouthOpenTime 5, correctTime 30 → 45, armDanger 5 → 8, sewSong 26 → 40, stopLimit 6 → 10), `tests/ep10_browser_smoke.py`(실제 키보드 입력 중 이벤트 후에도 포커스·값 유지, Enter 제출; 고정 3.3초 → 조정값 기준), `PROJECT_CONTEXT.md`.
+- 보존: 공정 순서·정답/실패 조건·canon 실패 문장·toy state·EP10 clear(10/10만) 불변.
+- 검증: `tests/ep10_browser_smoke.py` ALL PASS.
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — AUTHOR: Web Crypto 없는 내부망 주소에서도 동작 (SHA-256 fallback)
+
+- 목적: 사용자 지시("AUTHOR 히든코드가 아직 안 됐나? 확인해줘"). 확인 결과 코드의 해시는 `AUTHOR_SAVE_HASH`와 일치하고 localhost에서는 정상 동작. 태블릿 주소 `http://192.168.0.103:3000`은 secure context가 아니라 `crypto.subtle`이 없어 검사가 항상 실패했다.
+- 변경 파일: `field/field-author.js`(`crypto.subtle`이 없을 때만 쓰는 순수 JS `sha256Fallback`), `PROJECT_CONTEXT.md`(AUTHOR 섹션 Web Crypto 문장).
+- 보존: hash 값, trim → NFKC → UTF-8 → SHA-256 순서, HTTPS/localhost는 기존대로 Web Crypto, 실패 시 일반 Save 불러오기로 넘어감. 평문 코드는 파일에 두지 않음(테스트는 `AUTHOR_TEST_SECRET` 환경변수로만 주입).
+- 검증: fallback 결과를 Node `crypto` SHA-256과 9개 입력(빈 문자열, 한글, 55/56/64바이트 경계, 1000바이트)으로 대조해 모두 일치. 내부망 주소에서 오답 false / 정답(전각+공백) true. author·classified·record_reset 스모크 PASS.
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — Field EP08 슬라이드 4번째 곡선 대응 시간 6 → 12초
+
+- 목적: 사용자 지시("6초가 너무 빡빡하니 시간 좀 늘려줘").
+- 변경 파일: `field/ep08/ep08-data.js`(`tuning.slideStop` 6 → 12초).
+- 보존: 4번 세야 인지, 양팔 → 벽면 → 감속 → 멈춤 → 긴급 버튼 순서, 웅크리기/시간 초과 = SLIDE_END(canon 문장) 불변.
+- 검증: `tests/ep08_browser_smoke.py` ALL PASS.
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — EP08 표기 정정: 후루라기 → 호루라기
+
+- 목적: 사용자 지시("8화에 후루라기 → 호루라기로 바꿔줘"). STT 표기 오류 정정.
+- 변경 파일: `8화.txt`, `index.html`(EP08 문서 창), `docs/transcripts/reviewed/EP08_유성_워터파크.txt`, `field/ep08/ep08-data.js`, `field/ep08/ep08-ui.js`, `PROJECT_CONTEXT.md`. 과거 CHANGELOG 항목의 표기는 기록 보존을 위해 그대로 둠.
+- 검증: `node --check`, `git diff --check` 통과. `tests/ep08_browser_smoke.py` ALL PASS(8화.txt와 index.html 문서 동일성 포함).
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — Field EP08 탈의실 숨 참기: 누르고 끌기 → 클릭 + 게이지
+
+- 목적: 사용자 지시("8화 탈의실 숨 멈추는 거 이상하다"). 확인 결과 ① 사물함이 열린 뒤 3초 안에 반응해야 함 ② 버튼을 누른 채 오른쪽 지도까지 끌고 가서 떼야 함 ③ 남은 숨 표시 없음. 사용자가 "클릭/탭 방식"을 선택. 기본 플레이 환경은 PC(태블릿은 보조 확인용).
+- 변경 파일: `field/ep08/ep08-ui.js`(누르고 있기 버튼 `holdBtn` 제거 → `숨을 멈춘다` 한 번 클릭, 숨을 멈추면 숨 게이지 + `탈의실 밖으로 나간다` 버튼, 버튼 갱신 조건에 `d.breath` 추가), `field/ep08/ep08-data.js`(`breathDeadline` 3 → 5초), `field/ep08/ep08.js`(주석), `field/field.css`(`.f8-hold` → `.f8-gauge`), `tests/ep08_browser_smoke.py`(마우스 드래그·터치 다중 입력 검사를 클릭/게이지/나가기 검사로 교체), `PROJECT_CONTEXT.md`(EP08 CORE 설명).
+- 보존: 규칙 의미는 동일(미배정 사물함이 열리면 숨을 멈추고 → 밖으로 → 데스크 신고, 숨 쉬고 나감·안에서 숨 쉼·9초 초과·미신고 = 실패, canon 실패 문장 불변). 지도로 데스크 이동도 그대로 가능.
+- 검증: `node --check`, `git diff --check` 통과. `tests/ep08_browser_smoke.py` ALL PASS(PC 마우스 클릭과 390px 터치 모두).
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — Field EP07 손님 입장·퇴장 속도 완화
+
+- 목적: 사용자 지시(태블릿 플레이 피드백 "7화 사람 확인하는 게 시간이 너무 빠르다" → 손님 입장~계산대 도착 구간으로 확인).
+- 변경 파일: `field/ep07/ep07-data.js`(`tuning.browse` 1.6 → 4초, `tuning.leave` 1.4 → 3초).
+- 보존: 근무 시계(`idleSecondsPerMinute` 0.55, 손님 없는 시간에만 흐름), 거울/신분증 타이밍, 일정·canon 실패 문장 불변.
+- 검증: `node --check`, `git diff --check` 통과. `tests/ep07_browser_smoke.py` ALL PASS(solver 실측 약 339초, 이전 약 300초).
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-10 — 개발 모드 전체 개방을 내부망 IP까지 확장 (태블릿 확인용)
+
+- 목적: 사용자 지시("07부터 플레이할 건데 해금이 안 되어 있으니 전부 해금 상태로"). 태블릿에서 `http://192.168.0.103:3000`으로 접속하면 hostname이 localhost가 아니라 dev unlock이 꺼져 있었다.
+- 변경 파일: `field/field-save.js`(devUnlock 호스트 판정에 사설망 192.168.x.x / 10.x.x.x / 172.16~31.x.x 추가), `field/field-ui.js`(개발 모드 안내 문구), `CLAUDE.md`(개발 모드 설명).
+- 보존: 보기 전용 override 그대로(저장 기록·Save Code 불변), `?devunlock=0`으로 실제 잠금 확인 가능, 프로덕션(vercel.app) 도메인에서는 여전히 꺼짐.
+- 검증: `node --check`, `git diff --check` 통과. ep02(dev unlock 검사 포함)·field·ep07 스모크 PASS. 192.168.0.103 접속 시 devUnlock=true, `?devunlock=0`에서 false 확인.
+- Git: 미커밋(개발 서버에만 반영).
+
 ## 2026-10-10 — AUTHOR: 조용한 meta reaction layer로 정리
 
 - 목적: 사용자 지시(AUTHOR 7번). AUTHOR는 권한 시스템이 아니라 특정 한 사람에게 남긴 meta reaction이다.
