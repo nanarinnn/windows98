@@ -2,10 +2,12 @@
 window.FieldSave = (() => {
     const key = 'yuyeon98.field.v1';
     const blank = () => ({ v: 1, cleared: [], unlocked: ['EP01'], deaths: {}, records: {} });
-    // Dev convenience: on localhost every episode can be dispatched without clearing the previous one.
+    // Dev convenience: on localhost or a private LAN address (dev server opened from a tablet/phone) every episode
+    // can be dispatched without clearing the previous one.
     // View-only override: nothing is written to progress/Save Code, and production hosts never enable it.
     // Add ?devunlock=0 to the URL to test the real locks (the smoke tests do).
-    const devUnlock = ['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).get('devunlock') !== '0';
+    const devHost = /^(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)$/.test(location.hostname);
+    const devUnlock = devHost && new URLSearchParams(location.search).get('devunlock') !== '0';
     // Optional in-progress snapshots (EP03-EP06). Bounded plain JSON; absent unless a run is mid-way, so older saves/Save Codes stay valid.
     const PROGRESS_IDS = ['EP03', 'EP04', 'EP05', 'EP06'];
     function cleanJSON(value, depth) {

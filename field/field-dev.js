@@ -1,8 +1,8 @@
-// Local-only shortcut (inert anywhere except localhost/127.0.0.1): ?devclear=6 skips the Darkweb boot and plays a quiet EP06 day to its CLEAR screen
+// Dev-server shortcut (inert outside localhost / private LAN and with ?devunlock=0): ?devclear=6 skips the Darkweb boot and plays a quiet EP06 day to its CLEAR screen
 // so the post-clear inspection (CLASSIFIED 01) can be tried by hand. It uses the real Field actions, so the clear is recorded like a normal clear
 // (EP06 cleared, EP07 unlocked) in this browser; use the notebook's 기록 초기화 to undo. Nothing else changes.
 window.addEventListener('load', () => {
-    if (!['localhost', '127.0.0.1'].includes(location.hostname) || new URLSearchParams(location.search).get('devclear') !== '6') return;
+    if (!FieldSave.devUnlock || new URLSearchParams(location.search).get('devclear') !== '6') return;   // dev hosts (localhost / private LAN) only
     setTimeout(() => {
         document.getElementById('darkweb-terminal').style.display = 'none';
         document.getElementById('darkweb-overlay').style.display = 'block';
@@ -19,4 +19,22 @@ window.addEventListener('load', () => {
         FieldEP06Data.random = real;
         if (FieldCore.get().status !== 'cleared') console.warn('[devclear] the scripted day did not clear:', FieldCore.get().reason);
     }, 300);
+});
+
+// Dev-server only, URL-driven (no UI). ?devseed=all writes real Field return records for EP01-EP10 into this browser and clears
+// PUBLIC CLASSIFIED / 11 / 10, so all three CLASSIFIED records can be discovered by playing them. ?devseed=clues grants every
+// Story clue (no toasts; flags such as jayUnlocked are not set). Both can be combined: ?devseed=all,clues. Story flags, J, LOOP
+// and AUTHOR are otherwise untouched. Inert with ?devunlock=0 or on the production domain; removed from the address bar after use.
+window.addEventListener('load', () => {
+    const q = new URLSearchParams(location.search);
+    const seeds = (q.get('devseed') || '').split(',');
+    if (!FieldSave.devUnlock || !q.has('devseed')) return;
+    if (seeds.includes('all')) {
+        const ALL = Array.from({ length: 10 }, (_, i) => `EP${String(i + 1).padStart(2, '0')}`);
+        FieldSave.importProgress({ v: 1, cleared: ALL, unlocked: ALL, deaths: FieldSave.get().deaths, records: Object.fromEntries(ALL.map(id => [id, { patrols: {}, elapsed: 0, injuries: [] }])) });
+        window.Classified?.reset();
+    }
+    if (seeds.includes('clues')) CLUES.forEach(c => GameSave.addClue(c.id));
+    q.delete('devseed'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
+    console.info('[devseed]', seeds.join(', '));
 });

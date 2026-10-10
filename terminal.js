@@ -103,11 +103,76 @@ function setTerminalBusy(busy) {
     }
 }
 
-// 자동완성/도움말에 쓰는 검색어 목록: 고정 명령 + 획득한 단서의 키워드
+// 자동완성/도움말에 쓰는 검색어 목록: 고정 명령 + 획득한 단서의 키워드 + 생환한 현장 기록의 관련 용어
 function terminalVocabulary() {
     const tags = [];
     foundClues().forEach(c => c.tags.forEach(t => { if (!tags.includes(t)) tags.push(t); }));
+    availableFieldRecords().forEach(r => r.terms.forEach(t => { if (!tags.includes(t)) tags.push(t); }));
     return ['내 기록', '사망 기록', '생존율', '작업자 번호', '연결', '도움말', ...tags];
+}
+
+// ---------- 현장 생환 기록 (Field return records) ----------
+// Reviewed-transcript sentences of a Field episode the player actually returned from (FieldSave.cleared; the dev-server unlock
+// never counts). An ordinary search lists them; opening one is a plain lookup. With the EP03 and EP09 records both open,
+// 문장 대조 offers the PAIR CROSS-REFERENCE of PUBLIC CLASSIFIED 03 (classified.js). A search never discovers anything by itself.
+const FIELD_RECORDS = [
+    { ep: 'EP03', n: 3, title: '비상 상황 B. 보호자가 면회 왔을 시.', terms: ['구조 요원', '개인 정보', '면회'],
+      text: '정부에서 투입되는 구조 요원들은 귀하의 모든 개인 정보를 알고 있습니다. 본부 요원임을 강조하거나 당신의 정보와 안내문을 요구하지 않습니다. 면회는 각 병동 1층 면회실에서 진행됩니다.' },
+    { ep: 'EP09', n: 9, title: '안전 안내 문자', terms: ['요원', '위치', '0050-0200'],
+      text: '본부의 전화번호 0050-0200으로 요원이라 하며 귀하의 위치를 물어오는 경우. 본부는 대상자가 된 이들의 현재 위치를 즉시 파악 가능한 시스템을 구축하여 항시 대비하고 있습니다.' }
+];
+const FIELD_COMPARE = { pair: ['EP03', 'EP09'], classified: 'classified-03' };
+const fieldRecordState = { opened: new Set(), seq: 0 };
+function availableFieldRecords() {
+    const cleared = window.FieldSave ? FieldSave.get().cleared : [];
+    return FIELD_RECORDS.filter(r => cleared.includes(r.ep));
+}
+function searchFieldRecords(query) {
+    const q = normalizeInput(query);
+    if (q.length < 2) return [];
+    return availableFieldRecords().filter(r => normalizeInput(r.text).includes(q)
+        || r.terms.some(t => { const nt = normalizeInput(t); return nt.length >= 2 && (nt.includes(q) || q.includes(nt)); }));
+}
+function termButton(label, cls, onClick) {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = label; if (cls) b.className = cls; b.onclick = onClick; return b;
+}
+function printFieldRecords(records) {
+    const out = terminalOutput(); if (!out || !records.length) return;
+    const seq = ++fieldRecordState.seq;
+    records.forEach(r => {
+        const box = document.createElement('div'); box.className = 'trec';
+        const head = document.createElement('div'); head.textContent = `[EP.${pad2(r.n)} ${EPISODE_TITLES[r.n]} · 현장 생환 기록] ${r.title}`;
+        const open = termButton('원문 열기', '', () => {
+            open.remove();
+            const body = document.createElement('div'); body.className = 'trec-body'; body.textContent = `“${r.text}”`;
+            const terms = document.createElement('div'); terms.append('관련 용어: ');
+            r.terms.forEach(t => terms.append(termButton(t, 'trec-term', () => { if (!terminalState.busy) runTerminalCommand(t); })));
+            box.append(body, terms);
+            fieldRecordState.opened.add(r.ep);
+            offerCompare();
+            out.scrollTop = out.scrollHeight;
+        });
+        open.id = `trec-open-${r.ep}-${seq}`;
+        box.append(head, open); out.appendChild(box);
+    });
+    out.scrollTop = out.scrollHeight;
+}
+function offerCompare() {
+    const out = terminalOutput();
+    if (!out || !FIELD_COMPARE.pair.every(ep => fieldRecordState.opened.has(ep)) || document.getElementById('trec-compare')) return;
+    const box = document.createElement('div'); box.className = 'trec';
+    box.append('두 기록이 열려 있습니다. ');
+    const go = termButton('문장 대조', '', () => {
+        go.remove();
+        if (!window.Classified || !Classified.eligible(FIELD_COMPARE.classified)) { box.append(' 열람 권한이 없습니다.'); return; }
+        const already = Classified.has(FIELD_COMPARE.classified);
+        if (already) box.append(' 이미 대조한 기록입니다.');
+        Classified.pairReference(FIELD_COMPARE.classified, box, () => { if (!already) Classified.discover(FIELD_COMPARE.classified); }, { stack: true });
+        out.scrollTop = out.scrollHeight;
+    });
+    go.id = 'trec-compare';
+    box.append(go); out.appendChild(box);
+    out.scrollTop = out.scrollHeight;
 }
 
 // ---------- 단서 검색 ----------
@@ -276,6 +341,7 @@ function helpLines() {
         : '> 획득한 단서가 없습니다. 수칙 문서를 열람하거나 에피소드를 클리어하십시오.');
     lines.push('> 기록 조회: 내 기록 / 사망 기록 / 생존율 / 작업자 번호 / 연결');
     lines.push('> 구역 조회: 1화 ~ 10화 (예: 7화, EP.03)');
+    if (availableFieldRecords().length) lines.push('> 현장 생환 기록: 생환한 현장의 원문을 관련 용어로 검색할 수 있습니다.');
     lines.push('> ↑↓ 이전 입력 · Tab 자동완성 · 지우기');
     return lines;
 }
@@ -320,13 +386,20 @@ async function runTerminalCommand(raw) {
 
     if (key === 'clear' || key === 'cls' || key === '지우기') {
         terminalOutput().innerHTML = '';
+        fieldRecordState.opened.clear();   // records opened before the screen was cleared are no longer side by side
     } else if (key === 'help' || key === '도움말') {
         await terminalType(helpLines(), { color: TERM_DIM });
     } else {
         const special = TERMINAL_SPECIAL.find(e => e.keys.includes(key));
         const epMatch = key.match(/^(?:ep\.?|에피소드|구역)?0?(\d{1,2})(?:화)?$/);
         const result = special ? special.run() : (epMatch ? runEpisode(Number(epMatch[1])) : runSearch(text));
-        if (!result) {
+        // record/status commands keep their exact output; any other search may also list Field return records
+        const records = (special && ![runHq, runWard, runBus].includes(special.run)) || epMatch ? [] : searchFieldRecords(text);
+        if (!result && records.length) {
+            terminalState.failStreak = 0;
+            await terminalType([`> 현장 생환 기록 ${records.length}건`], { color: TERM_DIM });
+            printFieldRecords(records);
+        } else if (!result) {
             terminalState.failStreak++;
             const lines = ['> 일치하는 기록이 없습니다.'];
             const near = nearestKeyword(text);
@@ -339,6 +412,7 @@ async function runTerminalCommand(raw) {
             if (result.blood) document.getElementById('terminalWindow').classList.add('terminal-blood');
             await terminalType(result.lines, { slow: result.slow, color: result.blood ? TERM_RED : result.color });
             if (result.secret) GameSave.addSecret(result.secret); // 업적 판정은 변경 알림으로 자동 처리된다
+            if (records.length) { await terminalType([`> 현장 생환 기록 ${records.length}건`], { color: TERM_DIM }); printFieldRecords(records); }
         }
     }
     setTerminalBusy(false);

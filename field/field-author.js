@@ -32,15 +32,51 @@ window.AuthorRoute = (() => {
         // Case-sensitive; preserve internal spaces. Exact order: trim → NFKC → UTF-8 → SHA-256.
         return typeof input === 'string' ? input.trim().normalize('NFKC') : '';
     }
+    // Plain SHA-256 for origins without Web Crypto (crypto.subtle is missing on plain-HTTP LAN addresses,
+    // e.g. the dev server opened from a tablet). Same digest as crypto.subtle; HTTPS/localhost keep using Web Crypto.
+    function sha256Fallback(bytes) {
+        const K = [], H = [];
+        for (let n = 2, found = 0; found < 64; n++) {
+            let prime = true; for (let f = 2; f * f <= n; f++) if (n % f === 0) { prime = false; break; }
+            if (!prime) continue;
+            if (found < 8) H[found] = (Math.pow(n, 1 / 2) % 1) * 2 ** 32 | 0;
+            K[found++] = (Math.pow(n, 1 / 3) % 1) * 2 ** 32 | 0;
+        }
+        const len = bytes.length, padded = new Uint8Array(((len + 9 + 63) >> 6) << 6);
+        padded.set(bytes); padded[len] = 0x80;
+        const view = new DataView(padded.buffer); view.setUint32(padded.length - 4, len * 8); view.setUint32(padded.length - 8, Math.floor(len / 2 ** 29));
+        const rotr = (x, r) => (x >>> r) | (x << (32 - r)), W = new Array(64);
+        for (let off = 0; off < padded.length; off += 64) {
+            for (let i = 0; i < 64; i++) {
+                if (i < 16) W[i] = view.getUint32(off + i * 4);
+                else {
+                    const a = W[i - 15], b = W[i - 2];
+                    W[i] = (W[i - 16] + (rotr(a, 7) ^ rotr(a, 18) ^ (a >>> 3)) + W[i - 7] + (rotr(b, 17) ^ rotr(b, 19) ^ (b >>> 10))) | 0;
+                }
+            }
+            let [a, b, c, d, e, f, g, h] = H;
+            for (let i = 0; i < 64; i++) {
+                const t1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + W[i]) | 0;
+                const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+                h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+            }
+            [a, b, c, d, e, f, g, h].forEach((v, i) => { H[i] = (H[i] + v) | 0; });
+        }
+        return H.map(v => (v >>> 0).toString(16).padStart(8, '0')).join('');
+    }
     async function matches(input) {
         const expected = hashOverride || AUTHOR_SAVE_HASH;
         const normalized = normalize(input);
-        if (!/^[a-f0-9]{64}$/i.test(expected) || !normalized || !window.crypto?.subtle) return false;
+        if (!/^[a-f0-9]{64}$/i.test(expected) || !normalized) return false;
         try {
-            const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalized));
-            const actual = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+            const bytes = new TextEncoder().encode(normalized);
+            let actual;
+            if (window.crypto?.subtle) {
+                const digest = await crypto.subtle.digest('SHA-256', bytes);
+                actual = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+            } else actual = sha256Fallback(bytes);
             return actual === expected.toLowerCase();
-        } catch (error) { return false; } // Normal Save import still works on unsupported origins.
+        } catch (error) { return false; } // Normal Save import still works if hashing fails.
     }
     return {
         normalize, matches,
@@ -92,19 +128,8 @@ window.addEventListener('load', () => {
     closeControl.id = 'author-note-close'; closeControl.removeAttribute('onclick');
     closeControl.setAttribute('role', 'button'); closeControl.setAttribute('aria-label', '닫기'); closeControl.tabIndex = 0;
     const text = win.querySelector('textarea'); text.id = 'author-note-text';
-    // AUTHOR-only meta reactions to PUBLIC CLASSIFIED discoveries. Every CLASSIFIED is open to everyone and AUTHOR must discover
-    // it in the game like anyone else; this table only appends one line to this file when AUTHOR is unlocked AND the entry is
-    // discovered (either order, appended once). Extendable per id: a reaction for classified-02 or -03 may be added here
-    // later — none is defined now, and no sentence is written for them in advance.
-    const AUTHOR_CLASSIFIED_REACTIONS = {
-        'classified-01': { authorTextAppend: '연결한 건 내가 아니야.' }
-    };
+    // The file holds this text only (CLASSIFIED-based extra lines were removed on 2026-10-10 at the author's request).
     const BASE_NOTE = '누군가 이 창을 다시 열어 주었다.\n남겨 둔 문장 하나는, 여기까지 읽어 준 사람에게.\n\n영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께';
-    const noteText = () => {
-        const extra = Object.entries(AUTHOR_CLASSIFIED_REACTIONS)
-            .filter(([id]) => window.Classified?.has(id)).map(([, reaction]) => reaction.authorTextAppend);
-        return extra.length ? `${BASE_NOTE}\n\n${extra.join('\n')}` : BASE_NOTE;
-    };
     text.textContent = BASE_NOTE;
     desktop.append(win); makeDraggable(win);
     darkWebWindowsList.push({ id: win.id, title: '📄 제작자에게.txt' });
@@ -116,7 +141,7 @@ window.addEventListener('load', () => {
     };
     const open = () => {
         if (!AuthorRoute.get().unlocked) return;
-        AuthorRoute.addTrace('creator-note'); text.value = noteText();   // evaluated only when the file is (re)opened: no popup on discovery
+        AuthorRoute.addTrace('creator-note'); text.value = BASE_NOTE;
         win.style.display = 'flex';
         win.style.zIndex = ++highestZIndex; updateDarkWebTaskbar();
     };

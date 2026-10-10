@@ -14,10 +14,21 @@ window.FieldUI = (() => {
         win.style.display = 'flex'; focus();
         if (!FieldCore.get()) catalog();
     }
+    // Non-mission views (re-opened documents, 11 / 10) own timers/listeners; stop them whenever the content is replaced or closed.
+    function stopViews() { window.FieldRecords?.stop(); window.ElevenTenView?.stop(); }
     function close() {
+        stopViews();
         if (!FieldCore.get() && win.style.display === 'none') return;
         FieldCore.disconnect(); if (video) video.pause();
         win.style.display = 'none'; updateDarkWebTaskbar();
+    }
+    // Title-bar back: from any screen (a mission, a re-opened document, 11 / 10) to the observation list. An active shift asks first;
+    // leaving it is the same as 연결 종료 for that run (EP03-EP06 keep their resumable snapshot).
+    function back() {
+        const s = FieldCore.get();
+        if (s && s.status === 'active' && !window.confirm('현재 근무를 중단하고 관측 목록으로 돌아갈까요?')) return;
+        stopViews(); if (s) FieldCore.disconnect(); if (video) video.pause();
+        catalog();
     }
     function armAudio() {
         try {
@@ -33,6 +44,7 @@ window.FieldUI = (() => {
         const source = audio.createBufferSource(); source.buffer = buffer; source.connect(audio.destination); source.start();
     }
     function catalog() {
+        stopViews();
         content.replaceChildren();
         const title = document.createElement('h2'); title.textContent = '현장 관측 시스템'; content.append(title);
         const intro = document.createElement('p'); intro.textContent = '야간 연결 대기 / 근무 기록은 본 장치에 보관됩니다.'; content.append(intro);
@@ -56,16 +68,21 @@ window.FieldUI = (() => {
             }
             content.append(row);
             const record = document.createElement('small'); record.textContent = `${save.cleared.includes(id) ? '생환 기록 있음' : '생환 기록 없음'} / 연결 소실 ${save.deaths[id] || 0}회`; content.append(record);
+            // a real return record keeps its document readable (EP08 이용 안내문); never shown for the dev unlock alone
+            if (save.cleared.includes(id) && window.FieldRecords?.has(id)) {
+                const doc = document.createElement('button'); doc.type = 'button'; doc.id = `field-guide-${id}-record`; doc.className = 'field-record-doc'; doc.textContent = '이용 안내문';
+                doc.onclick = () => { stopViews(); FieldRecords.openGuide(id, content); }; record.append(' ', doc);
+            }
         }
         // 11 / 10: never announced; appears only after every CLASSIFIED trace exists and the list is opened again later
         if (window.ElevenTen && window.ElevenTen.visible(openedAt)) {
             const row = document.createElement('div'); row.className = 'field-case field-case-1110';
             const label = document.createElement('span'); label.textContent = '11 / 10'; row.append(label);
             const btn = document.createElement('button'); btn.id = 'field-dispatch-1110'; btn.textContent = '—';
-            btn.onclick = () => { content.replaceChildren(); const p = document.createElement('p'); content.append(p); window.ElevenTen.open(p); };
+            btn.onclick = () => { stopViews(); content.replaceChildren(); window.ElevenTen.open(content); };
             row.append(btn); content.append(row);
         }
-        if (FieldSave.devUnlock) { const dev = document.createElement('p'); dev.textContent = '[개발 모드] localhost에서는 모든 에피소드가 개방됩니다. 저장 기록에는 영향이 없습니다.'; content.append(dev); }
+        if (FieldSave.devUnlock) { const dev = document.createElement('p'); dev.textContent = '[개발 모드] 개발 서버(localhost·내부망)에서는 모든 에피소드가 개방됩니다. 저장 기록에는 영향이 없습니다.'; content.append(dev); }
         const note = document.createElement('p'); note.textContent = '근무 기록은 이 브라우저에 별도 저장됩니다. 사건수사노트의 [기록] 탭에서 세이브 코드로 함께 옮길 수 있습니다.'; content.append(note);
         if (FieldSave.storageError()) { const warn = document.createElement('p'); warn.textContent = '기록 저장소를 사용할 수 없습니다. 브라우저 저장 권한을 확인하십시오.'; content.append(warn); }
     }
@@ -187,6 +204,11 @@ window.FieldUI = (() => {
             const retry = document.createElement('button'); retry.textContent = '재파견'; retry.id = 'field-retry'; retry.onclick = () => { shell(s.id); FieldCore.dispatch(s.id); };
             const list = document.createElement('button'); list.textContent = '관측 목록'; list.id = 'field-list'; list.onclick = () => { FieldCore.disconnect(); catalog(); };
             outcome.append(retry, list);
+            if (s.status === 'cleared' && window.FieldRecords?.has(s.id)) {
+                const doc = document.createElement('button'); doc.textContent = '이용 안내문 다시 열기'; doc.id = `field-guide-${s.id}`;
+                doc.onclick = () => { FieldCore.disconnect(); FieldRecords.openGuide(s.id, content); };
+                outcome.append(doc);
+            }
             content.querySelectorAll('.field-grid button:not([data-live]), .field-grid select').forEach(el => { el.disabled = true; });   // [data-live] stays usable (EP06 post-clear inspection)
         }
     }
@@ -194,7 +216,7 @@ window.FieldUI = (() => {
         win = $('fieldWindow'); content = $('field-content');
         darkWebWindowsList.push({ id: 'fieldWindow', title: '▥ 현장 관측 시스템' });
         win.addEventListener('pointerdown', focus);
-        $('field-close').onclick = close; $('field-open').onclick = open;
+        $('field-close').onclick = close; $('field-open').onclick = open; $('field-back-list').onclick = back;
         $('field-open').onkeydown = event => { if (['Enter', ' '].includes(event.key)) { event.preventDefault(); open(); } };
         FieldCore.onChange(render);
         // Existing disconnect/Story overlays retain their behavior; stop our own session.
@@ -204,5 +226,5 @@ window.FieldUI = (() => {
         });
         for (const el of [win, $('darkweb-overlay'), $('bsod-overlay')]) observer.observe(el, { attributes: true, attributeFilter: ['style'] });
     });
-    return { open, close };
+    return { open, close, catalog: () => { if (!FieldCore.get()) catalog(); } };
 })();
