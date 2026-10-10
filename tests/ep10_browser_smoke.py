@@ -78,9 +78,9 @@ def run():
             spare = st()['spareNo']
             for side in ['left', 'right']:
                 i = [k for k, a in enumerate(st()[side]) if a['no'] == spare][0]
-                click('f10-arm-%s-%d' % (side, i)); step(1)
+                click('f10-arm-%s-%d' % (side, i)); step(T['armReveal'] + .2)
                 if st()['holding']['act'] in D['danger']:
-                    click('f10-crush'); click('f10-spare'); step(1)
+                    click('f10-crush'); click('f10-spare'); step(T['armReveal'] + .2)
                 click('f10-pin')
             click('f10-next')
         def do_tail():
@@ -163,7 +163,7 @@ def run():
 
         # --- 3. Head inspection ---------------------------------------------------------------------------------------------
         to('head'); click('f10-lift'); step(T['mouthWarn'] + .2); assert st()['phase'] == 'open'; click('f10-throw'); dead('HEAD_HELD')
-        to('head'); click('f10-lift'); step(T['mouthWarn'] + 3.3); dead('HEAD_HELD')
+        to('head'); click('f10-lift'); step(T['mouthWarn'] + T['mouthOpenTime'] + .3); dead('HEAD_HELD')
         to('head'); click('f10-lift'); step(T['mouthWarn'] + .2); click('f10-put-down'); act('fingers', True); step(2); act('fingers', False); dead('HEAD_FINGERS')
         to('head'); click('f10-lift'); step(T['mouthWarn'] + .2); click('f10-put-down')
         page.locator('#f10-fingers').hover(); page.mouse.down(); step(T['mouthHold'] + .2); page.mouse.up()
@@ -190,18 +190,20 @@ def run():
         click('f10-correct'); page.locator('#f10-say').fill('안녕 나는 인어공주야'); click('f10-say-send'); assert '목소리를 잃었으며' in dead('VOICE_1')
         to('voice');
         for _ in range(4): click('f10-press')
-        click('f10-correct'); step(T['touchAt'] + .2); assert '턱에 차가운 손가락' in log_text()
-        page.locator('#f10-say').fill('친구가 되어 줄 거지.'); click('f10-say-send'); assert data()['toy']['voices'][3] == 'corrected' and state()['status'] == 'active'
+        click('f10-correct'); assert page.evaluate("document.activeElement.id") == 'f10-say', 'the box opens focused'
+        page.keyboard.type('친구가 되어'); step(T['touchAt'] + .2); assert '턱에 차가운 손가락' in log_text()
+        assert page.evaluate("document.activeElement.id") == 'f10-say' and page.locator('#f10-say').input_value() == '친구가 되어', 'cloth / whisper / touch never rebuild the box mid-typing'
+        page.keyboard.type(' 줄 거지.'); page.keyboard.press('Enter'); assert data()['toy']['voices'][3] == 'corrected' and state()['status'] == 'active'
         print('PASS voice: the same body, four presses; a wrong line -> face it, say the whole normal sentence (typed) through cloth/whisper/touch; repeating the whisper, turning away or running out fail (line 1 / line 4 canon)')
 
         # --- 5. Arms --------------------------------------------------------------------------------------------------------
-        to('arms'); click('f10-arm-left-0'); step(1); assert '따라 접혔다가 펴진다' in log_text(); click('f10-pin')   # unsettling but normal
-        click('f10-arm-right-1'); step(1); assert '다섯 개가 동시에' in log_text(); click('f10-pin'); assert '플라스틱 손' in dead('ARM_GRABBED')
-        to('arms'); click('f10-arm-right-1'); step(1 + T['armDanger']); dead('ARM_GRABBED')
-        to('arms'); click('f10-arm-right-0'); step(1); assert '소매를 붙잡는다' in log_text(); click('f10-shake'); dead('ARM_SHAKE')
-        to('arms'); click('f10-arm-left-0'); step(1); click('f10-pin'); click('f10-arm-right-0'); step(1); click('f10-pin'); dead('ARM_PAIR')
-        to('arms'); click('f10-arm-left-0'); step(1); click('f10-pin'); click('f10-arm-right-1'); step(1); click('f10-crush')
-        assert '은색 페달' in log_text() and data()['counts']['rejected'] >= 2; click('f10-spare'); step(1); click('f10-pin')
+        to('arms'); click('f10-arm-left-0'); step(T['armReveal'] + .2); assert '따라 접혔다가 펴진다' in log_text(); click('f10-pin')   # unsettling but normal
+        click('f10-arm-right-1'); step(T['armReveal'] + .2); assert '다섯 개가 동시에' in log_text(); click('f10-pin'); assert '플라스틱 손' in dead('ARM_GRABBED')
+        to('arms'); click('f10-arm-right-1'); step(T['armReveal'] + T['armDanger'] + .2); dead('ARM_GRABBED')
+        to('arms'); click('f10-arm-right-0'); step(T['armReveal'] + .2); assert '소매를 붙잡는다' in log_text(); click('f10-shake'); dead('ARM_SHAKE')
+        to('arms'); click('f10-arm-left-0'); step(T['armReveal'] + .2); click('f10-pin'); click('f10-arm-right-0'); step(T['armReveal'] + .2); click('f10-pin'); dead('ARM_PAIR')
+        to('arms'); click('f10-arm-left-0'); step(T['armReveal'] + .2); click('f10-pin'); click('f10-arm-right-1'); step(T['armReveal'] + .2); click('f10-crush')
+        assert '은색 페달' in log_text() and data()['counts']['rejected'] >= 2; click('f10-spare'); step(T['armReveal'] + .2); click('f10-pin')
         assert data()['toy']['leftArm']['no'] == data()['toy']['rightArm']['no'] == 7 and data()['ready']
         print('PASS arms: same-number pair; following fingers / sleeve grab / hand stroking are attached as they are; five fingers converging or reaching out = crush groove + silver pedal + blue bin + spare; attaching it, waiting, shaking off or mismatching fail')
 

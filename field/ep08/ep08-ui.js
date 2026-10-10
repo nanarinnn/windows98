@@ -38,24 +38,6 @@ window.FieldEP08UI = (() => {
         const el = document.createElement('button'); el.type = 'button'; el.textContent = label; el.id = id;
         el.addEventListener('click', () => FieldCore.action(name, value)); return el;
     }
-    // Press-and-hold control (breath). Releasing ends the hold; releasing over a walkable map area walks there first
-    // (mouse users drag onto the map; touch users can also keep one finger down and tap the map with another).
-    function holdBtn(label, name, id) {
-        const el = document.createElement('button'); el.type = 'button'; el.textContent = label; el.id = id; el.className = 'f8-hold';
-        const on = event => { event.preventDefault(); try { el.setPointerCapture(event.pointerId); } catch (error) { /* synthetic or already released */ } FieldCore.action(name, true); };
-        const off = () => FieldCore.action(name, false);
-        const drop = event => {
-            const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('[id^="f8-move-"]');
-            if (target && !target.disabled) FieldCore.action('move', target.id.slice('f8-move-'.length));
-            off();
-        };
-        el.addEventListener('pointerdown', on);
-        el.addEventListener('pointerup', drop); el.addEventListener('pointercancel', off); el.addEventListener('lostpointercapture', off);
-        el.addEventListener('keydown', event => { if ([' ', 'Enter'].includes(event.key) && !event.repeat) { event.preventDefault(); FieldCore.action(name, true); } });
-        el.addEventListener('keyup', event => { if ([' ', 'Enter'].includes(event.key)) { event.preventDefault(); off(); } });
-        return el;
-    }
-
     const whistleOf = d => (d.overlay && d.overlay.kind === 'whistle') ? d.overlay : (d.scene && d.scene.kind === 'whistle') ? d.scene : null;
 
     function describe(s) {
@@ -84,7 +66,7 @@ window.FieldEP08UI = (() => {
                 return e.phase === 'stopped' ? '슬라이드 안. 벽에 팔을 버틴 채 멈춰 있다. 아래에서 물소리가 올라온다.' : '슬라이드 안. 물살이 몸을 끌어내린다.';
             case 'aloneChild': return `${zone}. 혼자 있는 아이가 손을 내밀고 올려다본다.`;
             case 'bandFloat': return `${zone}. 풀린 손목 밴드가 물 위에 떠 있다.`;
-            case 'whistle': return e.phase === 'empty' ? `${zone}. 가장 가까운 안전 요원대가 비어 있다.` : `${zone}. 후루라기 소리.`;
+            case 'whistle': return e.phase === 'empty' ? `${zone}. 가장 가까운 안전 요원대가 비어 있다.` : `${zone}. 호루라기 소리.`;
             case 'character': return `${zone}. 캐릭터가 혼자 서 있다. 인솔 직원이 없다. 큰 얼굴이 이쪽을 향해 있다.`;
             case 'bath': return e.phase === 'bell' ? '온천 스파. 안내종이 울린다.' : (e.thirst ? '온천 스파. 목이 마르다. 탕 가장자리에 생수병이 있다.' : '온천 스파. 김이 오른다.');
             case 'food': return e.phase === 'ask' ? '푸드코트. 직원이 테이블 옆에 서 있다.' : (e.extra ? `푸드코트. 주문한 음식 옆에 ${data.unordered}.` : '푸드코트. 주문한 음식.');
@@ -118,8 +100,13 @@ window.FieldEP08UI = (() => {
                 if (e.phase === 'band') add('전자 손목 밴드를 찬다', 'wearBand', null, 'f8-wear-band');
                 if (e.phase === 'store') for (const n of [d.band.locker, ...d.otherLockers].sort((a, b) => a - b)) add(`${n}번 사물함`, 'openLocker', n, 'f8-locker-' + n);
                 if (e.phase === 'open') {
-                    list.push(holdBtn('숨 참기 (누르고 있기)', 'breath', 'f8-breath'));
-                    const help = document.createElement('small'); help.textContent = '누르는 동안만 유지됩니다. 누른 채 지도의 구역 위에서 떼면 그쪽으로 이동합니다.'; list.push(help);
+                    // Tap once to stop breathing; the gauge shows how long the held breath lasts, then walk out.
+                    if (!d.breath) add('숨을 멈춘다', 'breath', true, 'f8-breath');
+                    else {
+                        const gauge = document.createElement('div'); gauge.className = 'f8-gauge'; gauge.id = 'f8-breath-gauge';
+                        gauge.innerHTML = '<span>숨</span><i><b></b></i>'; list.push(gauge);
+                        add('탈의실 밖으로 나간다', 'move', 'desk', 'f8-leave-locker');
+                    }
                 }
                 break;
             case 'report':
@@ -228,7 +215,7 @@ window.FieldEP08UI = (() => {
         root.className = `field-camera f8-scene f8-z-${d.zone}${d.clock >= data.clock.late ? ' f8-late' : ''}${d.core.closingStarted ? ' f8-closed' : ''}`;
         $('f8-text').textContent = describe(s);
         const o = d.overlay || (e && e.kind === 'whistle' ? e : null), alert = $('f8-alert');
-        if (o) { alert.hidden = false; alert.textContent = o.kind === 'nameBroadcast' ? data.text.nameBroadcast : '삐익— 후루라기'; }
+        if (o) { alert.hidden = false; alert.textContent = o.kind === 'nameBroadcast' ? data.text.nameBroadcast : '삐익— 호루라기'; }
         else alert.hidden = true;
         const crowd = $('f8-crowd');
         if (e && e.kind === 'wave' && e.phase !== 'ride') {
@@ -271,9 +258,10 @@ window.FieldEP08UI = (() => {
         }
         scene(s);
         const strip = (k, v) => (['t', 'el', 'held', 'from', 'ovT', 'floatT'].includes(k) ? undefined : v);
-        const next = JSON.stringify([d.zone, JSON.stringify(d.scene, strip), JSON.stringify(d.overlay, strip), JSON.stringify(d.band, strip),d.charges.length, d.clock >= data.clock.late, s.status]);
+        const next = JSON.stringify([d.zone, JSON.stringify(d.scene, strip), JSON.stringify(d.overlay, strip), JSON.stringify(d.band, strip), d.breath, d.charges.length, d.clock >= data.clock.late, s.status]);
         if (next !== sig) { sig = next; actions(s); band(s); }
-        const hold = $('f8-breath'); if (hold) hold.setAttribute('aria-pressed', String(!!d.breath));
+        const gauge = $('f8-breath-gauge');
+        if (gauge && d.scene && d.scene.kind === 'locker') gauge.querySelector('b').style.width = `${Math.max(0, 1 - (d.scene.held || 0) / data.tuning.breathMax) * 100}%`;
         video(s);
     }
 

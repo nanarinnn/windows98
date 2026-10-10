@@ -192,16 +192,17 @@ def run():
         fresh(); click('f8-locker-214'); step(T['lockerOpenDelay'] + .3); click('f8-move-desk'); dead('LOCKER_BREATH')       # walked out breathing
         fresh(); click('f8-locker-214'); step(T['lockerOpenDelay'] + .3); act('breath', True); act('breath', False); dead('LOCKER_BREATH')   # breathed inside
         fresh(); click('f8-locker-214'); step(T['lockerOpenDelay'] + .3); act('breath', True); step(T['breathMax'] + .3); dead('LOCKER_BREATH')  # lingered
-        # real press-and-hold: hold the button, drag onto the map's desk, release
+        # tap to stop breathing: the gauge drains while held, then the exit button walks out to the desk
         fresh(); click('f8-locker-214'); step(T['lockerOpenDelay'] + .3)
-        page.locator('#f8-breath').hover(); page.mouse.down(); assert data()['breath'] and page.locator('#f8-breath').get_attribute('aria-pressed') == 'true'
-        box = page.locator('#f8-move-desk').bounding_box(); page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2); page.mouse.up()
+        click('f8-breath'); assert data()['breath'] and has('f8-breath-gauge') and has('f8-leave-locker') and not has('f8-breath')
+        step(T['breathMax'] / 2); w = page.evaluate("parseFloat(document.querySelector('#f8-breath-gauge b').style.width)"); assert 30 < w < 70, w
+        click('f8-leave-locker')
         assert state()['status'] == 'active' and data()['zone'] == 'desk' and sc()['kind'] == 'report' and '숨을 참은 채 탈의실 밖으로' in log_text()
         click('f8-pass'); dead('LOCKER_UNREPORTED')
         fresh(); click('f8-locker-214'); step(T['lockerOpenDelay'] + .3); act('breath', True); act('move', 'desk'); act('move', 'wave'); dead('LOCKER_UNREPORTED')
         fresh(); click('f8-locker-214'); step(T['lockerOpenDelay'] + .3); act('breath', True); act('move', 'desk'); click('f8-report')
         assert data()['core']['locker'] and '신고했다' in log_text() and not data()['scene']
-        print('PASS CORE locker: assigned locker only; an unassigned one opens by itself -> hold breath (press-and-hold), leave, report at the desk; breathing/lingering/not reporting fail')
+        print('PASS CORE locker: assigned locker only; an unassigned one opens by itself -> stop breathing (tap + gauge), leave, report at the desk; breathing/lingering/not reporting fail')
 
         # --- 4. CORE 2: wave pool + overlap ----------------------------------------------------------------------------------
         clock_before = data()['clock']; step(20); assert data()['clock'] == clock_before, 'the tutorial clock only moves with actions'
@@ -420,11 +421,11 @@ def run():
         # --- 11. Mobile touch ------------------------------------------------------------------------------------------------
         page.set_viewport_size({'width': 390, 'height': 844})
         fresh(); tap('f8-locker-214'); step(T['lockerOpenDelay'] + .3)
-        page.locator('#f8-breath').dispatch_event('pointerdown', {'pointerId': 1, 'clientX': 1, 'clientY': 1}); assert data()['breath']
-        tap('f8-move-desk'); tap('f8-report'); assert data()['core']['locker']
+        tap('f8-breath'); assert data()['breath']
+        tap('f8-leave-locker'); tap('f8-report'); assert data()['core']['locker']
         tap('f8-move-wave'); step(T['waveRide'] + .3); tap('f8-avert'); assert sc()['phase'] == 'still'
         box = page.locator('#f8-map').bounding_box(); assert box['x'] >= 0 and box['x'] + box['width'] <= 390
-        print('PASS mobile: hold breath with one finger and tap the map with another; map and controls fit 390px')
+        print('PASS mobile: tap to stop breathing, tap to walk out; map and controls fit 390px')
 
         assert not errors, errors
         browser.close()

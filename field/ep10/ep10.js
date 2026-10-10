@@ -83,7 +83,7 @@
             case 'head':
                 if (st.phase === 'held' && st.heads[st.idx].mouth) {
                     st.t += dt;
-                    if (st.t >= T.mouthWarn) { st.phase = 'open'; st.t = 3; api.log(X.mouthOpen); api.majorEvent('HEAD_MOUTH'); }
+                    if (st.t >= T.mouthWarn) { st.phase = 'open'; st.t = T.mouthOpenTime; api.log(X.mouthOpen); api.majorEvent('HEAD_MOUTH'); }
                 } else if (st.phase === 'open') {
                     st.t -= dt; if (st.t <= 0) fail(s, api, 'HEAD_HELD');
                 } else if (st.phase === 'fingers') {
@@ -106,8 +106,8 @@
                 const h = st.holding;
                 if (!h) return;
                 h.t += dt;
-                if (!h.shown && h.t >= 0.8) { h.shown = true; api.log(`[팔 결합대] ${data.armActs[h.act]}`); if (data.danger.includes(h.act)) api.majorEvent('ARM_DANGER'); }
-                if (h.shown && data.danger.includes(h.act) && h.t >= 0.8 + T.armDanger) fail(s, api, 'ARM_GRABBED');
+                if (!h.shown && h.t >= T.armReveal) { h.shown = true; api.log(`[팔 결합대] ${data.armActs[h.act]}`); if (data.danger.includes(h.act)) api.majorEvent('ARM_DANGER'); }
+                if (h.shown && data.danger.includes(h.act) && h.t >= T.armReveal + T.armDanger) fail(s, api, 'ARM_GRABBED');
                 return;
             }
             case 'tail':

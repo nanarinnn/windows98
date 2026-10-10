@@ -497,7 +497,7 @@
         logTag: run => hhmm(run.data.clock),
         stamp: log => log.tag || '',
         manualClock: true, startLog: data.startLog,
-        release() { /* losing focus never changes the situation (a held breath stays held) */ },
+        release() { /* losing focus never changes the situation */ },
         get ui() { return window.FieldEP08UI; }
     });
 })();

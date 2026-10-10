@@ -128,6 +128,7 @@ window.FieldEP10UI = (() => {
                     box.innerHTML = '<input id="f10-say" autocomplete="off" aria-label="정상 문장" placeholder="정상 문장을 끝까지">';
                     const go = document.createElement('button'); go.type = 'button'; go.id = 'f10-say-send'; go.textContent = '말한다';
                     go.addEventListener('click', () => FieldCore.action('say', $('f10-say').value));
+                    box.querySelector('input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); FieldCore.action('say', e.target.value); } });
                     box.append(go); list.push(box);
                     add('천 끄는 소리 쪽을 돌아본다', 'turnAway', null, 'f10-turn-away');
                 } else {
@@ -205,12 +206,13 @@ window.FieldEP10UI = (() => {
         const epi = $('f10-epilogue');
         if (s.status === 'cleared') { epi.hidden = false; epi.textContent = ['FIELD OBSERVATION', '10 / 10', '', ...data.epilogue].join('\n'); } else epi.hidden = true;
         toy(s); line(s);
-        const strip = (k, v) => (['t', 'song', 'songT', 'idle', 'wet', 'inside'].includes(k) ? undefined : v);
+        const strip = (k, v) => (['t', 'song', 'songT', 'idle', 'wet', 'inside', 'cloth', 'whisper', 'touch'].includes(k) ? undefined : v);   // timed log events never rebuild the buttons (a rebuilt input loses focus / IME composition)
         const next = JSON.stringify([d.stage, JSON.stringify(st, strip), d.ready, d.toy.lamp, s.status]);
         if (next !== sig) {
             const keep = $('f10-say')?.value || '';
             sig = next; actions(s);
             if ($('f10-say') && keep) $('f10-say').value = keep;
+            else if ($('f10-say')) $('f10-say').focus();   // the correction box opens ready to type
         }
         const hold = $('f10-fingers');
         if (hold) hold.setAttribute('aria-pressed', String(st.phase === 'fingers'));

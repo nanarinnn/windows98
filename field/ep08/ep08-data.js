@@ -53,12 +53,12 @@ window.FieldEP08Data = {
     // Minutes each thing costs on the clock.
     cost: { move: 2, report: 2, lockerStore: 1, band: 3, child: 1, character: 2, slide: 8, food: 6, sunbed: 5, whistle: 1 },
     tuning: {
-        lockerOpenDelay: 2.5, breathDeadline: 3, breathMax: 9,
+        lockerOpenDelay: 2.5, breathDeadline: 5, breathMax: 9,
         waveRide: 5, unwetNotice: 7, unwetWait: 14, overlayDelay: 3,
         broadcastLength: 8, whistleFreeze: 3, whistleCheck: 5, leaveWater: 4,
         bandCall: 5, childWait: 8, characterWait: 8,
         bathLength: 14, thirstAt: 5, bellExit: 3,
-        curveGap: 2.2, blackout: 1.2, slideStop: 6,
+        curveGap: 2.2, blackout: 1.2, slideStop: 12,
         stayWait: 8, blockWait: 8, pathOpen: 10, bandFloatDelay: 2
     },
 
@@ -132,7 +132,7 @@ window.FieldEP08Data = {
         nextWave: '[파도풀] 17:30. 다음 파도가 밀려왔다. 물이 걷히고 나니 젖지 않은 사람은 보이지 않는다.',
         nameBroadcast: '[안내 방송] "……고객님, 안내 데스크로 와 주시기 바랍니다." 방송이 부른 이름은 분명히 내 이름이다.',
         broadcastOver: '[안내 방송] 방송이 끝났다. 아무도 다시 부르지 않는다.',
-        whistle: '[주변] 삐익—! 후루라기 소리가 울린다.',
+        whistle: '[주변] 삐익—! 호루라기 소리가 울린다.',
         alreadyStill: '[주변] 이미 움직이지 않고 있다.',
         freeze: '[주변] 즉시 동작을 멈췄다.',
         towerManned: '[안전요원대] 가장 가까운 안전 요원대에 붉은색 수영복의 안전 요원이 앉아 있다.',
@@ -206,8 +206,8 @@ window.FieldEP08Data = {
         CHILD_HAND: '혼자 있는 아이의 손을 잡았습니다.',
         CHILD_WORDS: '혼자 있는 아이에게 다른 말을 했습니다. 아이가 다시 손을 내밉니다.',
         UNWET: '젖지 않은 사람의 흥미를 끌었습니다. 이후 체내에 있는 수분에 거부 반응을 가지게 되며 한 시간 이내에 체내의 수분을 모두 게워낸 채 발견된 사례가 확인되었습니다. 수습된 유해에서는 혈액이 검출되지 않았습니다.',
-        WHISTLE_MOVE: '후루라기 소리를 듣고도 동작을 멈추지 않았습니다.',
-        WHISTLE_IGNORED: '후루라기 소리를 듣고도 가장 가까운 안전 요원대를 확인하지 않았습니다.',
+        WHISTLE_MOVE: '호루라기 소리를 듣고도 동작을 멈추지 않았습니다.',
+        WHISTLE_IGNORED: '호루라기 소리를 듣고도 가장 가까운 안전 요원대를 확인하지 않았습니다.',
         WHISTLE_STAY: '비어 있는 안전 요원대를 확인하고도 물에 남아 있었습니다. 검은색 수영복 반바지를 입은 안전 요원에게 심폐소생술을 받게 되며 양쪽 갈비뼈 골절 및 장기 손상을 당하는 사례가 확인되었습니다.',
         BROADCAST: '성함이 호명된 안내 방송에 응했습니다. 본 시설은 성인 고객을 안내 방송으로 호출하지 않습니다.',
         SPA_DRINK: '탕 안에서 물을 마셨습니다. 탕 안에서 수분을 섭취한 고객은 수술 대상으로 분류됩니다.',

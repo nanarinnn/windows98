@@ -54,7 +54,7 @@ window.FieldEP07Data = {
         { id: 'kimbap', name: '삼각김밥(전주비빔)', note: '06:00까지' }
     ],
     tuning: {
-        idleSecondsPerMinute: 0.55, txMinutes: 6, browse: 1.6, leave: 1.4,
+        idleSecondsPerMinute: 0.55, txMinutes: 6, browse: 4, leave: 3,         // browse: walk-in → counter, leave: paid → out (seconds)
         gazeWatch: 2.4, gazeAway: 2.8,                 // customer looks at you / looks away (mirror window)
         glanceMin: 0.25, corridorMax: 1.0, glanceMax: 2.2,
         blinkAfter: 0.6, idHold: 5, idTolerance: 0.6,  // return within ±60% of the take time

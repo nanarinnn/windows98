@@ -32,12 +32,12 @@ window.FieldEP10Data = {
     ],
     tuning: {
         lockerSong: 22, dressSteps: 3, behindAt: [6, 11, 16],
-        mouthHold: 6, mouthWarn: 2.5,
-        correctTime: 30, clothAt: 4, whisperAt: 8, touchAt: 13,
-        armDanger: 5, pinHold: 1.5,
-        stitches: 10, sewSongAt: 3, sewSong: 26,
+        mouthHold: 6, mouthWarn: 2.5, mouthOpenTime: 5,
+        correctTime: 45, clothAt: 4, whisperAt: 8, touchAt: 13,
+        armReveal: 0.8, armDanger: 12, pinHold: 1.5,
+        stitches: 10, sewSongAt: 3, sewSong: 60,
         finalPause: 2.2, inspecting: 2.5,
-        corridorSteps: 14, stopLimit: 6, callAt: [3, 7, 10]
+        corridorSteps: 14, stopLimit: 10, callAt: [3, 7, 10]
     },
     video: {
         idle: 'movies/ep10_idle.mp4', locker: 'movies/ep10_event_locker.mp4', head: 'movies/ep10_event_head.mp4',
