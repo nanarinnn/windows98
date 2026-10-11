@@ -462,7 +462,7 @@ function renderRecord(root) {
                 // AUTHOR is separate browser metadata; it never replaces a Story save.
                 if (window.AuthorRoute && await AuthorRoute.tryImport(code)) {
                     // Nothing is announced: the input is cleared and the notebook simply closes, as if nothing happened.
-                    // ([제작자에게.txt] is there the next time the player looks at the desktop.)
+                    // ([수신인 미기재.txt] is there the next time the player looks at the desktop.)
                     inp.value = ''; msg2.textContent = '';
                     closeNotebook();
                     return;

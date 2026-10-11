@@ -167,7 +167,7 @@ def run():
                 page.locator('#author-note-icon').click()
                 text = page.locator('#author-note-text').input_value()
                 page.locator('#author-note-close').click(); return text
-            BASE_NOTE = '누군가 이 창을 다시 열어 주었다.\n남겨 둔 문장 하나는, 여기까지 읽어 준 사람에게.\n\n영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께'
+            BASE_NOTE = '수신인:\n발신인:\n\n누군가 이 창을 다시 열어 주었다.\n받는 사람은 끝내 적지 못했다.\n이름을 쓰면, 이 기록은 그 사람에게만 닿을 테니까.\n\n여기까지 읽어 준 사람에게.\n영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께'
             # --- 8. AUTHOR first, CLASSIFIED discovered later (real in-game path): the file keeps its base text only --------------------------
             page.evaluate("GameSave.reset()"); boot()
             assert page.evaluate("async (s) => AuthorRoute.tryImport(s)", SECRET) is True
@@ -184,7 +184,7 @@ def run():
             assert 'AUTHOR' not in body and 'BONUS' not in body and 'ACCESS' not in body
             page.evaluate("Classified.discover('classified-02', { announce: false }); Classified.discover('classified-03', { announce: false })")
             assert author_note() == BASE_NOTE, 'no line is appended for any CLASSIFIED'
-            print('PASS 8 AUTHOR first -> CLASSIFIED 01/02/03 discovered -> [제작자에게.txt] keeps exactly its base text (no appended line, no popup)')
+            print('PASS 8 AUTHOR first -> CLASSIFIED 01/02/03 discovered -> [수신인 미기재.txt] keeps exactly its base text (no appended line, no popup)')
             # --- 9. CLASSIFIED first, AUTHOR later --------------------------------------------------------------------------------------------
             page.evaluate("GameSave.reset()"); boot()
             for n in ['01', '02', '03']: page.evaluate("(id) => Classified.discover(id, { announce: false })", 'classified-' + n)

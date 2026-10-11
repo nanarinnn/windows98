@@ -115,24 +115,24 @@ window.addEventListener('load', () => {
     const desktop = document.getElementById('darkweb-desktop');
     const icon = document.createElement('div'); icon.className = 'icon'; icon.id = 'author-note-icon';
     icon.style.display = 'none'; // Hide before insertion; only restored unlock may reveal it.
-    icon.tabIndex = 0; icon.setAttribute('role', 'button'); icon.setAttribute('aria-label', '제작자에게.txt');
-    icon.innerHTML = '<div style="width: 32px; height: 32px; font-size: 26px; margin: 0 auto; text-align: center; line-height: 32px; filter: grayscale(1) sepia(1) hue-rotate(-50deg) saturate(3);">📄</div><span style="font-size: 11px; color: #ff0000; text-shadow: 0 0 2px #000; font-family: monospace; font-weight: bold; word-break: break-all;">[제작자에게.txt]</span>';
+    icon.tabIndex = 0; icon.setAttribute('role', 'button'); icon.setAttribute('aria-label', '수신인 미기재.txt');
+    icon.innerHTML = '<div style="width: 32px; height: 32px; font-size: 26px; margin: 0 auto; text-align: center; line-height: 32px; filter: grayscale(1) sepia(1) hue-rotate(-50deg) saturate(3);">📄</div><span style="font-size: 11px; color: #ff0000; text-shadow: 0 0 2px #000; font-family: monospace; font-weight: bold; word-break: break-all;">[수신인 미기재.txt]</span>';
     desktop.querySelector('.darkweb-icons-container').append(icon);
     // Reuse the existing Darkweb text-window DOM/styles, including mobile rules.
     const win = document.getElementById('darkwebReadmeWindow').cloneNode(true);
     win.id = 'authorNoteWindow'; win.style.display = 'none';
     win.style.top = '90px'; win.style.left = '100px'; win.style.width = 'min(380px,90%)';
     win.style.maxHeight = '70%';
-    win.querySelector('.window-header > span').textContent = '📄 [제작자에게.txt] - 메모장';
+    win.querySelector('.window-header > span').textContent = '📄 [수신인 미기재.txt] - 메모장';
     const closeControl = win.querySelector('.win-btn');
     closeControl.id = 'author-note-close'; closeControl.removeAttribute('onclick');
     closeControl.setAttribute('role', 'button'); closeControl.setAttribute('aria-label', '닫기'); closeControl.tabIndex = 0;
     const text = win.querySelector('textarea'); text.id = 'author-note-text';
     // The file holds this text only (CLASSIFIED-based extra lines were removed on 2026-10-10 at the author's request).
-    const BASE_NOTE = '누군가 이 창을 다시 열어 주었다.\n남겨 둔 문장 하나는, 여기까지 읽어 준 사람에게.\n\n영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께';
+    const BASE_NOTE = '수신인:\n발신인:\n\n누군가 이 창을 다시 열어 주었다.\n받는 사람은 끝내 적지 못했다.\n이름을 쓰면, 이 기록은 그 사람에게만 닿을 테니까.\n\n여기까지 읽어 준 사람에게.\n영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께';
     text.textContent = BASE_NOTE;
     desktop.append(win); makeDraggable(win);
-    darkWebWindowsList.push({ id: win.id, title: '📄 제작자에게.txt' });
+    darkWebWindowsList.push({ id: win.id, title: '📄 수신인 미기재.txt' });
     const close = () => { if (win.style.display === 'none') return; win.style.display = 'none'; updateDarkWebTaskbar(); };
     const update = () => {
         const unlocked = AuthorRoute.get().unlocked;
