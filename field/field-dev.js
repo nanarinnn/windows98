@@ -23,7 +23,8 @@ window.addEventListener('load', () => {
 
 // Dev-server only, URL-driven (no UI). ?devseed=all writes real Field return records for EP01-EP10 into this browser and clears
 // PUBLIC CLASSIFIED / 11 / 10, so all three CLASSIFIED records can be discovered by playing them. ?devseed=clues grants every
-// Story clue (no toasts; flags such as jayUnlocked are not set). Both can be combined: ?devseed=all,clues. Story flags, J, LOOP
+// Story clue (no toasts; flags such as jayUnlocked are not set). ?devseed=classified marks CLASSIFIED 01/02/03 discovered (11 / 10
+// ready). They can be combined: ?devseed=all,clues,classified. Story flags, J, LOOP
 // and AUTHOR are otherwise untouched. Inert with ?devunlock=0 or on the production domain; removed from the address bar after use.
 window.addEventListener('load', () => {
     const q = new URLSearchParams(location.search);
@@ -35,6 +36,8 @@ window.addEventListener('load', () => {
         window.Classified?.reset();
     }
     if (seeds.includes('clues')) CLUES.forEach(c => GameSave.addClue(c.id));
+    // ?devseed=classified: CLASSIFIED 01/02/03 already discovered (3/3, no toasts), so 11 / 10 is listed on the next opening
+    if (seeds.includes('classified')) window.Classified?.importProgress({ v: 1, discovered: [...window.CLASSIFIED_SLOTS], viewed: [], completeAt: Date.now() - 1000 });
     q.delete('devseed'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
     console.info('[devseed]', seeds.join(', '));
 });
