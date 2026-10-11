@@ -32,7 +32,12 @@ window.SFX = (() => {
     function arm() { const c = context(); if (c && c.state === 'suspended') c.resume().catch(() => {}); }
     function setVolume(v) { prefs.volume = Math.min(1, Math.max(0, v)); if (prefs.volume > 0) prefs.muted = false; apply(); }
     function setMuted(m) { prefs.muted = !!m; apply(); }
-    function apply() { save(); if (master) master.gain.setTargetAtTime(level(), ctx.currentTime, 0.05); syncUi(); }
+    function apply() { save(); if (master) master.gain.setTargetAtTime(level(), ctx.currentTime, 0.05); syncMedia(); syncUi(); }
+    // the desktop media player (catch catch / 공주의 규칙, the only videos with audio) follows the same volume and mute
+    function syncMedia() {
+        const v = document.getElementById('player-video'); if (!v) return;
+        v.volume = prefs.volume; v.muted = prefs.muted || prefs.volume === 0;
+    }
 
     // ---------- synth helpers ----------
     function blip(c, t, f, len, { type = 'square', vol = 0.05, to = 0, bus = fx } = {}) {
@@ -191,7 +196,7 @@ window.SFX = (() => {
         document.querySelectorAll('.sfx-toggle').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); arm(); panel(b); }));
         syncUi();
     }
-    window.addEventListener('load', () => { mountUi(); hook(); });
+    window.addEventListener('load', () => { mountUi(); hook(); syncMedia(); });
 
     return { context, out, arm, play, ambient, setVolume, setMuted, volume: () => prefs.volume, muted: () => prefs.muted, sounds: Object.keys(SOUNDS), places: Object.keys(AMBIENT) };
 })();
