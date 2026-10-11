@@ -58,7 +58,9 @@ window.SFX = (() => {
         message: (c, t) => { blip(c, t, 1046, 0.06, { type: 'sine', vol: 0.05 }); blip(c, t + 0.08, 1568, 0.08, { type: 'sine', vol: 0.04 }); },
         death: (c, t) => { hiss(c, t, 0.9, { vol: 0.16, freq: 3000 }); blip(c, t, 220, 0.8, { type: 'sawtooth', vol: 0.06, to: 35 }); },
         clear: (c, t) => [523, 659, 784, 1046].forEach((f, i) => blip(c, t + i * 0.09, f, 0.22, { type: 'triangle', vol: 0.06 })),
-        static: (c, t) => hiss(c, t, 0.25, { vol: 0.07, freq: 4000 })
+        static: (c, t) => hiss(c, t, 0.25, { vol: 0.07, freq: 4000 }),
+        // 뿅: a quick rising sweep with a small sparkle on top (pop-up windows such as the new recruit document)
+        pop: (c, t) => { blip(c, t, 420, 0.12, { type: 'sine', vol: 0.09, to: 1500 }); blip(c, t + 0.07, 1800, 0.09, { type: 'triangle', vol: 0.03, to: 2400 }); }
     };
     let lastAt = {};
     function play(name) {
@@ -137,6 +139,7 @@ window.SFX = (() => {
         }, true);
         wrap('showToast', ([title]) => play(String(title).includes('단서') ? 'clue' : 'notify'));
         wrap('showAlert', () => play('error'));
+        wrap('openNewRecruitDocument', () => play('pop'));   // EP09 -> LOOP: the new recruit file pops up
         wrap('openDarkWebAlert', () => play('error'));
         wrap('messengerAdd', ([kind]) => { if (kind !== 'me') play('message'); });
         wrap('terminalPrint', () => play('type'));
