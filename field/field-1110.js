@@ -28,11 +28,11 @@ window.ElevenTenView = (() => {
         if (!run) return;
         try {
             const A = window.AudioContext || window.webkitAudioContext; if (!A) return;
-            run.audio = run.audio || new A(); const a = run.audio; if (a.state === 'suspended') a.resume().catch(() => {});
+            run.audio = run.audio || window.SFX?.context() || new A(); const a = run.audio; if (a.state === 'suspended') a.resume().catch(() => {});
             freqs.forEach((f, i) => {
                 const o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime + i * len;
                 o.frequency.value = f; g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + len);
-                o.connect(g); g.connect(a.destination); o.start(t0); o.stop(t0 + len + 0.02);
+                o.connect(g); g.connect(window.SFX?.out(a) || a.destination); o.start(t0); o.stop(t0 + len + 0.02);
             });
         } catch (e) { /* the text is always shown */ }
     }
@@ -41,7 +41,7 @@ window.ElevenTenView = (() => {
         if (!run) return;
         const r = run; run = null;
         r.timers.forEach(clearTimeout); r.offs.forEach(off => { try { off(); } catch (e) { /* ignore */ } });
-        if (r.audio) r.audio.close().catch(() => {});
+        if (r.audio && r.audio !== window.SFX?.context()) r.audio.close().catch(() => {});   // never close the shared context
         r.root.remove();
     }
     function begin(host) {

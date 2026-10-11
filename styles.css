@@ -1276,3 +1276,15 @@ input[type=range]::-webkit-slider-thumb:active {
 /* no layout change (line count/height stay identical, so the existing scroll-to-end trigger is never moved) */
 #jayReportWindow.jv-s4 .jv-text { text-align:justify; color:#e26a6a !important; }
 @media (prefers-reduced-motion: reduce) { .jv-s2 .jv-caret, .jv-s3 .jv-caret, .jv-echo.jv-show { animation:none; } .jv-ghost { transition:none; } }
+
+/* sound control (sfx.js): 🔊 in both taskbars opens a small volume panel */
+.sfx-toggle { background:none; border:none; padding:0 2px; margin:0; font-size:11px; line-height:1; cursor:pointer; color:inherit; }
+.sfx-toggle:focus-visible { outline:1px dotted currentColor; }
+.sfx-panel { position:fixed; z-index:200000; display:flex; flex-direction:column; gap:6px; align-items:stretch; width:150px; padding:8px; background:#c0c0c0; color:#000; font:11px sans-serif;
+    border-top:2px solid #fff; border-left:2px solid #fff; border-right:2px solid #404040; border-bottom:2px solid #404040; box-shadow:1px 1px 0 #000; }
+.sfx-panel[hidden] { display:none; }
+.sfx-panel .sfx-head { font-weight:bold; }
+.sfx-panel #sfx-value { align-self:flex-end; font-family:monospace; }
+.sfx-panel label { display:flex; gap:4px; align-items:center; }
+.sfx-panel.sfx-dark { background:#111; color:#ff3333; border-color:#555 #000 #000 #555; font-family:monospace; }
+.sfx-panel.sfx-dark input[type=range] { accent-color:#ff0000; }

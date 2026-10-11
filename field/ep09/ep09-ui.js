@@ -12,7 +12,7 @@ window.FieldEP09UI = (() => {
 
     function mount(root) {
         sig = ''; lastSound = ''; ghostSeen = false;
-        try { const A = window.AudioContext || window.webkitAudioContext; if (A) { audio = audio || new A(); audio.resume().catch(() => {}); } } catch (error) { audio = null; }
+        try { const A = window.AudioContext || window.webkitAudioContext; if (A) { audio = audio || window.SFX?.context() || new A(); audio.resume().catch(() => {}); } } catch (error) { audio = null; }
         root.innerHTML = `<div class="field-hud"><strong id="f9-clock"></strong><span id="f9-battery-hud"></span><span id="f9-rescue"></span></div>
             <div class="field-grid f9-grid"><section class="f9-wrap">
               <div class="f9-phone" id="f9-phone">
@@ -218,7 +218,7 @@ window.FieldEP09UI = (() => {
         try {
             const len = e.kind === 'D' ? T.screamLen : 0.06, buf = audio.createBuffer(1, Math.floor(audio.sampleRate * len), audio.sampleRate), ch = buf.getChannelData(0);
             for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (e.kind === 'D' ? 0.12 * Math.sin(i / 9) : 0.3) * (1 - i / ch.length);
-            const src = audio.createBufferSource(); src.buffer = buf; src.connect(audio.destination); src.start();
+            const src = audio.createBufferSource(); src.buffer = buf; src.connect(window.SFX?.out(audio) || audio.destination); src.start();
         } catch (error) { /* sound is optional; text always carries the signal */ }
     }
 

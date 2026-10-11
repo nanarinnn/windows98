@@ -33,7 +33,7 @@ window.FieldUI = (() => {
     function armAudio() {
         try {
             const Audio = window.AudioContext || window.webkitAudioContext;
-            if (Audio) { audio = audio || new Audio(); audio.resume().catch(() => {}); }
+            if (Audio) { audio = audio || window.SFX?.context() || new Audio(); audio.resume().catch(() => {}); }
         } catch (error) { /* Text signal always remains available. */ }
     }
     function crackle() {
@@ -41,7 +41,7 @@ window.FieldUI = (() => {
         const buffer = audio.createBuffer(1, Math.floor(audio.sampleRate * .25), audio.sampleRate);
         const samples = buffer.getChannelData(0);
         for (let i = 0; i < samples.length; i++) samples[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / samples.length, 3) * .15;
-        const source = audio.createBufferSource(); source.buffer = buffer; source.connect(audio.destination); source.start();
+        const source = audio.createBufferSource(); source.buffer = buffer; source.connect(window.SFX?.out(audio) || audio.destination); source.start();
     }
     function catalog() {
         stopViews();

@@ -6028,7 +6028,7 @@ function closeNewRecruitDocument() {
 
 function playRetroBeep() {
     try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const audioCtx = (window.SFX && SFX.context()) || new (window.AudioContext || window.webkitAudioContext)();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sawtooth';
@@ -6037,7 +6037,7 @@ function playRetroBeep() {
         gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect((window.SFX && SFX.out(audioCtx)) || audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.5);
     } catch (e) {
