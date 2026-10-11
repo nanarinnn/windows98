@@ -2,6 +2,25 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-10-12 — AUTHOR 메모 `[제작자에게.txt]` → `[수신인 미기재.txt]`, 본문 개편
+
+- 목적: 사용자 지시("제작자 말고" → `수신인 미기재`로, 본문은 안 1: 지금 문장을 살리고 수신인을 적지 않은 이유를 덧붙임).
+- 변경 파일: `field/field-author.js`(아이콘 aria-label·아이콘 이름·창 제목·작업 표시줄 제목, `BASE_NOTE`), `notebook.js`(주석), `tests/author_browser_smoke.py`·`tests/classified_browser_smoke.py`(본문·문구), `PROJECT_CONTEXT.md`.
+- 본문: `수신인:` / `발신인:`(빈 칸) → `누군가 이 창을 다시 열어 주었다.` / `받는 사람은 끝내 적지 못했다.` / `이름을 쓰면, 이 기록은 그 사람에게만 닿을 테니까.` → `여기까지 읽어 준 사람에게.` / `영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께`.
+- 보존: AUTHOR 해금 조건·hash·trace, 메모장 DOM/서식, CLASSIFIED와 무관하게 항상 같은 본문, 일반 플레이어 비노출.
+- 검증: `node --check`. author·classified·record_reset 스모크 PASS(새 본문 정확 일치 포함).
+- Git: 미커밋(개발 서버에만 반영).
+
+## 2026-10-12 — 영상 오디오 제거, 합성 사운드(UI 효과음·분위기음), 보안 점검
+
+- 목적: 사용자 지시("원본 영상의 오디오는 삭제", "ui 효과음이랑 분위기음", "효과음은 합성으로", "보안 부분도 확인").
+- 변경 파일: 신규 `sfx.js`; `index.html`(sfx.js 로드, 외부 링크 `rel="noopener noreferrer"` 8개), `styles.css`(볼륨 패널), `app.js`(`playRetroBeep` 공용 컨텍스트/마스터 경유), `field/field-ui.js`·`field/ep09/ep09-ui.js`·`field/field-1110.js`(같은 경유, 11/10은 공용 컨텍스트를 닫지 않음), `vercel.json`(builds에 sfx.js, Permissions-Policy·Cross-Origin-Opener-Policy), `server.js`(같은 헤더), `package-lock.json`(npm audit fix), `tests/darkweb_ui_smoke.py`(닫기 버튼 선택자), tracked mp4 52개(오디오 트랙 제거), `PROJECT_CONTEXT.md`(사운드 섹션).
+- 영상: ffmpeg `-map 0:v:0 -c copy -movflags +faststart` — 영상 스트림은 재인코딩 없이 그대로, 오디오·타임코드 데이터 트랙만 제거. 102.3MB → 97.8MB. 52개 모두 영상 스트림 존재·오디오 0 확인. `play.mp4`(미추적 사용자 파일)는 손대지 않음.
+- 보안 점검 결과: (1) 프로덕션에서 server.js·package.json·.git·*.md·tests·tools·docs 모두 404, HSTS·CSP·nosniff·X-Frame-Options·Referrer-Policy 적용 확인. (2) npm audit 4건(proxy-addr critical: trust proxy 미사용이라 실영향 낮음, qs moderate) → `npm audit fix`로 0건(express 4.x 유지, 개발 서버 전용 의존성). (3) Save Code 가져오기는 Story 바이트·Field id/숫자 whitelist·CLASSIFIED/AUTHOR whitelist라 외부 문자열이 HTML로 삽입되는 경로 없음(Field injuries 문자열은 저장만 되고 렌더링되지 않음). (4) 저장소에 비밀키·토큰 없음. (5) 추가: Permissions-Policy(카메라·마이크·위치·결제·USB·화면 캡처 차단), COOP same-origin, 외부 링크 noopener.
+- 남은 한계(변경 안 함): CSP `script-src 'unsafe-inline'`은 index.html/app.js의 인라인 onclick 때문에 필요(제거하려면 대규모 리팩터링). AUTHOR 판정은 서버 없는 클라이언트 구조라 브라우저 저장소를 고치면 우회 가능(보안 경계가 아닌 이스터에그로 취급). `field/field-dev.js`는 프로덕션에도 배포되지만 devUnlock 호스트(localhost·사설망)에서만 동작.
+- 검증: `node --check`(수정 JS 전부), vercel.json JSON 파싱, `git diff --check`. 브라우저(Playwright)에서 sfx 효과음 11종·분위기 프리셋 11종 오류 없음, 볼륨 패널·음소거·새로고침 후 유지, 토스트/경고 훅, 개발 서버 새 헤더 확인. 전체 스모크 16종 ALL PASS(darkweb_ui는 10-10에 추가된 `◀` 버튼 때문에 닫기 버튼 대신 첫 번째 버튼을 비교하던 낡은 선택자를 `lastElementChild`로 고친 뒤 PASS — 사운드와 무관한 기존 테스트 노후). 실제 청감(소리 크기·느낌)은 사용자 확인 필요.
+- Git: 미커밋(개발 서버에만 반영).
+
 ## 2026-10-11 — 11 / 10 붉은 반복 문구 속도 상향
 
 - 목적: 사용자 지시("붉은색으로 나오는 텍스트는 좀 더 빠르게, 기존은 그대로").

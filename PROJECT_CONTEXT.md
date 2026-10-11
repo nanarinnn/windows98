@@ -273,7 +273,7 @@ EP01(한 장소에서 밤을 버티는 관측형)과 달리 **움직이는 열�
 
 **플레이어 유형은 두 종류뿐이다. 제3의 HIDDEN USER / CLASSIFIED ACCESS USER / 권한 계층은 만들지 않는다.**
 
-1. **NORMAL PLAYER** — 표준 Story, 표준 Field, **PUBLIC CLASSIFIED 발견**. AUTHOR 전용 콘텐츠(`[제작자에게.txt]`, AUTHOR trace, AUTHOR meta 문구)는 접근/노출 불가.
+1. **NORMAL PLAYER** — 표준 Story, 표준 Field, **PUBLIC CLASSIFIED 발견**. AUTHOR 전용 콘텐츠(`[수신인 미기재.txt]`, AUTHOR trace, AUTHOR meta 문구)는 접근/노출 불가.
 2. **AUTHOR** — NORMAL이 할 수 있는 모든 것 + AUTHOR 전용 메타 파일/문구. **CLASSIFIED를 자동 해금하지 않는다**(AUTHOR도 일반 플레이어처럼 발견 조건을 직접 만족해야 한다). 선택된 CLASSIFIED를 발견했을 때만 AUTHOR에게 추가 메타 반응이 생길 수 있다. 관리자/debug/true ending/Story 조건이 아니다.
 
 **PUBLIC CLASSIFIED** = 모두에게 공개된 선택적 히든 발견. 권한 state(`hiddenAccess` 등)는 없고 오직 "발견 조건을 충족했는가"로만 결정한다. 서로 **독립**이며(순차 해금 아님, 01 없이 02 발견 가능, 02 발견이 01을 열지 않음) collectible progression이 아니다. 발견 여부는 EP07 이후 Field unlock, J, 블루스크린, LOOP 02, `finaleSeen`, `jayUnlocked`, 엔딩 어디에도 영향을 주지 않는다(3/3도 true ending 조건 아님).
@@ -293,7 +293,7 @@ EP01(한 장소에서 밤을 버티는 관측형)과 달리 **움직이는 열�
 - **현장 관측 시스템 뒤로가기**(2026-10-10): 창 제목 표시줄 `◀`(`#field-back-list`). 어느 화면(임무·재열람 문서·11/10)에서든 관측 목록으로 돌아간다. 진행 중인 근무는 확인창 후 연결 종료와 같게 중단(EP03~EP06 이어하기 스냅샷 유지).
 - **개발 서버 `?devclear=6`**: devUnlock 호스트(localhost·내부망)에서 EP06 하루를 자동 진행해 클리어 화면(17번 자리 재조사, CLASSIFIED 01)에서 멈춘다. `?devseed=all&devclear=6`으로 함께 쓰면 10/10 생환 + CLASSIFIED 처음 상태에서 6화 완료 시점부터 시작.
 
-**AUTHOR 반응 CLASSIFIED: 없음**(2026-10-10 사용자 지시로 삭제). `[제작자에게.txt]`는 CLASSIFIED 발견과 무관하게 항상 기본 본문("누군가 이 창을 다시 열어 주었다. …지금 이 순간을 너와 함께")만 보여 준다. 이전의 "연결한 건 내가 아니야."(01) / "네가 묻기 전부터, 여기 있었다."(03) 반응 표(`AUTHOR_CLASSIFIED_REACTIONS`)는 소스에서 제거했다.
+**AUTHOR 반응 CLASSIFIED: 없음**(2026-10-10 사용자 지시로 삭제). `[수신인 미기재.txt]`는 CLASSIFIED 발견과 무관하게 항상 기본 본문(빈 `수신인:`/`발신인:` 칸 → "누군가 이 창을 다시 열어 주었다. …지금 이 순간을 너와 함께")만 보여 준다. 이전의 "연결한 건 내가 아니야."(01) / "네가 묻기 전부터, 여기 있었다."(03) 반응 표(`AUTHOR_CLASSIFIED_REACTIONS`)는 소스에서 제거했다.
 
 ## (대체됨) NORMAL / CLASSIFIED / Hidden — 옛 H01~H10 계획
 
@@ -311,13 +311,22 @@ EP01(한 장소에서 밤을 버티는 관측형)과 달리 **움직이는 열�
 
 별도 상태 예는 `authorAccessLevel`, `authorTraces`다. NORMAL / CLASSIFIED / AUTHOR 진행을 서로 구분한다. AUTHOR 콘텐츠는 정식 세계관이나 일반 엔딩을 대체하지 않는다. normalize는 trim → NFKC → UTF-8 → SHA-256이며 대소문자와 내부 공백을 구분한다. 사용자가 제공한 SHA-256 hash를 `AUTHOR_SAVE_HASH`에 적용했다. 실제 secret 평문은 제공받거나 저장하지 않았으며 비교에는 hash만 사용한다. `AuthorRoute.setHashOverride(hash)`는 개발/로컬 검수용 64자리 SHA-256 hex만 세션 메모리에 받으며 새로고침하면 사라진다. 평문 secret을 인수인계 문서나 JS/Git에 기록하지 않는다. 기존 Save Code 입력/정상 가져오기 경로는 보존한다. 브라우저 해시 비교는 프론트엔드 Easter Egg로만 취급한다.
 
-현재 `field/field-author.js`는 일반 script이며 Field 완료 상태를 읽지 않고 `AuthorRoute`를 제공한다. 기존 세이브 코드 [불러오기] UI에서 먼저 비동기 AUTHOR hash 검사를 하고, 불일치/미설정/Web Crypto 실패 시 입력 원문을 기존 GameSave parser에 전달한다. 일반 Save의 덮어쓰기 확인/새로고침/export 동작은 유지한다. AUTHOR 성공은 Story save를 교체하지 않고 입력 UI를 비운 뒤 **아무 문구 없이 사건수사노트 창을 닫는다**(2026-10-10, 이전의 `[UNKNOWN SAVE FORMAT] → … → [RECORD RESTORED]` 연출 제거). 이후 데스크톱에 `[제작자에게.txt]`가 생겨 있다. AUTHOR는 관리자/debug/정답 열람/Field skip/CLASSIFIED·11/10 자동 해금/J 우회 기능이 아니다. HTTPS·localhost에서는 Web Crypto를 쓰고, Web Crypto가 없는 평문 HTTP 내부망 주소(태블릿 개발 서버 확인)에서는 같은 결과의 내장 SHA-256 fallback을 쓴다(2026-10-10).
+현재 `field/field-author.js`는 일반 script이며 Field 완료 상태를 읽지 않고 `AuthorRoute`를 제공한다. 기존 세이브 코드 [불러오기] UI에서 먼저 비동기 AUTHOR hash 검사를 하고, 불일치/미설정/Web Crypto 실패 시 입력 원문을 기존 GameSave parser에 전달한다. 일반 Save의 덮어쓰기 확인/새로고침/export 동작은 유지한다. AUTHOR 성공은 Story save를 교체하지 않고 입력 UI를 비운 뒤 **아무 문구 없이 사건수사노트 창을 닫는다**(2026-10-10, 이전의 `[UNKNOWN SAVE FORMAT] → … → [RECORD RESTORED]` 연출 제거). 이후 데스크톱에 `[수신인 미기재.txt]`가 생겨 있다. AUTHOR는 관리자/debug/정답 열람/Field skip/CLASSIFIED·11/10 자동 해금/J 우회 기능이 아니다. HTTPS·localhost에서는 Web Crypto를 쓰고, Web Crypto가 없는 평문 HTTP 내부망 주소(태블릿 개발 서버 확인)에서는 같은 결과의 내장 SHA-256 fallback을 쓴다(2026-10-10).
 
 AUTHOR 상태는 독립 localStorage 키 `yuyeon98.author.v1`의 `{v:1, unlocked:false, authorAccessLevel:0, authorTraces:[]}`다. 현재 활성 단계는 1이며 trace ID는 `creator-note`, `ep01-observation` 두 개뿐이다. 신규 브라우저/기존 save에 AUTHOR 기록이 없으면 기본 false이며 구 Save의 Story import는 현재 AUTHOR·Field 기록을 삭제하지 않는다. 명시적인 `GameSave.reset()`/UI 기록 초기화는 Story·Field·AUTHOR 전체 진행을 초기화한다. 새 v5 Save Code는 별도 계층을 명시적으로 복원하며 v4 Story byte 형식 자체에는 AUTHOR 내용을 추가하지 않는다. 이 상태와 hash 비교는 사용자 수정이 가능한 frontend easter egg로서 인증/권한 기능이 아니다.
 
-`[제작자에게.txt]`는 기존 `darkwebReadmeWindow`의 메모장 DOM/inline CSS를 복제해 title bar/메뉴/readonly textarea를 재사용한다. 본문은 monospace 12px/normal, line-height 1.6, letter-spacing normal, padding 10px, 내용 영역 margin 2px와 기존 세로 스크롤을 따른다. 이전 안내 머리말은 제거했고, 마지막 문구는 `영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께`이며 앞에 대시는 없다. 앞의 두 문장은 유지한다.
+`[수신인 미기재.txt]`는 기존 `darkwebReadmeWindow`의 메모장 DOM/inline CSS를 복제해 title bar/메뉴/readonly textarea를 재사용한다. 본문은 monospace 12px/normal, line-height 1.6, letter-spacing normal, padding 10px, 내용 영역 margin 2px와 기존 세로 스크롤을 따른다. 2026-10-12 파일명 `제작자에게.txt` → `수신인 미기재.txt`, 본문 개편: 빈 `수신인:` / `발신인:` 칸, `누군가 이 창을 다시 열어 주었다.` / `받는 사람은 끝내 적지 못했다.` / `이름을 쓰면, 이 기록은 그 사람에게만 닿을 테니까.`, 빈 줄, `여기까지 읽어 준 사람에게.` / `영원을 약속하지는 못하겠지만, 지금 이 순간을 너와 함께`(마지막 문구, 앞 대시 없음).
 
-최소 meta 연출은 Darkweb의 `[제작자에게.txt]` 개인 메모(열람 시 첫 trace), AUTHOR 활성 상태에서 EP01 최초 파견의 `[수신 여백]` 한 줄(두 번째 trace)이다. trace는 중복 지급하지 않으며 AUTHOR 없이 모든 기존 콘텐츠를 이용할 수 있다. 기존 J 원문/문서/엔딩을 바꾸지 않고 EP11·11/10·CLASSIFIED·AUTHOR 엔딩은 구현하지 않았다. 메모 창은 본부 창/작업표시줄에 연결하고 본부 연결 종료/셧다운 때 닫는다. 저장 권한 실패는 성공 메시지에 표시하며 그 경우 새로고침 후 보존을 보장하지 않는다.
+최소 meta 연출은 Darkweb의 `[수신인 미기재.txt]` 개인 메모(열람 시 첫 trace), AUTHOR 활성 상태에서 EP01 최초 파견의 `[수신 여백]` 한 줄(두 번째 trace)이다. trace는 중복 지급하지 않으며 AUTHOR 없이 모든 기존 콘텐츠를 이용할 수 있다. 기존 J 원문/문서/엔딩을 바꾸지 않고 EP11·11/10·CLASSIFIED·AUTHOR 엔딩은 구현하지 않았다. 메모 창은 본부 창/작업표시줄에 연결하고 본부 연결 종료/셧다운 때 닫는다. 저장 권한 실패는 성공 메시지에 표시하며 그 경우 새로고침 후 보존을 보장하지 않는다.
+
+## 사운드 (2026-10-12, `sfx.js`)
+
+- 원칙: 음원 파일 없이 Web Audio로 합성한다. 영상(tracked mp4 52개)은 오디오 트랙을 제거했고 `muted` 재생 그대로다. 사운드는 게임 진행·저장·클리어 조건에 영향을 주지 않는다(듣기만 하고 재생만 한다).
+- 구조: `window.SFX` — AudioContext 1개, 마스터 게인(볼륨·음소거, `localStorage` `yuyeon98.sound.v1` = `{ volume, muted }`), 효과 버스, 분위기 버스. 첫 pointerdown/keydown에서 오디오 활성화. 기존 소리(블루스크린 `playRetroBeep`, Field `crackle`, EP09, 11/10)는 `SFX.context()` / `SFX.out(ctx)`로 같은 마스터를 거쳐 음소거가 모두 적용된다(11/10 `stop()`은 공용 컨텍스트를 닫지 않음).
+- 효과음(`SFX.play`): click(버튼·아이콘·onclick 클릭), close(✕·close 계열·11/10 연결 종료), type(터미널 출력 줄), notify(토스트), clue(단서 토스트), classified(`Classified.discover` 신규 발견), error(`showAlert`/`openDarkWebAlert`), message(메신저 상대 말풍선), death/clear(Story: `GameSave` 사망·클리어 합계 증가 감지 / Field: `FieldCore` status dead·cleared), static. 같은 소리는 45ms 안에 겹쳐 울리지 않는다.
+- 분위기음(`SFX.ambient`, 600ms 폴링으로 장소 판별 후 크로스페이드): Darkweb 화면 `hq`(옅은 팬 소음), 가장 위의 CCTV 창 또는 진행 중인 Field 근무의 EP 번호별 프리셋 1~10(바다·지하철·병동 형광등·엘리베이터·계곡·교실·냉장고·워터파크·어두운 방·공장), 11/10 화면은 무음(자체 벨만), Darkweb 밖(일반 데스크톱)은 무음.
+- UI: 데스크톱 작업 표시줄의 기존 🔊 장식과 Darkweb 작업 표시줄 시계 앞 🔊 버튼 → 볼륨 패널(슬라이더·음소거, 바깥 클릭 시 닫힘). 음소거 시 🔇.
+- 배포: `vercel.json` builds에 `sfx.js` 추가(명시 목록이라 빠지면 프로덕션 404). `index.html`에서 `save.js` 다음에 로드.
 
 ## Save 호환성: 기존 데이터 의미 보존
 
@@ -529,4 +538,4 @@ vercel.json
 
 `GameSave.reset()`와 사건수사노트 [기록 초기화]는 Story + Field + AUTHOR 전체 진행 삭제다. 구 Save import의 missing 계층 보존 정책과 구분한다. `FieldSave.reset()`은 진행 중 `FieldCore` 연결/timer를 먼저 종료한 후 `{v:1, cleared:[], unlocked:["EP01"], deaths:{}, records:{}}`를 기존 키에 저장한다. `AuthorRoute.reset()`은 `{v:1, unlocked:false, authorAccessLevel:0, authorTraces:[]}`를 기존 키에 저장하고 listeners를 즉시 호출한다. 설정된 AUTHOR hash/세션 override는 reset으로 바꾸지 않는다.
 
-AUTHOR 아이콘은 DOM 삽입 전부터 display:none이며 unlocked일 때만 표시한다. reset/locked 상태 변경 시 열린 [제작자에게.txt]도 즉시 닫고 작업표시줄을 갱신한다. 새로고침 없이 아이콘/메모가 사라지며 trace는 다시 해금 후 재획득할 수 있다. UI의 기존 전체 삭제 확인과 새로고침은 유지한다. `tests/record_reset_smoke.py`는 실제 UI 초기화 직후(새로고침 전)와 새로고침 후 상태, Web Crypto 재해금, trace 재획득, icon 삽입 당시 숨김, live session 종료와 세 namespace 기본값을 검증한다. 기존 Field suite에서도 실제 생환/사망/CCTV 기록을 초기화하고 reload를 확인한다.
+AUTHOR 아이콘은 DOM 삽입 전부터 display:none이며 unlocked일 때만 표시한다. reset/locked 상태 변경 시 열린 [수신인 미기재.txt]도 즉시 닫고 작업표시줄을 갱신한다. 새로고침 없이 아이콘/메모가 사라지며 trace는 다시 해금 후 재획득할 수 있다. UI의 기존 전체 삭제 확인과 새로고침은 유지한다. `tests/record_reset_smoke.py`는 실제 UI 초기화 직후(새로고침 전)와 새로고침 후 상태, Web Crypto 재해금, trace 재획득, icon 삽입 당시 숨김, live session 종료와 세 namespace 기본값을 검증한다. 기존 Field suite에서도 실제 생환/사망/CCTV 기록을 초기화하고 reload를 확인한다.
