@@ -22,7 +22,9 @@ const SECURITY_HEADERS = {
   ].join('; '),
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
-  'Referrer-Policy': 'strict-origin-when-cross-origin'
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), display-capture=()', // 카메라·마이크·위치 등은 쓰지 않는다
+  'Cross-Origin-Opener-Policy': 'same-origin'
 };
 
 app.use((req, res, next) => {
