@@ -321,7 +321,7 @@ AUTHOR 상태는 독립 localStorage 키 `yuyeon98.author.v1`의 `{v:1, unlocked
 
 ## 사운드 (2026-10-12, `sfx.js`)
 
-- 원칙: 음원 파일 없이 Web Audio로 합성한다. 영상(tracked mp4 52개)은 오디오 트랙을 제거했고 `muted` 재생 그대로다. 사운드는 게임 진행·저장·클리어 조건에 영향을 주지 않는다(듣기만 하고 재생만 한다).
+- 원칙: 음원 파일 없이 Web Audio로 합성한다. 영상(tracked mp4 52개 중 50개)은 오디오 트랙을 제거했고 `muted` 재생 그대로다. 예외: 일반 데스크톱 미디어 플레이어(`#player-video`)의 `catch_short.mp4`(catch catch)·`princess_rule_short.mp4`(공주의 규칙)는 원본 오디오를 유지하며, 🔊 패널의 볼륨·음소거를 따른다(`SFX` `syncMedia`, 2026-10-12 사용자 지시). 사운드는 게임 진행·저장·클리어 조건에 영향을 주지 않는다(듣기만 하고 재생만 한다).
 - 구조: `window.SFX` — AudioContext 1개, 마스터 게인(볼륨·음소거, `localStorage` `yuyeon98.sound.v1` = `{ volume, muted }`), 효과 버스, 분위기 버스. 첫 pointerdown/keydown에서 오디오 활성화. 기존 소리(블루스크린 `playRetroBeep`, Field `crackle`, EP09, 11/10)는 `SFX.context()` / `SFX.out(ctx)`로 같은 마스터를 거쳐 음소거가 모두 적용된다(11/10 `stop()`은 공용 컨텍스트를 닫지 않음).
 - 효과음(`SFX.play`): click(버튼·아이콘·onclick 클릭), close(✕·close 계열·11/10 연결 종료), type(터미널 출력 줄), notify(토스트), clue(단서 토스트), classified(`Classified.discover` 신규 발견), error(`showAlert`/`openDarkWebAlert`), message(메신저 상대 말풍선), death/clear(Story: `GameSave` 사망·클리어 합계 증가 감지 / Field: `FieldCore` status dead·cleared), static. 같은 소리는 45ms 안에 겹쳐 울리지 않는다.
 - 분위기음(`SFX.ambient`, 600ms 폴링으로 장소 판별 후 크로스페이드): Darkweb 화면 `hq`(옅은 팬 소음), 가장 위의 CCTV 창 또는 진행 중인 Field 근무의 EP 번호별 프리셋 1~10(바다·지하철·병동 형광등·엘리베이터·계곡·교실·냉장고·워터파크·어두운 방·공장), 11/10 화면은 무음(자체 벨만), Darkweb 밖(일반 데스크톱)은 무음.
