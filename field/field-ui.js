@@ -81,6 +81,12 @@ window.FieldUI = (() => {
             const btn = document.createElement('button'); btn.id = 'field-dispatch-1110'; btn.textContent = '—';
             btn.onclick = () => { stopViews(); content.replaceChildren(); window.ElevenTen.open(content); };
             row.append(btn); content.append(row);
+            // a cleared 11 / 10 call leaves one more return line under it (no case name, no rule document)
+            if (window.Classified?.eleven()) {
+                const n = window.GameSave?.workerNo?.() || 0;
+                const record = document.createElement('small'); record.id = 'field-1110-record';
+                record.textContent = `생환 기록 · 사건명 — · 작업자 번호 ${n || '미발급'} · 수칙문서 없음`; content.append(record);
+            }
         }
         if (FieldSave.devUnlock) { const dev = document.createElement('p'); dev.textContent = '[개발 모드] 개발 서버(localhost·내부망)에서는 모든 에피소드가 개방됩니다. 저장 기록에는 영향이 없습니다.'; content.append(dev); }
         const note = document.createElement('p'); note.textContent = '근무 기록은 이 브라우저에 별도 저장됩니다. 사건수사노트의 [기록] 탭에서 세이브 코드로 함께 옮길 수 있습니다.'; content.append(note);

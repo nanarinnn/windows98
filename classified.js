@@ -144,10 +144,20 @@ window.Classified = (() => {
     const KEY = 'yuyeon98.classified.v1';
     const ids = () => window.CLASSIFIED_ENTRIES.map(entry => entry.id);   // read live: a later entry only has to be appended
     const listeners = new Set();
-    // + completeAt once every slot is found (11/10 hook); + eleven = { doneAt, acts } once 11 / 10 was watched to the end
+    // + completeAt once every slot is found (11/10 hook); + eleven = { doneAt, stage, log } once the 11 / 10 call was cleared
     const blank = () => ({ v: 1, discovered: [], viewed: [] });
-    const ACTS = ['read', 'pick', 'compare'];   // 문서 열람 / 출처 선택 / 기록 대조: the only things the residual file remembers
+    // 11 / 10 call: the times the player refused each request and hung up; stage = requests refused before hanging up (0-3).
+    // These times are the only things the residual file remembers. An older 11 / 10 record (acts) is dropped: not a clear.
+    const LOG = ['loc', 'date', 'ret'];
     let state = blank(), storageError = false;
+    const time = t => Number.isSafeInteger(t) && t > 0;
+    function elevenOf(e) {
+        if (!e || typeof e !== 'object' || Array.isArray(e) || !time(e.doneAt) || !e.log || typeof e.log !== 'object') return null;
+        if (!Number.isSafeInteger(e.stage) || e.stage < 0 || e.stage > LOG.length || !time(e.log.end)) return null;
+        const log = { end: e.log.end };
+        for (let i = 0; i < e.stage; i++) { if (!time(e.log[LOG[i]])) return null; log[LOG[i]] = e.log[LOG[i]]; }
+        return { doneAt: e.doneAt, stage: e.stage, log };
+    }
     function sanitize(saved) {
         if (!saved || typeof saved !== 'object' || Array.isArray(saved) || saved.v !== 1) return null;
         const list = value => (Array.isArray(value) ? [...new Set(value.filter(id => ids().includes(id)))] : []);
@@ -155,11 +165,8 @@ window.Classified = (() => {
         const clean = { v: 1, discovered, viewed: list(saved.viewed).filter(id => discovered.includes(id)) };
         if (Number.isSafeInteger(saved.completeAt) && saved.completeAt > 0 && discovered.length >= window.CLASSIFIED_TOTAL) clean.completeAt = saved.completeAt;
         const e = saved.eleven;
-        if (clean.completeAt && e && typeof e === 'object' && !Array.isArray(e) && Number.isSafeInteger(e.doneAt) && e.doneAt > 0) {
-            const acts = {};
-            for (const k of ACTS) if (Number.isSafeInteger(e.acts?.[k]) && e.acts[k] > 0) acts[k] = e.acts[k];
-            clean.eleven = { doneAt: e.doneAt, acts };
-        }
+        const eleven = elevenOf(e);
+        if (clean.completeAt && eleven) clean.eleven = eleven;
         return clean;
     }
     try { state = sanitize(JSON.parse(localStorage.getItem(KEY))) || blank(); } catch (error) { storageError = true; }
@@ -205,13 +212,13 @@ window.Classified = (() => {
             const cleared = window.FieldSave ? FieldSave.get().cleared : [];
             return (e.requires || []).every(ep => cleared.includes(ep));
         },
-        // 11 / 10 completion: saved only when the sequence was watched to the end; replays overwrite the same three times.
+        // 11 / 10 clear: saved only when the call was hung up without giving anything; a cleared replay overwrites it.
         eleven: () => (state.eleven ? JSON.parse(JSON.stringify(state.eleven)) : null),
-        completeEleven(acts) {
+        completeEleven(call) {
             if (!state.completeAt) return false;
-            const clean = {};
-            for (const k of ACTS) if (Number.isSafeInteger(acts?.[k]) && acts[k] > 0) clean[k] = acts[k];
-            state.eleven = { doneAt: Date.now(), acts: clean }; persist(); return true;
+            const clean = elevenOf({ doneAt: Date.now(), stage: call?.stage, log: call?.log });
+            if (!clean) return false;
+            state.eleven = clean; persist(); return true;
         },
         markViewed(id) {
             if (!state.discovered.includes(id) || state.viewed.includes(id)) return;

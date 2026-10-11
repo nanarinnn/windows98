@@ -332,63 +332,70 @@ def run():
         page.evaluate("FieldUI.open()"); assert has('field-dispatch-1110'), 'after a Save Code import'
         print('PASS 15 third discovery (any record) is silent: conclusion shown, 3 / 3, no toast; 11 / 10 row only on a later visit, also after reload and Save Code import; Field record untouched')
 
-        # --- 16. 11 / 10 sequence ------------------------------------------------------------------------------------------------------------
-        page.evaluate("Object.assign(ElevenTenView.timing, { loading: 30, blank: 30, flicker: 30, follow: 30, early: 60, idle: 120, residual: 400 })")
-        def e11_to_scene3():
-            click('field-dispatch-1110'); page.wait_for_selector('#e11-loading'); page.wait_for_selector('#e11-open')
-            case = page.locator('#e11-case').inner_text()
-            assert '사건명' in case and '관측 위치' in case and '문서 번호' in case and '11 / 10' in case and 'EP' not in case
-            click('e11-open'); ov = page.locator('#e11-overlay').inner_text(); assert ov in ep03, 'EP03 sentence verbatim'
-            assert page.locator('#e11-screen video').get_attribute('src').endswith('ep8_idle.mp4')
-            click('e11-src'); src = page.locator('#e11-src-list').inner_text(); assert '화면: EP08' in src and '문서: EP03' in src
-            click('e11-next'); ph = page.locator('#e11-phone').inner_text()
-            assert '안전 안내 문자. 특별재난관리본부.' in ph and '귀하는 금일 수신한 통화로 관리 대상자로 분류되었습니다.' in ph and '귀하는 금일 수신한 통화로 관리 대상자로 분류되었습니다.' in ep09
-            assert '[수신음]' in page.locator('#e11-sig').inner_text()
-            click('e11-next2')
-        fresh_field(); e11_to_scene3()
-        page.wait_for_timeout(800); assert '[자동문 알림음]' not in page.locator('#e11-sig').inner_text(), 'EP07 never returned from: no chime'
-        page.evaluate("FieldUI.close()"); assert page.evaluate("ElevenTenView.active()") is False and page.evaluate("Classified.eleven()") is None and not has('e11')
+        # --- 16. 11 / 10 call (수신 기록 0050-0200) ------------------------------------------------------------------------------------------
         clear_ep('EP07')
-        fresh_field(); e11_to_scene3(); page.wait_for_selector('text=[자동문 알림음]')
-        for k in ['screen', 'doc', 'comm']: click('e11-src-' + k)
-        srcs = page.locator('#e11-sources').inner_text(); assert 'EP08' in srcs and 'EP03' in srcs and 'EP09' in srcs
-        click('e11-compare'); click('e11-subject')
-        acts = page.locator('#e11-acts').inner_text()
-        for label in ['문서 열람', '출처 선택', '기록 대조']: assert re.search(label + r'\s+\d{2}:\d{2}:\d{2}', acts), acts
-        assert '127.0.0.1' not in acts and 'Mozilla' not in acts
-        click('e11-next3'); page.wait_for_selector('#e11-toggle')
-        assert page.locator('#e11-mini').get_attribute('aria-hidden') == 'true' and page.locator('#e11-mini button, #e11-mini input, #e11-mini a').count() == 0
-        mini_hidden = lambda: page.evaluate("document.querySelector('#e11-mini .e11-mini-table').hidden")
-        click('e11-toggle'); page.wait_for_timeout(70); assert not mini_hidden(), 'the inner table follows the player'
-        click('e11-toggle'); page.wait_for_timeout(70); assert mini_hidden()
-        click('e11-toggle'); page.wait_for_selector('#e11-next4')
-        assert mini_hidden() and page.locator('#e11-real-table').is_visible(), 'once, the inner table folds before the player'
-        assert page.evaluate("Classified.eleven()") is None
-        click('e11-next4'); assert '관측 위치를 확인할 수 없습니다.' in page.locator('#e11-end').inner_text()
+        page.evaluate("Object.assign(ElevenTenView.timing, { roll: 10, line: 15, ring: 30, fail: 120, repeat: 40, after: 60 })")
+        def e11_answer():
+            click('field-dispatch-1110'); page.wait_for_selector('#e11-boot')
+            head = page.locator('#e11-head').inner_text(); assert '해당 없음' in head and '11 / 10' in head
+            page.wait_for_selector('#e11-answer'); boot_txt = page.locator('#e11-boot').inner_text()
+            assert '귀환 절차 미완료' in boot_txt and '미완료 1건' in boot_txt and '0050-0200' in page.locator('#e11-ring').inner_text()
+            click('e11-answer'); page.wait_for_selector('#e11-c-silent')
+        def e11_refuse_all():
+            click('e11-c-silent'); page.wait_for_selector('#e11-c-nodate'); click('e11-c-nodate')
+            page.wait_for_selector('#e11-c-random'); click('e11-c-random'); page.wait_for_selector('#e11-c-name')
+        def e11_retry():
+            click('e11-retry'); page.wait_for_selector('#e11-answer'); click('e11-answer'); page.wait_for_selector('#e11-c-silent')
+        fresh_field(); e11_answer()
+        for n in ['01', '02', '03']:
+            click('e11-ref-' + n); assert f'[분류 보류 기록 {n}]' in page.locator('#e11-ref-doc').inner_text(), 'the CLASSIFIED records are the rules'
+        page.evaluate("FieldUI.close()"); assert page.evaluate("ElevenTenView.active()") is False and page.evaluate("Classified.eleven()") is None and not has('e11'), 'mid-exit saves nothing'
+        # every way of giving something away fails and saves nothing
+        fresh_field(); e11_answer(); click('e11-c-share'); page.wait_for_selector('#e11-retry')
+        assert '관측 위치가 확인되었습니다.' in page.locator('#e11-log').inner_text() and '제공된 정보: 1건' in page.locator('#e11-given').inner_text()
+        assert page.evaluate("Classified.eleven()") is None and page.locator('#e11-hangup').is_disabled()
+        e11_retry(); click('e11-c-ask')
+        page.wait_for_selector('#e11-c-silent'); assert not has('e11-c-ask') and '확인하려는 겁니다.' in page.locator('#e11-log').inner_text()
+        click('e11-c-silent'); page.wait_for_selector('#e11-day-15'); click('e11-day-15'); page.wait_for_selector('#e11-retry')
+        assert '해당 날짜에 반드시 수술을 받게 됩니다.' in page.locator('#e11-log').inner_text() and '수술 예정' in page.locator('#e11-day-15').inner_text()
+        e11_retry(); click('e11-c-silent'); page.wait_for_selector('#e11-c-nodate'); click('e11-c-nodate'); page.wait_for_selector('#e11-c-go'); click('e11-c-go'); page.wait_for_selector('#e11-retry')
+        assert '이번에는 돌아오지 않으셔도 됩니다.' in page.locator('#e11-log').inner_text()
+        e11_retry(); e11_refuse_all()
+        assert '성함을 말씀해 주십시오.' in page.locator('#e11-log').inner_text() and 'e11-pulse' in page.locator('#e11-hangup').get_attribute('class')
+        click('e11-c-name'); page.wait_for_selector('#e11-retry'); assert '찾았습니다.' in page.locator('#e11-log').inner_text() and page.evaluate("Classified.eleven()") is None
+        # the clear: give nothing, hang up
+        e11_retry(); e11_refuse_all()
+        click('e11-hangup'); page.wait_for_selector('#e11-done')
+        res = page.locator('#e11-result').inner_text()
+        for t in ['제공된 정보: 없음', '요청자의 소속은 확인되지 않았습니다.', '관측 위치를 확인할 수 없습니다.', '기록을 보관합니다.']: assert t in res, t
+        assert '다시 연락드리겠습니다.' in page.locator('#e11-log').inner_text()
         assert page.locator('#field-content', has_text='CLEAR').count() == 0 and page.locator('text=TRUE END').count() == 0
-        e = page.evaluate("Classified.eleven()"); assert e and set(e['acts']) == {'read', 'pick', 'compare'}
-        page.wait_for_selector('#field-dispatch-1110'); assert page.evaluate("ElevenTenView.active()") is False
-        fs = page.evaluate("FieldSave.get()"); assert sorted(fs['cleared']) == ['EP03', 'EP07', 'EP08', 'EP09'] and 'EP11' not in str(fs)
+        e = page.evaluate("Classified.eleven()"); assert e and e['stage'] == 3 and set(e['log']) == {'loc', 'date', 'ret', 'end'}
+        click('e11-done'); page.wait_for_selector('#field-1110-record'); assert '사건명 —' in page.locator('#field-1110-record').inner_text()
+        assert page.evaluate("ElevenTenView.active()") is False
+        fs = page.evaluate("FieldSave.get()"); assert 'EP11' not in str(fs) and len(fs['cleared']) <= 10
         click('field-dispatch-1110'); click('e11-file'); txt = page.locator('#e11-residual-text').inner_text()
-        for line in ['관측 기록: 11 / 10', '관측 위치: 미확인', '화면 출처와 문서 출처는 대조되었습니다.', '관측 대상은 확인되지 않았습니다.', '문서 열람', '출처 선택']:
-            assert line in txt, line
-        assert re.search(r'기록 대조 \d{2}:\d{2}:\d{2}$', txt.strip()), txt
-        click('e11-replay'); page.wait_for_selector('#e11-open'); page.evaluate("FieldUI.close()")
-        assert page.evaluate("Classified.eleven()")['acts'] == e['acts'], 'an aborted replay keeps the saved record'
-        size = len(page.evaluate("localStorage.getItem('yuyeon98.classified.v1')"))
-        page.evaluate("FieldUI.open()"); click('field-dispatch-1110'); click('e11-replay'); page.wait_for_selector('#e11-open')
-        click('e11-open'); click('e11-src'); click('e11-next'); click('e11-next2')
-        for k in ['screen', 'doc', 'comm']: click('e11-src-' + k)
-        click('e11-compare'); click('e11-subject'); click('e11-next3'); page.wait_for_selector('#e11-toggle'); click('e11-toggle'); page.wait_for_selector('#e11-next4'); click('e11-next4')
-        page.wait_for_selector('#field-dispatch-1110')
-        assert abs(len(page.evaluate("localStorage.getItem('yuyeon98.classified.v1')")) - size) <= 2, 'replays never grow the record'
+        for label in ['위치 요청 ── 응답 없음', '날짜 요청 ── 거부', '귀환 지점 ── 거부', '연결 종료 ── 수신자']: assert re.search(r'\d{2}:\d{2}:\d{2}  ' + label, txt), (label, txt)
+        assert '--:--:--  성함 요청 ── 응답 전 연결 종료' in txt and '제공된 정보: 없음' in txt and '127.0.0.1' not in txt and 'Mozilla' not in txt
+        # a failed replay keeps the saved clear; an early hang-up (EP03: at once) is also a clear and overwrites it
+        click('e11-replay'); page.wait_for_selector('#e11-answer'); click('e11-answer'); page.wait_for_selector('#e11-c-share'); click('e11-c-share'); page.wait_for_selector('#e11-retry')
+        assert page.evaluate("Classified.eleven()") == e, 'a failed replay keeps the saved record'
+        e11_retry(); click('e11-hangup'); page.wait_for_selector('#e11-result')
+        assert '바로 연결을 종료했습니다.' in page.locator('#e11-result').inner_text()
+        e0 = page.evaluate("Classified.eleven()"); assert e0['stage'] == 0 and set(e0['log']) == {'end'}
+        page.wait_for_selector('#e11-done'); click('e11-done'); click('field-dispatch-1110'); click('e11-file')
+        assert '--:--:--  위치 요청 ── 응답 전 연결 종료' in page.locator('#e11-residual-text').inner_text()
+        # an older 11 / 10 record (the previous sequence) is not a clear of this call
+        old = page.evaluate("(() => { const s = Classified.get(); s.eleven = { doneAt: 5, acts: { read: 1, pick: 2, compare: 3 } }; return s; })()")
+        assert page.evaluate("(s) => Classified.importProgress(s)", old) and page.evaluate("Classified.eleven()") is None
+        page.evaluate("(s) => Classified.importProgress(s)", {**old, 'eleven': e})
         code = page.evaluate("GameSave.exportCode()"); page.evaluate("FieldUI.close(); Classified.reset()")
-        assert page.evaluate("(c) => GameSave.importCode(c)", code) and page.evaluate("Classified.eleven()") is not None, 'the residual record travels in the Save Code'
-        page.evaluate("FieldUI.open()"); click('field-dispatch-1110'); click('e11-replay'); page.wait_for_selector('#e11-open')
+        assert page.evaluate("(c) => GameSave.importCode(c)", code) and page.evaluate("Classified.eleven()") == e, 'the clear travels in the Save Code'
+        page.evaluate("FieldUI.open()"); click('field-dispatch-1110'); click('e11-replay'); page.wait_for_selector('#e11-boot')
         page.evaluate("GameSave.reset()"); assert page.evaluate("ElevenTenView.active()") is False and not has('e11'), 'reset stops the sequence'
         assert page.evaluate("Classified.eleven()") is None
         page.wait_for_timeout(300); assert not has('e11') and page.evaluate("Classified.eleven()") is None, 'no late timer revives it'
-        print('PASS 16 11 / 10: loading without case data, EP08 screen + EP03 sentence, sources, EP09 overlay, chime only with an EP07 return, observed-subject actions with real time, inert inner window folding once ahead, residual file; mid-exit saves nothing; replay bounded; Save Code; reset stops it')
+        print('PASS 16 11 / 10 call: return-record loading + 0050-0200 ring, CLASSIFIED records as rules, location/date/return point/name each fail without saving, hang-up after refusing (or at once) is the clear with call times, trace line, old record dropped, Save Code, reset stops it')
 
         # --- 17. The dev unlock never satisfies discovery; narrow screen -------------------------------------------------------------------
         page.evaluate("FieldUI.close()")
