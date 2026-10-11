@@ -28,7 +28,7 @@ def run():
                 const baseline = document.createElement('span');
                 baseline.style.cssText = 'display:inline-block;width:0;height:0'; title.append(baseline);
                 const hr = header.getBoundingClientRect(); const parts = {};
-                for (const [key, el] of [['header',header],['title',title],['close',header.querySelector('.window-buttons').firstElementChild]]) {
+                for (const [key, el] of [['header',header],['title',title],['close',header.querySelector('.window-buttons').lastElementChild]]) {
                     const s = getComputedStyle(el); const r = el.getBoundingClientRect();
                     parts[key] = { ...Object.fromEntries(props.map(p => [p,s[p]])), height:r.height, offsetY:r.y-hr.y };
                     if (key === 'close') parts[key].rightInset = hr.right-r.right;
