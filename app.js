@@ -151,7 +151,8 @@ const windowsList = [
     { id: 'profileTxtWindow', title: '📄 프로필.txt' },
     { id: 'calendarWindow', title: '📅 방송일정' },
     { id: 'readmeWindow', title: '📄 readme.txt' },
-    { id: 'imageViewerWindow', title: '🖼️ 이미지 뷰어' }
+    { id: 'imageViewerWindow', title: '🖼️ 이미지 뷰어' },
+    { id: 'minihompyWindow', title: '🏠 미니홈피' }
 ];
 
 // Desktop Window Management
@@ -163,6 +164,11 @@ function openWindow(windowId) {
         el.style.zIndex = highestZIndex;
         if (windowId === 'calendarWindow') {
             renderCalendar();
+        }
+        if (windowId === 'minihompyWindow') {
+            // 미니홈피는 처음 열 때만 불러온다(시작 시 폰트/스크립트 로딩 방지).
+            const frame = document.getElementById('minihompy-frame');
+            if (frame && !frame.getAttribute('src')) frame.setAttribute('src', frame.dataset.src);
         }
         updateTaskbar();
     }
@@ -176,6 +182,10 @@ function closeWindow(windowId) {
         if (windowId === 'mediaPlayerWindow') {
             const video = document.getElementById("player-video");
             if (video) video.pause();
+        }
+        if (windowId === 'minihompyWindow') {
+            const frame = document.getElementById('minihompy-frame');
+            try { frame && frame.contentWindow && frame.contentWindow.minihompyPause && frame.contentWindow.minihompyPause(); } catch (e) {}
         }
         updateTaskbar();
     }
@@ -251,6 +261,8 @@ function makeDraggable(windowEl) {
         if (e.target.closest && e.target.closest('.win-btn, .window-buttons')) return; // 닫기 버튼 누름은 드래그가 아님
 
         let pos1 = 0, pos2 = 0, pos3 = e.clientX, pos4 = e.clientY;
+        // 끄는 도중 포인터가 iframe(미니홈피) 위로 지나가도 이벤트를 잃지 않도록
+        document.body.classList.add('window-dragging');
 
         function elementDrag(e) {
             e.preventDefault();
@@ -264,6 +276,7 @@ function makeDraggable(windowEl) {
         }
 
         function closeDragElement() {
+            document.body.classList.remove('window-dragging');
             document.removeEventListener('pointerup', closeDragElement);
             document.removeEventListener('pointercancel', closeDragElement);
             document.removeEventListener('pointermove', elementDrag);

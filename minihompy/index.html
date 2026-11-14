@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>유연의 미니홈피 ♡ D+1000</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{background:#f3e6f7 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Crect x='3' y='3' width='2' height='2' fill='%23e9c6e6'/%3E%3Crect x='15' y='15' width='2' height='2' fill='%23d9c9f2'/%3E%3C/svg%3E");font-family:'Galmuri11','Galmuri9','Dotum','돋움',monospace;font-size:11px;-webkit-font-smoothing:none;color:#4a4458}
+input,select,button,textarea{font-family:inherit}
+#stage{position:absolute;left:0;top:0;width:1000px;height:560px;transform-origin:0 0}
+
+/* 상단 장식(가랜드) */
+#deco{position:absolute;left:0;top:0;width:1000px;height:44px;z-index:3;pointer-events:none;image-rendering:pixelated}
+
+/* 바인더 */
+.binder{position:absolute;left:10px;top:36px;width:800px;height:514px;background:#c4aee9;border-radius:14px;box-shadow:0 3px 0 #a48bd3,0 6px 14px rgba(110,80,160,.25)}
+.binder:before{content:'';position:absolute;inset:7px;border:2px dashed #fff;border-radius:10px;pointer-events:none}
+.ring{position:absolute;left:214px;width:46px;height:10px;border-radius:5px;background:linear-gradient(#fdfdff,#c9c9d6 60%,#9a9aab);border:1px solid #7d7d90;z-index:2}
+.ring:before,.ring:after{content:'';position:absolute;top:1px;width:6px;height:6px;border-radius:50%;background:#7d6aa8}
+.ring:before{left:2px}.ring:after{right:2px}
+
+/* 왼쪽 패널 */
+.lp{position:absolute;left:20px;top:16px;width:198px;bottom:16px;background:#fff;border:1px solid #b9a3e0;border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.counter{font-size:10px;color:#8a80a0;text-align:center;letter-spacing:.5px}
+.counter b{color:#e8579b}
+.todaybox{display:flex;align-items:center;justify-content:space-between;border:1px solid #e3d7f6;border-radius:3px;padding:2px 4px;font-size:10px;color:#6a4fb3}
+.todaybox select{font-size:10px;border:1px solid #d5c8ee;color:#d2457f;background:#fff}
+.photo{background:linear-gradient(#f7f0ff,#fbe9f3);border:1px solid #e2d7f5;border-radius:4px;display:flex;justify-content:center;align-items:flex-end;height:150px;padding-bottom:4px}
+.intro{line-height:1.6;color:#8e5fd4;text-align:center;font-size:11px}
+.hist{font-size:10px;color:#9a90b0;border-top:1px dotted #d8cfe8;padding-top:4px}
+.hist b{color:#6a4fb3;font-weight:normal}
+.name{font-size:12px;color:#2f2a45}
+.name small{display:block;font-size:10px;color:#e8579b}
+.wave-tabs{display:flex;gap:2px}
+.wave-tabs span{font-size:10px;padding:1px 6px;border:1px solid #c8bde0;border-bottom:none;border-radius:3px 3px 0 0;background:#f4effc;color:#776b93}
+.wave-tabs span.on{background:#fff;color:#6a4fb3;font-weight:bold}
+.wave{width:100%;font-size:10px;padding:1px;border:1px solid #c8bde0;margin-top:-1px}
+
+/* 오른쪽 패널 */
+.rp{position:absolute;left:256px;top:16px;right:20px;bottom:16px;background:#fff;border:1px solid #b9a3e0;border-radius:6px;padding:8px 16px;overflow:hidden}
+.title{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #efe8fa;padding-bottom:4px;margin-bottom:5px;height:26px}
+.title h1{font-size:14px;color:#4b3a7a;font-weight:normal}
+.title .url{font-size:9px;color:#b0a8c2}
+.sec{display:none;height:438px;overflow-y:auto}.sec.on{display:block}
+#home.sec{overflow:hidden}
+.box-t{font-size:11px;color:#8e5fd4;font-weight:bold;margin:2px 0 3px;display:flex;justify-content:space-between;align-items:baseline}
+.box-t small{font-weight:normal;color:#b8a9d6;font-size:9px}
+.top2{display:flex;gap:10px;height:88px}
+.news{flex:1;min-width:0}
+.news ul li{list-style:none;padding:1px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{display:inline-block;font-size:9px;background:#e8579b;color:#fff;padding:0 3px;border-radius:2px;margin-right:4px}
+.tag.v{background:#8e5fd4}
+.boards{width:220px;flex:none;display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;align-content:start;padding-top:18px}
+.boards div{display:flex;justify-content:space-between;border-bottom:1px dotted #e3dcf0;padding:1px 0;cursor:pointer}
+.boards div:hover{color:#8e5fd4}
+.boards span{color:#9a90b0;font-size:10px}
+.boards .new{color:#fff;background:#ff8c3a;font-size:8px;padding:0 2px;border-radius:2px;margin-left:2px}
+.roomwrap{position:relative;height:236px;border:1px solid #e3d7f6;border-radius:3px;background:linear-gradient(#fbf6ff,#f6eefc);display:flex;justify-content:center;overflow:hidden}
+#room{width:496px;height:232px;image-rendering:pixelated;display:block;cursor:pointer}
+.bubble{display:none;position:absolute;transform:translate(-50%,-100%);background:#fff;border:1px solid #8e5fd4;border-radius:6px;padding:2px 7px;font-size:10px;color:#4b3a7a;white-space:nowrap;pointer-events:none;box-shadow:1px 1px 0 #d9c9f2;z-index:2}
+.bubble:after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-4px;border:4px solid transparent;border-top-color:#8e5fd4;border-bottom:none}
+.roombar{display:flex;justify-content:space-between;font-size:10px;color:#9a90b0;margin-top:2px}
+.ilchon{display:flex;gap:4px;margin:2px 0 3px}
+.ilchon input{border:1px solid #d5c8ee;padding:1px 3px;font-size:10px}
+.ilchon-list li{list-style:none;padding:1px 0;font-size:10px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ilchon-list b{color:#8e5fd4;font-weight:normal}
+.btn{border:1px solid #b9a3e0;background:#f4effc;border-radius:3px;padding:1px 6px;cursor:pointer;font-size:10px;color:#4b3a7a}
+.btn.pink{background:#e8579b;border-color:#c93f80;color:#fff}
+
+/* 탭 */
+.tabs{position:absolute;left:806px;top:58px;display:flex;flex-direction:column;gap:3px;z-index:2}
+.tab{width:44px;padding:6px 0;text-align:center;background:#8e5fd4;color:#fff;border-radius:0 6px 6px 0;cursor:pointer;font-size:10px;border:1px solid #6f48b5;border-left:none}
+.tab.on{background:#fff;color:#8e5fd4;font-weight:bold;border-color:#c4aee9}
+
+/* 사이드 패널 */
+.side{position:absolute;left:856px;top:36px;width:136px;display:flex;flex-direction:column;gap:6px}
+.sbox{background:#fff;border:1px solid #c4aee9;border-radius:4px;padding:5px 6px}
+.sbox h3{font-size:10px;color:#fff;background:#8e5fd4;margin:-5px -6px 5px;padding:2px 6px;border-radius:3px 3px 0 0;font-weight:normal}
+.stat{display:flex;align-items:center;gap:4px;font-size:10px;margin:2px 0}
+.stat em{font-style:normal;width:40px;flex:none}
+.stat i{flex:1;height:5px;background:#eee8f6;border-radius:3px;overflow:hidden}
+.stat i b{display:block;height:100%}
+.stat span{width:24px;text-align:right;color:#e8579b;font-size:9px}
+.slink{font-size:10px;color:#6a4fb3;line-height:1.7}
+.slink b{color:#e8579b}
+.player .ttl{overflow:hidden;white-space:nowrap;color:#6a4fb3;font-size:10px;border:1px solid #eee8f6;padding:1px 2px;background:#fbf8ff}
+.player .ttl span{display:inline-block;padding-left:100%;animation:mq 11s linear infinite}
+@keyframes mq{to{transform:translateX(-100%)}}
+.player .ctl{display:flex;gap:3px;justify-content:center;margin-top:4px}
+.player .ctl button{border:1px solid #b9a3e0;background:#f4effc;border-radius:3px;width:26px;height:18px;cursor:pointer;font-size:9px;color:#4b3a7a}
+.sbtns{display:flex;gap:4px}
+.sbtns .btn{flex:1;white-space:nowrap;padding:2px 2px;text-align:center;background:#ffd84a;border-color:#d9b22f;color:#5a4a10}
+#sideDeco{image-rendering:pixelated;align-self:center}
+
+/* 다른 탭 */
+.diary-item{border-bottom:1px dotted #ddd;padding:6px 0;line-height:1.6}
+.diary-item .d{color:#8e5fd4;font-size:10px}
+.album{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.polaroid{background:#fff;border:1px solid #ddd;padding:6px 6px 16px;text-align:center;font-size:10px;color:#888}
+.polaroid canvas{width:144px;height:108px;image-rendering:pixelated;display:block;margin:0 auto 4px;border:1px solid #eee}
+.ptable{width:100%;border-collapse:collapse;font-size:11px}
+.ptable th{width:90px;text-align:left;color:#8e5fd4;font-weight:normal;padding:5px 4px;border-bottom:1px dotted #e3dcf0}
+.ptable td{padding:5px 4px;border-bottom:1px dotted #e3dcf0}
+.jlist li{list-style:none;display:flex;justify-content:space-between;padding:4px 2px;border-bottom:1px dotted #e3dcf0}
+.jlist li.on{color:#e8579b}
+.jlist li{align-items:center}
+.jlist .pl{width:22px;padding:1px 0;margin-right:4px}
+.jlist.rec a{color:#e8579b;text-decoration:none;font-size:10px}
+.jlist.rec a:hover{text-decoration:underline}
+.gb-form{border:1px solid #e3d7f6;background:#fbf8ff;border-radius:4px;padding:6px;display:flex;gap:8px;margin-bottom:8px}
+.gb-form .fields{flex:1;display:flex;flex-direction:column;gap:4px}
+.gb-form input[type=text],.gb-form textarea{border:1px solid #d5c8ee;padding:3px;font-size:11px;width:100%}
+.gb-form textarea{height:44px;resize:none}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:10px}
+.swatch{width:14px;height:14px;border:2px solid #fff;outline:1px solid #c8bde0;cursor:pointer;border-radius:2px}
+.swatch.on{outline:2px solid #e8579b}
+.stk{cursor:pointer;border:1px solid transparent;border-radius:3px;padding:1px;image-rendering:pixelated}
+.stk.on{border-color:#e8579b;background:#fff}
+.err{color:#d23c3c;font-size:10px;min-height:12px}
+.entry{border:1px solid #e3d7f6;border-radius:4px;margin-bottom:6px;overflow:hidden}
+.entry-h{background:#f4effc;padding:3px 8px;font-size:10px;display:flex;justify-content:space-between;color:#776b93}
+.entry-h b{color:#4b3a7a}
+.entry-b{display:flex;gap:10px;padding:6px 8px}
+.entry-b .av{width:72px;flex:none;background:#fbf8ff;border:1px solid #eee8f6;display:flex;justify-content:center;align-items:flex-end;padding:3px 0}
+.entry-b .msg{flex:1;line-height:1.6;white-space:pre-wrap;word-break:break-all;font-size:11px}
+.secret{color:#aaa}
+.reply{margin:0 8px 6px;padding:4px 8px;background:#fbeef6;border-radius:3px;font-size:10px;color:#a03a6c}
+.ownerbar{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin:-2px 0 6px;font-size:10px;color:#8e5fd4}
+.ownerbar #ownerState{margin-right:auto}
+#ownerLogin{gap:4px}
+#ownerLogin input{border:1px solid #d5c8ee;padding:1px 4px;font-size:10px;width:120px}
+.owner-tools{display:flex;gap:4px;align-items:center;margin:0 8px 6px;padding-top:4px;border-top:1px dashed #eee8f6}
+.owner-tools input{flex:1;border:1px solid #d5c8ee;padding:2px 4px;font-size:10px}
+.owner-tools .ostat{font-size:10px;color:#d23c3c}
+.hidden-entry{opacity:.55}
+.tagh{font-style:normal;font-size:9px;background:#9a90b0;color:#fff;padding:0 3px;border-radius:2px}
+</style>
+</head>
+<body>
+<div id="stage">
+<canvas id="deco" width="1000" height="44"></canvas>
+
+<div class="binder">
+  <span class="ring" style="top:60px"></span><span class="ring" style="top:84px"></span>
+  <span class="ring" style="top:236px"></span><span class="ring" style="top:260px"></span>
+  <span class="ring" style="top:412px"></span><span class="ring" style="top:436px"></span>
+
+  <div class="lp">
+    <div class="counter">TODAY <b id="todayCnt">1000</b> | TOTAL <span id="totalCnt">0</span></div>
+    <div class="todaybox">TODAY IS..
+      <select><option>♡ 행복</option><option>☆ 설렘</option><option>♪ 신남</option><option>z 졸림</option></select>
+    </div>
+    <div class="photo"><canvas id="profileMini" width="24" height="35" style="width:96px;height:140px;image-rendering:pixelated"></canvas></div>
+    <div class="intro">데뷔 <span class="dday">1000</span>일 ☆<br>같이 와줘서 고마워요.<br>앞으로도 잘 부탁해 ♡</div>
+    <div class="hist">▸ EDIT ▸ <b>HISTORY</b></div>
+    <div style="flex:1"></div>
+    <div class="name"><span class="ownerName">유연</span><small>yuyeon@windows.98</small></div>
+    <div>
+      <div class="wave-tabs"><span class="on">홈주인</span><span>나</span></div>
+      <select class="wave"><option>★ 일촌 파도타기 ★</option><option>레이미</option></select>
+    </div>
+  </div>
+
+  <div class="rp">
+    <div class="title">
+      <h1><span class="ownerName">유연</span>의 미니홈피 ♡ 1000일 축하 주간</h1>
+      <span class="url">http://minihompy.yuyeon/1000</span>
+    </div>
+
+    <section class="sec on" id="home">
+      <div class="top2">
+        <div class="news">
+          <div class="box-t">Updated news <small>TODAY STORY</small></div>
+          <ul>
+            <li><span class="tag v">방명록</span>1000일 축하글을 남겨주세요 ♡</li>
+            <li><span class="tag">쥬크박스</span>1000일 기념 BGM 업데이트</li>
+            <li><span class="tag v">사진첩</span>도트 사진 6장 업데이트</li>
+          </ul>
+        </div>
+        <div class="boards">
+          <div onclick="openTab('diary')">다이어리 <span>0/0</span></div>
+          <div onclick="openTab('jukebox')">쥬크박스 <span>3/3</span></div>
+          <div onclick="openTab('album')">사진첩 <span>6/6<i class="new">N</i></span></div>
+          <div onclick="openTab('gb')">방명록 <span id="gbCount">0/0</span></div>
+          <div onclick="openTab('profile')">프로필 <span>1/1</span></div>
+          <div>스크랩 <span>1000</span></div>
+        </div>
+      </div>
+      <div class="box-t">Mini Room <small>방송방 · <span id="countdown">D+1000 파티</span></small></div>
+      <div class="roomwrap"><canvas id="room" width="496" height="232"></canvas><div id="roomBubble" class="bubble"></div></div>
+      <div class="roombar"><span>▸ 미니미 <b id="miniCnt" style="color:#8e5fd4;font-weight:normal">1</b> · 미니미를 누르면 말을 걸어요</span><span>▸ 미니룸 꾸미기</span></div>
+      <div class="box-t" style="margin-top:3px">What friends say <small>일촌평</small></div>
+      <div class="ilchon">
+        <input id="ilName" placeholder="닉네임" style="width:70px">
+        <input id="ilMsg" placeholder="일촌평을 남겨주세요" maxlength="40" style="flex:1">
+        <button class="btn" id="ilBtn">확인</button>
+      </div>
+      <ul class="ilchon-list" id="ilList"></ul>
+    </section>
+
+    <section class="sec" id="profile">
+      <div class="box-t">Profile</div>
+      <table class="ptable">
+        <tr><th>이름</th><td>진유연</td></tr>
+        <tr><th>데뷔</th><td><span id="debutTxt2"></span> (D+<span class="dday">1000</span>)</td></tr>
+        <tr><th>생일</th><td>8월 13일</td></tr>
+        <tr><th>MBTI</th><td>ISFJ</td></tr>
+        <tr><th>팬 애칭</th><td>레임단 (또는 레이미)</td></tr>
+        <tr><th>방송 일정</th><td>치지직 · 화, 수, 금, 토 PM 10:00 ~ AM 01:00<br>유연ASMR · 일 PM 11:00 ~ AM 01:00</td></tr>
+      </table>
+    </section>
+
+    <section class="sec" id="diary">
+      <p style="padding:20px 0;text-align:center;color:#9a90b0">아직 다이어리가 없어요.</p>
+    </section>
+
+    <section class="sec" id="jukebox">
+      <div class="box-t">Jukebox <small>직접 만든 8비트 BGM · 음원 파일 없음</small></div>
+      <ul class="jlist" id="jlist"></ul>
+      <div class="box-t" style="margin-top:12px">추천곡 <small>미니홈피 BGM 명곡 · 유튜브에서 듣기</small></div>
+      <ul class="jlist rec" id="recList"></ul>
+    </section>
+
+    <section class="sec" id="album">
+      <div class="album">
+        <div class="polaroid"><canvas class="ph" data-i="0" width="72" height="54"></canvas>첫 방송</div>
+        <div class="polaroid"><canvas class="ph" data-i="1" width="72" height="54"></canvas>노래 방송</div>
+        <div class="polaroid"><canvas class="ph" data-i="2" width="72" height="54"></canvas>생일 0813</div>
+        <div class="polaroid"><canvas class="ph" data-i="3" width="72" height="54"></canvas>유연ASMR</div>
+        <div class="polaroid"><canvas class="ph" data-i="4" width="72" height="54"></canvas>레임단과 함께</div>
+        <div class="polaroid"><canvas class="ph" data-i="5" width="72" height="54"></canvas>D+1000</div>
+      </div>
+    </section>
+
+    <section class="sec" id="gb">
+      <div class="gb-form">
+        <div class="av" style="width:72px;display:flex;justify-content:center;align-items:flex-end;background:#fff;border:1px solid #eee8f6"><canvas id="formMini" width="24" height="35" style="width:48px;height:70px;image-rendering:pixelated"></canvas></div>
+        <div class="fields">
+          <div class="row">
+            <input type="text" id="gbName" placeholder="닉네임" maxlength="12" style="width:110px">
+            <span>머리색</span><span id="swatches" class="row"></span>
+          </div>
+          <textarea id="gbMsg" placeholder="1000일 축하 메시지를 남겨주세요 ♡" maxlength="300"></textarea>
+          <div class="row">
+            <span>스티커</span><span id="stickers" class="row"></span>
+            <label style="margin-left:auto"><input type="checkbox" id="gbSecret"> 비밀글</label>
+            <button class="btn pink" id="gbBtn">등록</button>
+          </div>
+          <div class="err" id="gbErr"></div>
+        </div>
+      </div>
+      <div class="ownerbar"><span id="ownerState"></span><span id="ownerLogin" style="display:none"><input type="password" id="ownerPass" placeholder="주인장 비밀번호" autocomplete="current-password"><button class="btn" id="ownerOk">확인</button></span><button class="btn" id="ownerBtn">🔑 주인장</button></div>
+      <div id="gbList"></div>
+    </section>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab on" data-t="home">홈</div>
+  <div class="tab" data-t="profile">프로필</div>
+  <div class="tab" data-t="diary">다이어리</div>
+  <div class="tab" data-t="jukebox">쥬크박스</div>
+  <div class="tab" data-t="album">사진첩</div>
+  <div class="tab" data-t="gb">방명록</div>
+</div>
+
+<div class="side">
+  <div class="sbox">
+    <h3>YUYEON HOME</h3>
+    <div class="stat"><em>텐션</em><i><b style="width:92%;background:#ff8fb8"></b></i><span>92</span></div>
+    <div class="stat"><em>귀여움</em><i><b style="width:100%;background:#8e5fd4"></b></i><span>MAX</span></div>
+    <div class="stat"><em>노래력</em><i><b style="width:85%;background:#7ec8f0"></b></i><span>85</span></div>
+    <div class="stat"><em>호러내성</em><i><b style="width:12%;background:#9ad66b"></b></i><span>12</span></div>
+    <div class="stat"><em>칼퇴력</em><i><b style="width:70%;background:#ffd84a"></b></i><span>70</span></div>
+    <div class="slink" style="margin-top:4px">일촌 <b>1000</b> · 즐겨찾기 <b>39</b></div>
+    <div class="slink">▸ 1000일 이벤트 진행 중</div>
+  </div>
+  <div class="sbox player">
+    <h3>♬ BGM</h3>
+    <div class="ttl"><span id="bgmTitle">천일의 왈츠 (8bit ver.) ― 유연 데뷔 1000일 기념 BGM</span></div>
+    <div class="ctl"><button id="bgmPrev" title="이전 곡">◀◀</button><button id="bgmBtn" title="재생">▶</button><button id="bgmNext" title="다음 곡">▶▶</button></div>
+  </div>
+  <div class="sbtns"><span class="btn" onclick="openTab('gb')">방명록 쓰기</span><span class="btn" onclick="openTab('home')">HOME</span></div>
+  <canvas id="sideDeco" width="68" height="70" style="width:136px;height:140px"></canvas>
+</div>
+
+<div class="foot" style="position:absolute;left:24px;bottom:-1px;font-size:9px;color:#b0a3c8">since <span id="debutTxt"></span> · D+<span class="dday">1000</span></div>
+</div>
+
+<script>
+const CONFIG={
+  owner:'유연',
+  debut:'2024-02-27',
+  storageKey:'minihompy_yuyeon_gb_v2',
+  // 방명록 Supabase 프로젝트(yuyeon-minihompy). publishable 키는 브라우저 공개용이며 권한은 RLS/GRANT로 제한한다.
+  supabaseUrl:'https://vrbwzinpfmhxnpxswkbm.supabase.co',
+  supabaseKey:'sb_publishable_PPtLvMXWQGGKofrv1ht2qA_RFqGH2lN'
+};
+
+const today=new Date();today.setHours(0,0,0,0);
+const debut=new Date(CONFIG.debut+'T00:00:00');
+const DDAY=Math.floor((today-debut)/86400000)+1;
+const fmt=d=>`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+document.querySelectorAll('.dday').forEach(e=>e.textContent=DDAY);
+document.querySelectorAll('.ownerName').forEach(e=>e.textContent=CONFIG.owner);
+document.getElementById('debutTxt').textContent=fmt(debut);
+document.getElementById('debutTxt2').textContent=fmt(debut);
+document.getElementById('todayCnt').textContent=DDAY;
+// 1000일 카운트다운(데뷔일을 1일째로 센다)
+{const left=1000-DDAY;document.getElementById('countdown').textContent=left>0?`1000일까지 D-${left}`:(left===0?'D+1000 ♡ 오늘!':'D+1000 기념 파티')}
+
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const total=store.get('minihompy_total',123456)+1;store.set('minihompy_total',total);
+document.getElementById('totalCnt').textContent=total.toLocaleString();
+
+/* ===== 미니미 24×35 (싸이 감성: 큰 머리, 점 눈, 같은 계열 진한 색 외곽선) ===== */
+const HALF=[
+"......kkkkkk",
+"....kkHHHHHH",
+"...kHHHHhhHH",
+"..kHHHHhhHHH",
+"..kHHHHHHHHH",
+".kHHHHHHHHHH",
+".kHHHHHHHHHH",
+".kHHHHHHHHHH",
+".kHHHHHHHHHH",
+".kHHHSSHHHHS",
+".kHHoSSSHSSS",
+".kHPoSSSSSSS",
+".kHPoSSEESSS",
+".kHPoSSIeSSS",
+".kHPoBSSSSSS",
+".kPPoSSSSSSM",
+".kPPkoSSSSSS",
+"..kPPkoooooo",
+"...kk...oSSS",
+"........kCCc",
+"....gWWWWwWT",
+"...gWWWWWWwT",
+"...gWWWWWWWT",
+"..gWwgWWWWWT",
+"..gWwgWWWWWT",
+"..gWwgWWWWWT",
+"..oSSgkkkkkk",
+"...oo.kLLLLL",
+"......kLLLLL",
+".....kLLlLLk",
+".....kLLlLLk",
+".....kLLlLLk",
+"....kFFFFFFk",
+"....kFfFFFFk",
+"....kkkkkkk."];
+const SW=24,SH=HALF.length;
+HALF.forEach((r,i)=>{if(r.length!==12)console.error('HALF row',i,r.length)});
+function baseGrid(){return HALF.map(r=>(r+r.split('').reverse().join('')).split(''))}
+const OWNER=baseGrid();
+// 검정 머리 + 보라 안쪽 머리(P), 보라 눈(I), 초커(C/c), 흰 셔츠 + 검정 넥타이(T)
+const VISITOR=baseGrid();
+const BASEPAL={k:'#231a26',H:'#2a2430',h:'#5e5474',P:'#7d4fd0',o:'#c48c70',S:'#ffe7d6',E:'#2a1f3d',I:'#8a5ad6',e:'#ffffff',B:'#ffd0d6',M:'#d98a8a',C:'#1f1d26',c:'#d8d8e6',T:'#1f1d26',g:'#9590ae',W:'#ffffff',w:'#e2e0ee',L:'#2e2c38',l:'#4c4a5c',F:'#1f1d26',f:'#6c6a7a'};
+const HAIRS={'갈색':['#7a4a2a','#a8714a','#cfe3ff','#a9c4ea'],'분홍':['#e67aa6','#f5a8c8','#ffffff','#e2e0ee'],'금발':['#e0b545','#f5d77a','#ffd6e6','#f0b3cb'],'파랑':['#3f6fd1','#7ea0ea','#fff1c2','#e6d49a'],'검정':['#2a2430','#5e5474','#e7f6ec','#bfe0c9']};
+const shade=(hex,k)=>'#'+[1,3,5].map(i=>Math.round(parseInt(hex.substr(i,2),16)*k).toString(16).padStart(2,'0')).join('');
+function drawSprite(ctx,grid,pal,ox=0,oy=0,rows){grid.forEach((row,y)=>{if(rows&&y>=rows)return;row.forEach((v,x)=>{if(pal[v]){ctx.fillStyle=pal[v];ctx.fillRect(ox+x,oy+y,1,1)}})})}
+function visitorPal(hair){const h=HAIRS[hair]||HAIRS['갈색'];return Object.assign({},BASEPAL,{P:h[0],I:'#3a2a2a',E:'#3a2a2a',B:'#ffaebb',C:'#ffe7d6',c:'#ffe7d6',T:h[3],H:h[0],h:h[1],k:shade(h[0],0.45),W:h[2],w:h[3]})}
+function spriteCanvas(grid,pal,w,h){const c=document.createElement('canvas');c.width=SW;c.height=SH;c.style.width=w+'px';c.style.height=h+'px';c.style.imageRendering='pixelated';drawSprite(c.getContext('2d'),grid,pal);return c}
+drawSprite(document.getElementById('profileMini').getContext('2d'),OWNER,BASEPAL);
+
+const STICKERS={
+  heart:["..XX..XX..",".XppXXppX.","XpPPPPPPPX","XPPPPPPPPX","XPPPPPPPPX",".XPPPPPPX.","..XPPPPX..","...XPPX...","....XX...."],
+  cake:["....f.....","...fYf....","....C.....","..XXXXXX..",".XwwwwwwX.",".XmmmmmmX.",".XwwwwwwX.","XXXXXXXXXX"],
+  star:["....X.....","...XYX....","XXXYYYXXX.",".XYYYYYX..","..XYYYX...",".XYYXYYX..",".XX...XX.."],
+  flower:["..XX.XX...",".XppXppX..",".XppYppX..","..XXpXX...","....g.....","...gg.....","....g....."]
+};
+const STKPAL={X:'#2a2233',p:'#ffb3c1',P:'#ff6f9f',f:'#ff9d2e',Y:'#ffd84a',C:'#ffffff',w:'#ffffff',m:'#f6a6c6',g:'#4caf6a'};
+function stickerCanvas(name,scale){const g=STICKERS[name];const c=document.createElement('canvas');c.width=10;c.height=g.length;c.style.width=10*scale+'px';c.style.height=g.length*scale+'px';c.style.imageRendering='pixelated';const x=c.getContext('2d');g.forEach((r,yy)=>r.split('').forEach((v,xx)=>{if(STKPAL[v]){x.fillStyle=STKPAL[v];x.fillRect(xx,yy,1,1)}}));return c}
+
+/* 상단 가랜드 + 바인더에 걸터앉은 주인 미니미 */
+function drawDeco(){
+  const c=document.getElementById('deco'),x=c.getContext('2d');x.clearRect(0,0,1000,44);
+  const flags=['#ff8fb8','#8e5fd4','#ffd84a','#7ec8f0','#9ad66b'];
+  [[30,280],[280,530],[530,790]].forEach(([x0,x1],seg)=>{
+    for(let X=x0;X<=x1;X++){const t=(X-x0)/(x1-x0);const Y=Math.round(6+Math.sin(t*Math.PI)*14);x.fillStyle='#9a8bb8';x.fillRect(X,Y,1,1)}
+    for(let X=x0+10,k=0;X<x1-6;X+=18,k++){const t=(X-x0)/(x1-x0);const Y=Math.round(6+Math.sin(t*Math.PI)*14)+1;x.fillStyle=flags[(k+seg)%flags.length];for(let r=0;r<9;r++){const w=Math.max(0,5-Math.floor(r/2));x.fillRect(X-w,Y+r,w*2+1,1)}}
+  });
+  drawSprite(x,OWNER,BASEPAL,700,44-19,19);
+}
+function drawSideDeco(){
+  const c=document.getElementById('sideDeco'),x=c.getContext('2d');x.clearRect(0,0,68,70);
+  const balloon=(cx,cy,col,hi)=>{for(let dy=-8;dy<=9;dy++)for(let dx=-7;dx<=7;dx++)if(dx*dx/49+dy*dy/(dy<0?64:81)<=1){x.fillStyle=col;x.fillRect(cx+dx,cy+dy,1,1)}x.fillStyle=hi;x.fillRect(cx-4,cy-5,2,2);x.fillRect(cx-3,cy-3,1,1);for(let s=0;s<34;s++){x.fillStyle='#9b8bb0';x.fillRect(cx+Math.round(Math.sin(s/5)),cy+10+s,1,1)}};
+  balloon(16,14,'#8e5fd4','#c9a3f0');balloon(50,18,'#ff8fb8','#ffd3e4');balloon(33,24,'#ffd84a','#fff3b8');
+  x.fillStyle='#d2457f';x.font='8px Galmuri11, monospace';x.textAlign='center';x.fillText('D+1000',34,68);
+}
+
+/* ===== 사진첩: 도트 사진 6장 (72×54, 2배 표시) ===== */
+function drawAlbum(){
+  const scenes=[
+    function firstLive(x,px,rect,disc){ // 첫 방송
+      rect(0,0,72,54,'#efe7fc');for(let i=0;i<72;i+=8)rect(i,0,1,40,'#e3d6f9');rect(0,40,72,14,'#f3d3a2');rect(0,40,72,1,'#dcae78');
+      drawSprite(x,OWNER,BASEPAL,38,8,28);
+      rect(30,34,42,5,'#f8c3d8');rect(30,39,42,2,'#d97aa2');rect(34,41,2,13,'#e58db2');rect(66,41,2,13,'#e58db2');
+      rect(6,14,26,18,'#3d3a50');rect(8,16,22,13,'#008080');rect(8,27,22,2,'#c0c0c0');rect(8,27,4,2,'#008000');rect(10,18,2,2,'#ffffff');rect(10,22,2,2,'#ffffff');rect(16,19,12,7,'#c0c0c0');rect(16,19,12,1,'#000080');rect(17,20,10,5,'#ffffff');
+      rect(17,32,4,2,'#3d3a50');rect(13,34,12,1,'#3d3a50');
+      rect(46,32,12,2,'#ffffff');
+      rect(3,3,19,8,'#e84a5f');x.font='7px Galmuri11, monospace';x.fillStyle='#ffffff';x.textAlign='left';x.textBaseline='top';x.fillText('LIVE',5,3);px(60,5,'#ff6f6f');},
+    function song(x,px,rect,disc){ // 노래 방송
+      rect(0,0,72,54,'#2b2140');disc(36,30,26,(a,b)=>a*a+b*b>500?null:'#4a3a70');disc(36,30,18,'#6a52a0');
+      for(let i=0;i<9;i++)px((i*23)%72,(i*13)%20+2,'#ffd84a');
+      rect(0,46,72,8,'#3d3060');
+      drawSprite(x,OWNER,BASEPAL,30,12);
+      rect(22,26,1,20,'#9a9ab0');rect(19,45,7,1,'#9a9ab0');rect(21,22,3,5,'#9a6ae0');rect(21,22,3,1,'#cfc6e6');
+      const note=(nx,ny,col)=>{rect(nx,ny,1,6,col);rect(nx+1,ny,2,1,col);rect(nx-2,ny+5,3,2,col)};
+      note(10,8,'#ff8fb8');note(56,6,'#7ec8f0');note(62,18,'#ffd84a');note(6,22,'#c9a3f0');},
+    function birthday(x,px,rect,disc){ // 생일 0813
+      rect(0,0,72,54,'#fff3d6');for(let i=0;i<72;i+=6)rect(i,0,3,3,['#ff8fb8','#9a6ae0','#7ec8f0','#9ad66b'][(i/6)%4]);
+      rect(0,44,72,10,'#f3d3a2');
+      drawSprite(x,OWNER,BASEPAL,24,9);
+      for(let r=0;r<8;r++){const w=Math.floor(r/2.4);for(let q=-w;q<=w;q++)px(39+q,2+r,(r+q)%3===0?'#ffd84a':'#ff6fae')}
+      rect(44,40,26,4,'#ffffff');rect(46,30,22,10,'#f6a6c6');rect(46,30,22,2,'#ffffff');rect(50,24,14,6,'#fbc6dc');rect(50,24,14,1,'#ffffff');
+      [52,57,62].forEach(cx=>{rect(cx,19,1,5,'#7ec8f0');px(cx,17,'#ff9d2e');px(cx,18,'#ffd84a')});
+      x.font='7px Galmuri11, monospace';x.fillStyle='#d2457f';x.textAlign='left';x.textBaseline='top';x.fillText('0813',4,5);},
+    function asmr(x,px,rect,disc){ // 유연ASMR
+      rect(0,0,72,54,'#1d1b3a');for(let i=0;i<14;i++)px((i*29)%72,(i*17)%30,'#fff3b0');
+      disc(58,11,7,'#fff3b0');disc(61,9,6,'#1d1b3a');
+      rect(0,38,72,16,'#b294dc');rect(0,38,72,2,'#d9c4f7');for(let i=4;i<72;i+=10)rect(i,42,4,1,'#9d7ad8');
+      drawSprite(x,OWNER,BASEPAL,24,10,28);
+      rect(26,8,20,2,'#9a9ab0');rect(24,10,2,4,'#9a9ab0');rect(46,10,2,4,'#9a9ab0');rect(22,13,4,7,'#9a6ae0');rect(46,13,4,7,'#9a6ae0');rect(23,14,2,5,'#cfa9f5');rect(47,14,2,5,'#cfa9f5');
+      rect(0,36,72,4,'#ffffff');rect(0,36,72,1,'#e2e0ee');
+      x.font='7px Galmuri11, monospace';x.fillStyle='#cfa9f5';x.textAlign='left';x.textBaseline='top';x.fillText('ASMR',4,4);
+      x.fillStyle='#9a90b0';x.fillText('z',52,28);x.fillText('z',57,24);},
+    function together(x,px,rect,disc){ // 레임단과 함께
+      rect(0,0,72,54,'#e6f6ee');rect(0,42,72,12,'#c9f0d6');
+      const heart=(hx,hy,col)=>{[".X.X.","XXXXX",".XXX.","..X.."].forEach((r,yy)=>r.split('').forEach((v,xx)=>{if(v==='X')px(hx+xx,hy+yy,col)}))};
+      heart(4,4,'#ff8fb8');heart(62,6,'#ff8fb8');heart(30,1,'#e8579b');
+      [[-2,'갈색',12],[50,'분홍',12],[10,'금발',17],[38,'파랑',17]].forEach(([vx,hair,vy])=>drawSprite(x,VISITOR,visitorPal(hair),vx,vy));
+      drawSprite(x,OWNER,BASEPAL,24,10);},
+    function d1000(x,px,rect,disc){ // D+1000
+      rect(0,0,72,54,'#ffe6ef');rect(0,44,72,10,'#f3d3a2');
+      [[8,20,'#9a6ae0'],[64,16,'#7ec8f0'],[60,30,'#ff8fb8']].forEach(([bx,by,col])=>{disc(bx,by,4,col,5);px(bx-2,by-3,'#ffffff');rect(bx,by+5,1,14,'#b49ccc')});
+      const D={'1':['.X.','XX.','.X.','.X.','XXX'],'0':['XXX','X.X','X.X','X.X','XXX']};
+      '1000'.split('').forEach((d,i)=>D[d].forEach((r,yy)=>r.split('').forEach((v,xx)=>{if(v==='X'){rect(16+i*10+xx*2,2+yy*2,2,2,'#f5c542');px(16+i*10+xx*2,2+yy*2,'#fff3b0')}})));
+      drawSprite(x,OWNER,BASEPAL,24,15);
+      for(let r=0;r<6;r++){const w=Math.floor(r/2.4);for(let q=-w;q<=w;q++)px(39+q,10+r,(r+q)%3===0?'#ffd84a':'#ff6fae')}
+      for(let i=0;i<24;i++)px((i*31)%72,(i*19)%44+4,['#ff8fb8','#9a6ae0','#ffd84a','#7ec8f0'][i%4]);}
+  ];
+  document.querySelectorAll('canvas.ph').forEach(c=>{const x=c.getContext('2d');x.clearRect(0,0,72,54);
+    const px=(a,b,col)=>{x.fillStyle=col;x.fillRect(a,b,1,1)};
+    const rect=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};
+    const disc=(cx,cy,r,col,ry)=>{ry=ry||r;for(let a=-r;a<=r;a++)for(let b=-ry;b<=ry;b++)if(a*a/(r*r)+b*b/(ry*ry)<=1){const cc=typeof col==='function'?col(a,b):col;if(cc)px(cx+a,cy+b,cc)}};
+    const f=scenes[+c.dataset.i];if(f)f(x,px,rect,disc)});
+}
+
+/* ===== 미니룸: 방송방 + D+1000 파티 (496×232, 1배 도트, 싸이풍 밝은 방) ===== */
+const ROOM_W=496,ROOM_H=232;
+var roomReady=false,roomMinis=[];
+// 곰인형(좌우 대칭 반쪽 10칸)
+const TEDDY_HALF=["..ooo.....",".oLmLooooo",".oLmLLLLLL","..oLLLLLLL",".oLLLLLLLL",".oLLLELLLL",".oLLLLLmmm",".oLLLLmmmN","..oLLLmmmm","...oLLLLLL","..oRRRRRRR",".oLLoLLLLL","oLLLoLLmmm","oLLLoLmmmm",".oLLoLmmmm","..ooLLLLLL",".oLLLLoLLL","oLmmmLoLLL","oLmmmLoooo",".ooooo...."];
+const TEDDY=TEDDY_HALF.map(r=>(r+r.split('').reverse().join('')).split(''));
+const TEDDYPAL={o:'#8a5a34',L:'#d9a066',m:'#f6dcb4',E:'#2a1810',N:'#2a1810',R:'#e84a5f'};
+const DIGIT={'1':['.X.','XX.','.X.','.X.','XXX'],'0':['XXX','X.X','X.X','X.X','XXX']};
+function drawRoom(){
+  const c=document.getElementById('room'),x=c.getContext('2d');x.clearRect(0,0,ROOM_W,ROOM_H);
+  const px=(a,b,col)=>{x.fillStyle=col;x.fillRect(a,b,1,1)};
+  const inside=(pts,X,Y)=>{let k=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){const[xi,yi]=pts[i],[xj,yj]=pts[j];if((yi>Y)!==(yj>Y)&&X<(xj-xi)*(Y-yi)/(yj-yi)+xi)k=!k}return k};
+  const poly=(pts,col)=>{const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const y0=Math.max(0,Math.floor(Math.min(...ys))),y1=Math.min(ROOM_H,Math.ceil(Math.max(...ys)));const x0=Math.max(0,Math.floor(Math.min(...xs))),x1=Math.min(ROOM_W,Math.ceil(Math.max(...xs)));for(let Y=y0;Y<=y1;Y++)for(let X=x0;X<=x1;X++){if(inside(pts,X+0.5,Y+0.5)){const cc=typeof col==='function'?col(X,Y):col;if(cc)px(X,Y,cc)}}};
+  const line=(a,b,col)=>{const[x0,y0]=a,[x1,y1]=b;const n=Math.max(1,Math.abs(x1-x0),Math.abs(y1-y0));for(let i=0;i<=n;i++)px(Math.round(x0+(x1-x0)*i/n),Math.round(y0+(y1-y0)*i/n),col)};
+  const disc=(cx,cy,r,col,ry)=>{ry=ry||r;for(let a=-r;a<=r;a++)for(let b=-ry;b<=ry;b++)if(a*a/(r*r)+b*b/(ry*ry)<=1){const cc=typeof col==='function'?col(a,b):col;if(cc)px(cx+a,cy+b,cc)}};
+  // 방 크기: 뒤 모서리 y 96, 벽 높이 92, 바닥 한 변 105칸(양옆 바닥 끝이 캔버스 안에 들어온다)
+  const CY=96,WH=92,S=105;
+  const P=(u,v,z=0)=>[248-2*u+2*v,CY+u+v-z];
+  const UV=(X,Y)=>{const a=Y-CY,b=(X-248)/2;return[(a-b)/2,(a+b)/2]};
+  const box=(u0,v0,du,dv,h,z,top,fu,fv,edge,hi)=>{const u1=u0+du,v1=v0+dv,zt=z+h;
+    poly([P(u1,v0,z),P(u1,v1,z),P(u1,v1,zt),P(u1,v0,zt)],fu);
+    poly([P(u0,v1,z),P(u1,v1,z),P(u1,v1,zt),P(u0,v1,zt)],fv);
+    poly([P(u0,v0,zt),P(u1,v0,zt),P(u1,v1,zt),P(u0,v1,zt)],top);
+    if(edge){[[P(u0,v0,zt),P(u1,v0,zt)],[P(u0,v0,zt),P(u0,v1,zt)],[P(u1,v0,zt),P(u1,v0,z)],[P(u0,v1,zt),P(u0,v1,z)],[P(u1,v0,z),P(u1,v1,z)],[P(u1,v1,z),P(u0,v1,z)]].forEach(([a,b])=>line(a,b,edge))}
+    if(hi){line(P(u1,v0+1,zt),P(u1,v1,zt),hi);line(P(u1,v1,zt),P(u0+1,v1,zt),hi);line(P(u1,v1,z+1),P(u1,v1,zt),hi)}};
+  const quadU=(u,v0,v1,z0,z1,col)=>poly([P(u,v0,z0),P(u,v1,z0),P(u,v1,z1),P(u,v0,z1)],col);
+  const quadV=(v,u0,u1,z0,z1,col)=>poly([P(u0,v,z0),P(u1,v,z0),P(u1,v,z1),P(u0,v,z1)],col);
+  const LWq=(u0,u1,h0,h1,col)=>poly([P(u0,0,h0),P(u1,0,h0),P(u1,0,h1),P(u0,0,h1)],col);
+  const RWq=(v0,v1,h0,h1,col)=>poly([P(0,v0,h0),P(0,v1,h0),P(0,v1,h1),P(0,v0,h1)],col);
+  const wallText=(v,h,txt,font,col)=>{x.save();x.setTransform(1,0.5,0,1,0,0);x.textAlign='center';x.textBaseline='middle';x.font=font;x.fillStyle=col;const[X,Y]=P(0,v,h);x.fillText(txt,X,Y-0.5*X);x.restore()};
+  let seed=1000;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+
+  // --- 바닥 판 두께(양옆에서 앞으로 내려오는 단면) ---
+  poly([P(S,0),P(S,S),P(S,S,-6),P(S,0,-6)],'#c9935e');
+  poly([P(0,S),P(S,S),P(S,S,-6),P(0,S,-6)],'#b98250');
+  // --- 벽 ---
+  poly([P(0,0,WH),P(S,0,WH),P(S,0,0),P(0,0,0)],(X,Y)=>{const u=(248-X)/2,h=CY+u-Y;if(h<5)return h<1.2?'#e9c9d8':'#ffffff';if(h>WH-3)return'#f7cfe0';const a=Math.floor(u),b=Math.floor(h);const ox=(Math.floor(b/8)%2)*4;return((a+ox)%8<2&&b%8<2)?'#ffffff':'#ffe6ef'});
+  poly([P(0,0,WH),P(0,S,WH),P(0,S,0),P(0,0,0)],(X,Y)=>{const v=(X-248)/2,h=CY+v-Y;if(h<5)return h<1.2?'#c9d3e6':'#ffffff';if(h>WH-3)return'#d7e4f7';const a=Math.floor(v),b=Math.floor(h);return((a%10===5&&b%10===5)||(a%10===5&&(b%10===4||b%10===6))||(b%10===5&&(a%10===4||a%10===6)))?'#d7e4f7':'#eef4fc'});
+  line(P(0,0,0),P(0,0,WH),'#e6d3e6');
+  line(P(S,0,0),P(S,0,WH),'#e9c9d8');line(P(0,S,0),P(0,S,WH),'#c9d3e6');
+  // --- 바닥 ---
+  poly([P(0,0),P(S,0),P(S,S),P(0,S)],(X,Y)=>{const[u,v]=UV(X+0.5,Y+0.5);const row=Math.floor(u/7);if(u%7<0.7)return'#dcae78';if((v+row*17)%34<0.8)return'#e2b582';return row%2?'#f3d3a2':'#efcb96'});
+
+  // --- 왼쪽 벽: 창문, 커튼, 하트 액자, 미니미 포스터 ---
+  LWq(18,56,26,76,'#ffffff');
+  LWq(20,54,28,74,(X,Y)=>{const u=(248-X)/2,h=CY+u-Y;
+    if((h>62&&h<66&&u>25&&u<34)||(h>64&&h<68&&u>28&&u<32)||(h>46&&h<49&&u>42&&u<50))return'#ffffff';
+    return h>62?'#9fd3f5':(h>46?'#b8e0f8':'#d2ecfb')});
+  LWq(36,38,28,74,'#ffffff');LWq(20,54,50,52,'#ffffff');
+  LWq(14,60,76,79,'#f4a9c6');
+  [[12,20],[52,60]].forEach(([a,b])=>LWq(a,b,18,78,(X,Y)=>{const u=(248-X)/2,h=CY+u-Y;if(h<22)return'#f7b7cf';return Math.floor(u-a)%3===0?'#f7b7cf':'#ffd4e4'}));
+  LWq(66,82,46,66,'#ffd84a');LWq(68,80,48,64,'#fff7d6');
+  {const[hx,hy]=P(74,0,56);[".XX.XX.","XPPXPPX","XPPPPPX",".XPPPX.","..XPX..","...X..."].forEach((r,yy)=>r.split('').forEach((v,xx)=>{if(v!=='.')px(hx-3+xx,hy-3+yy+Math.round((3-xx)*0.5),v==='X'?'#d2457f':'#ff8fb8')}))}
+  // 1000일 달력(왼쪽 벽, 벽면에 맞춰 기울여 그린다)
+  {const wallTextL=(u,h,txt,font,col)=>{x.save();x.setTransform(1,-0.5,0,1,0,0);x.textAlign='center';x.textBaseline='middle';x.font=font;x.fillStyle=col;const[X,Y]=P(u,0,h);x.fillText(txt,X,Y+0.5*X);x.restore()};
+    LWq(87,103,38,73,'#d9c4f7');LWq(88,102,39,72,'#ffffff');
+    LWq(88,102,63,72,'#ff8fb8');LWq(88,102,62.4,63,'#e8579b');
+    [91,95,99].forEach(u=>{px(...P(u,0,73),'#7a7a90');px(...P(u,0,74),'#7a7a90')});
+    wallTextL(95,67.5,'D+1000','7px Galmuri11, monospace','#ffffff');
+    for(let r=0;r<4;r++)for(let k=0;k<5;k++){const u0=89+k*2.6,h1=60-r*5;const last=(r===3&&k===3);LWq(u0,u0+1.8,h1-3,h1,last?'#ff6fae':((k===0)?'#ffe0e8':'#efe8f8'))}
+    {const[hx,hy]=P(97.7,0,56);[".X.X.","XXXXX",".XXX.","..X.."].forEach((r,yy)=>r.split('').forEach((v,xx)=>{if(v==='X')px(hx-2+xx,hy-11+yy+Math.round((2-xx)*0.5),'#e8579b')}))}}
+  // --- 오른쪽 벽: D+1000 현수막, 벽시계, 선반+트로피, ON AIR 램프 ---
+  RWq(6,54,52,78,'#c9a3f0');RWq(8,52,54,76,'#ffffff');
+  wallText(30,69,'D+1000','11px Galmuri11, monospace','#d2457f');
+  wallText(30,60,'THANK YOU ♡','8px Galmuri11, monospace','#8e5fd4');
+  RWq(76,100,60,70,'#e8579b');RWq(77,99,61,69,'#ff7eb6');
+  wallText(88,65,'ON AIR','8px Galmuri11, monospace','#ffffff');
+  {const[cx,cy]=P(0,64,72);for(let a=-6;a<=6;a++)for(let b=-6;b<=6;b++){const d=a*a+b*b;if(d<=36)px(cx+a,cy+b+Math.round(a*0.5),d>25?'#7ec8f0':'#ffffff')}line([cx,cy],[cx,cy-4],'#2a2233');line([cx,cy],[cx+3,cy+2],'#2a2233')}
+  box(0,58,5,14,2,46,'#ffffff','#e4e4ee','#f2f2f8','#b9b9cc');
+  {const[tx,ty]=P(2,62,48);disc(tx,ty-7,3,'#f5c542',2);x.fillStyle='#f5c542';x.fillRect(tx-1,ty-5,3,4);x.fillStyle='#c9932a';x.fillRect(tx-3,ty-1,7,2);px(tx-1,ty-8,'#fff3b0')}
+  {const[tx,ty]=P(2,68,48);x.fillStyle='#d9c4f7';x.fillRect(tx-3,ty-8,7,8);x.fillStyle='#9a6ae0';x.fillRect(tx-2,ty-7,5,6);px(tx,ty-4,'#ffffff')}
+  // 가랜드
+  const fl=['#ff8fb8','#9a6ae0','#ffd84a','#7ec8f0','#9ad66b'];
+  const gh=t=>WH-6-Math.round(Math.sin(t/S*Math.PI)*5);
+  for(let u=3,k=0;u<S-6;u+=9,k++){line(P(u,0,gh(u)),P(u+9,0,gh(u+9)),'#b49ccc');poly([P(u+1,0,gh(u)),P(u+6,0,gh(u)),P(u+3.5,0,gh(u)-8)],fl[k%5])}
+  for(let v=3,k=2;v<S-6;v+=9,k++){line(P(0,v,gh(v)),P(0,v+9,gh(v+9)),'#b49ccc');poly([P(0,v+1,gh(v)),P(0,v+6,gh(v)),P(0,v+3.5,gh(v)-8)],fl[k%5])}
+
+  // --- 러그 + 색종이 ---
+  poly([P(24,24),P(76,24),P(76,76),P(24,76)],(X,Y)=>{const[u,v]=UV(X+0.5,Y+0.5);const du=(u-50)/26,dv=(v-50)/26;const d=du*du+dv*dv;if(d>1)return null;if(d>0.84)return'#f39ac0';if(d>0.74)return'#ffffff';if(d>0.68)return'#f9b6d1';return(Math.floor(u)%6===0&&Math.floor(v)%6===0)?'#ffc6dc':'#ffd9e8'});
+  const conf=['#ff8fb8','#9a6ae0','#ffd84a','#7ec8f0','#9ad66b','#ffffff'];
+  for(let i=0;i<70;i++){const u=16+rnd()*84,v=16+rnd()*84;if(u+v>132)continue;const[X,Y]=P(u,v);px(X,Y,conf[i%6]);if(i%3===0)px(X+1,Y,conf[i%6])}
+
+  // --- 뒤쪽 가구 ---
+  // 컬러 칸 책장(왼쪽 벽 앞)
+  box(62,0,26,10,40,0,'#ffffff','#e4e4ee','#f2f2f8','#b9b9cc','#ffffff');
+  const cub=['#ffb3c8','#ffe28a','#a8dcf5','#c9f0a8','#d9c4f7','#ffd0a8'];
+  [[2,12],[14,25],[27,38]].forEach(([z0,z1],s)=>[[64,71],[72,79],[80,87]].forEach(([a,b],k)=>{quadV(10,a,b,z0,z1,cub[(s*3+k)%6]);if((s+k)%2===0)for(let u=a+1;u<b-1;u+=2)quadV(10,u,u+1.4,z0,z0+6+((u*3)%3),['#e8579b','#7ec8f0','#9a6ae0','#ffb347'][(u+s)%4])}));
+  {const[tx,ty]=P(67,5,40);disc(tx,ty-6,4,'#ff8fb8',4);disc(tx,ty-6,2,'#ffd84a');}
+  {const[tx,ty]=P(80,5,40);x.fillStyle='#ffffff';x.fillRect(tx-5,ty-10,10,9);x.fillStyle='#ffb3c8';x.fillRect(tx-4,ty-9,8,7);px(tx-1,ty-6,'#d2457f');px(tx+1,ty-6,'#d2457f');px(tx,ty-5,'#d2457f')}
+  // 화분(왼쪽 벽 끝)
+  box(92,4,10,10,10,0,'#ffb38a','#e88f63','#f5a176','#c06a40','#ffd2b8');
+  {const[lx,ly]=P(97,9,18);[[0,0,7],[-6,-5,5],[6,-6,5],[-2,-11,5],[5,-13,4],[-8,-1,4],[8,0,4]].forEach(([dx,dy,r])=>disc(lx+dx,ly+dy,r,(a,b)=>(a+b)<-r/2?'#a6e08e':(a*a+b*b>=(r-0.6)*(r-0.6)?'#3f9a52':'#5cbf6a')))}
+  // 방송 책상(핑크, 다리) — 오른쪽 벽을 따라
+  box(26,34,2,2,19,0,'#f3a9c6','#e58db2','#ec9dbe','#c96a92');
+  box(26,100,2,2,19,0,'#f3a9c6','#e58db2','#ec9dbe','#c96a92');
+  // 책상 밑 PC 본체
+  box(6,84,14,8,17,0,'#f2f2f8','#d8d8e6','#e6e6f0','#a9a9bd','#ffffff');
+  quadU(20,85.5,90.5,12,13.5,'#b9b9cc');quadU(20,85.5,90.5,9.5,11,'#b9b9cc');
+  quadU(20,85.5,90.5,2,7,(X,Y)=>(X+Y)%2?'#c9c9d9':'#e6e6f0');px(...P(20,89,15),'#7ee07a');
+  box(2,32,28,72,3,19,'#ffe1ec','#f3a9c6','#f8c3d8','#d97aa2','#ffffff');
+  const D=22;
+  // 스피커 2개
+  [[34],[94]].forEach(([v0])=>{box(4,v0,6,5,15,D,'#4a4858','#2e2c38','#3a3846','#1e1c28','#6a6878');
+    [[D+11,2.2],[D+5,3]].forEach(([z,r])=>{const[cx,cy]=P(10,v0+2.5,z);disc(cx,cy,r+1,'#6a6878',r+2);disc(cx,cy,r,'#24222e',r+1);px(cx-1,cy-1,'#8a8898')})});
+  // 메인 모니터(높게) — Windows 98 바탕화면
+  box(8,46,6,10,1,D,'#5a5670','#3d3a50','#4a4660','#2a2838');
+  box(10,50,2,2,10,D+1,'#5a5670','#3d3a50','#4a4660');
+  box(11,37,2,30,24,D+10,'#4a4660','#3d3a50','#2a2838','#1e1c28');
+  quadU(13,38.5,65.5,D+12,D+32.5,'#008080');
+  quadU(13,38.5,65.5,D+12,D+14,'#c0c0c0');quadU(13,38.5,42,D+12,D+14,'#008000');quadU(13,61.5,65.5,D+12,D+14,'#dcdcdc');
+  [[39.5,D+29],[39.5,D+25],[39.5,D+21],[43.5,D+29]].forEach(([v,z])=>{quadU(13,v,v+2,z,z+2,'#ffffff');quadU(13,v+0.4,v+1.6,z+0.4,z+1.2,'#ffd84a')});
+  quadU(13,47,63,D+16,D+29,'#c0c0c0');quadU(13,47,63,D+27.4,D+29,'#000080');quadU(13,47.6,62.4,D+16.6,D+26.6,'#ffffff');
+  [[D+25,10],[D+23,7],[D+21,9],[D+19,5]].forEach(([z,w])=>quadU(13,48.6,48.6+w,z,z+0.7,'#7a7a90'));
+  quadU(13,61.6,62.6,D+27.6,D+28.6,'#c0c0c0');
+  box(11,51,2,4,2,D+34,'#2a2838','#1e1c28','#24222e');{const[cx,cy]=P(13,53,D+35);px(cx,cy,'#7ec8f0')}
+  // 보조 모니터(높게) — 방송 화면
+  box(8,73,6,10,1,D,'#5a5670','#3d3a50','#4a4660','#2a2838');
+  box(10,77,2,2,10,D+1,'#5a5670','#3d3a50','#4a4660');
+  box(11,69,2,24,21,D+10,'#4a4660','#3d3a50','#2a2838','#1e1c28');
+  quadU(13,70.5,91.5,D+12,D+29.5,'#2b2140');
+  quadU(13,70.5,83,D+12,D+29.5,'#ffe6ef');
+  {const[sx,sy]=P(13,77,D+25);x.fillStyle='#2a2430';x.fillRect(sx-4,sy,9,7);x.fillStyle='#ffe7d6';x.fillRect(sx-3,sy+3,7,4);px(sx-1,sy+4,'#3a2a2a');px(sx+2,sy+4,'#3a2a2a');px(sx-2,sy+6,'#ffaebb');px(sx+3,sy+6,'#ffaebb');px(sx+3,sy+1,'#9a6ae0');px(sx+2,sy+2,'#9a6ae0');x.fillStyle='#ffffff';x.fillRect(sx-3,sy+7,7,4)}
+  quadU(13,71.5,75,D+27,D+28.5,'#e84a5f');
+  [[D+27,'#ff8fb8',5],[D+24.5,'#c9a3f0',6],[D+22,'#ffffff',4],[D+19.5,'#7ec8f0',6],[D+17,'#ffd84a',3],[D+14.5,'#ff8fb8',5]].forEach(([z,col,w])=>quadU(13,84.5,84.5+w,z,z+0.8,col));
+  // 키보드, 마우스, 머그컵, 마이크 암
+  box(18,45,5,18,1,D,'#ffffff','#dcdcea','#ebebf4','#b9b9cc');
+  for(let u=18.8;u<22.6;u+=1.3)for(let v=46;v<62;v+=1.6)px(...P(u,v,D+1),'#c9c9d9');
+  box(19,67,3,2,1,D,'#ffffff','#dcdcea','#ebebf4','#b9b9cc');px(...P(20,68,D+1),'#9a6ae0');
+  box(18,88,3,3,4,D,'#ffffff','#e0e0ea','#f0f0f6','#b9b9cc');{const[cx,cy]=P(21,89.5,D+2);px(cx-1,cy,'#b9b9cc');px(cx-2,cy-1,'#b9b9cc');px(cx-1,cy-2,'#b9b9cc');const[tx,ty]=P(19.5,89.5,D+4);px(tx,ty,'#8a5a34');px(tx+1,ty,'#8a5a34')}
+  // 마이크 암 + 스튜디오 마이크(그릴 줄무늬, 쇼크 마운트)
+  line(P(3,102,D+3),P(5,100,D+30),'#7a7a90');line(P(5,100,D+30),P(16,97,D+33),'#7a7a90');line(P(4,101,D+16),P(6,100,D+29),'#9a9ab0');
+  {const[mx,my]=P(17,97,D+31);
+    line([mx,my-1],[mx,my+2],'#7a7a90');
+    const MIC=[".ooooo.","oGgGgGo","oGGGGGo","oGgGgGo","oGGGGGo","oGgGgGo","oRRRRRo","oBBBBBo","oBhBBBo","oBhBBBo",".ooooo.","..oco..","..oco.."];
+    const MP={o:'#3e2a6e',G:'#cfc6e6',g:'#8e85aa',R:'#5a4a80',B:'#9a6ae0',h:'#cfa9f5',c:'#7a7a90'};
+    MIC.forEach((r,yy)=>r.split('').forEach((v,xx)=>{if(MP[v])px(mx-3+xx,my+2+yy,MP[v])}));
+    line([mx-5,my+4],[mx-5,my+11],'#7a7a90');line([mx+5,my+4],[mx+5,my+11],'#7a7a90');line([mx-5,my+11],[mx-3,my+11],'#7a7a90');line([mx+3,my+11],[mx+5,my+11],'#7a7a90');}
+  // 링라이트(바닥 스탠드)
+  {const[lx,ly]=P(34,24,0);line([lx-4,ly+1],[lx,ly-2],'#7a7a90');line([lx+4,ly+1],[lx,ly-2],'#7a7a90');line([lx,ly],[lx,ly-54],'#8a8aa0');disc(lx,ly-61,8,(a,b)=>{const d=a*a+b*b;return d>=42?'#c9c9d9':(d>=26?'#ffffff':null)});disc(lx,ly-61,2,'#3a3846')}
+
+  // --- 앞쪽 물건 + 주인 미니미 ---
+  const items=[];
+  // 바퀴 달린 사무용 의자
+  items.push({y:P(50,70)[1],draw(){
+    const[bx,by]=P(42,62,1);
+    [[6,0],[-6,0],[0,6],[0,-6],[4,-4]].forEach(([du,dv])=>{const[wx,wy]=P(42+du,62+dv,1);line([bx,by],[wx,wy],'#5a5670');x.fillStyle='#2a2838';x.fillRect(wx-1,wy,3,2)});
+    box(41,61,2,2,10,2,'#9a9ab0','#7a7a90','#8a8aa0');
+    box(36,56,12,12,3,12,'#e84a5f','#c0304a','#d63c55','#9a2036','#ff8a9a');
+    box(38,55,8,1.5,5,15,'#5a5670','#3d3a50','#4a4660');box(38,67.5,8,1.5,5,15,'#5a5670','#3d3a50','#4a4660');
+    box(48,57,2.5,10,20,14,'#e84a5f','#c0304a','#d63c55','#9a2036','#ff8a9a');
+    quadU(50.5,60.5,63.5,20,31,'#ffffff');quadU(50.5,61.2,62.8,22,29,'#ffb3c8');}});
+  // 3단 케이크 테이블
+  items.push({y:P(88,38)[1],draw(){
+    box(70,22,18,16,12,0,'#ffffff','#efe6f7','#f7f1fb','#c9b8e0','#ffffff');
+    quadU(88,22,38,3,12,(X,Y)=>((X+Y)%6<3)?'#ffd9e8':'#ffffff');
+    box(73,24,12,12,6,12,'#fff3f8','#f6a6c6','#fbc6dc','#d9709f','#ffffff');
+    box(75,26,8,8,5,18,'#fff3f8','#c9a3f0','#dcc4f7','#8e5fd4','#ffffff');
+    box(77,28,4,4,4,23,'#fff3f8','#ffd84a','#ffe58a','#c9932a','#ffffff');
+    quadU(85,24,36,16,17,'#e8579b');quadU(83,26,34,21,22,'#ffffff');
+    {const[cx,cy]=P(79,30,27);x.fillStyle='#7ec8f0';x.fillRect(cx,cy-5,1,5);x.fillStyle='#ff9d2e';x.fillRect(cx,cy-7,1,2);x.fillStyle='#ffd84a';x.fillRect(cx,cy-6,1,1)}
+    {const[cx,cy]=P(83,32,13);x.font='7px Galmuri11, monospace';x.fillStyle='#d2457f';x.textAlign='center';x.fillText('1000',cx+6,cy+3)}}});
+  // 선물 더미(왼쪽 앞)
+  items.push({y:P(102,26)[1],draw(){
+    box(90,14,10,10,9,0,'#a8dcf5','#6fb8e0','#8ccbec','#3b7fa8','#ffffff');quadU(100,18.5,19.5,0,9,'#ffffff');quadV(24,94.5,95.5,0,9,'#ffffff');
+    box(92,16,6,6,6,9,'#ffe28a','#e0b84a','#f0cc66','#a8861a','#ffffff');quadU(98,18.5,19.5,9,15,'#e8579b');
+    box(92,28,7,7,7,0,'#ffb3c8','#e8799f','#f497b8','#c0507a','#ffffff');quadU(99,31,32,0,7,'#9a6ae0');}});
+  // 빈백 + 곰인형(러그 앞)
+  items.push({y:P(78,62)[1],draw(){
+    const[bx,by]=P(76,58,0);disc(bx,by-6,14,(a,b)=>b<-3&&a<-3?'#d9c4f7':(a*a/196+b*b/49>0.85?'#8e5fd4':'#b294dc'),7);
+    drawSprite(x,TEDDY,TEDDYPAL,bx-10,by-30);}});
+  // 축하 화환(오른쪽 앞)
+  items.push({y:P(34,98)[1],draw(){
+    const[fx,fy]=P(32,96,0);line([fx-8,fy],[fx,fy-34],'#b49ccc');line([fx+8,fy],[fx,fy-34],'#b49ccc');line([fx,fy],[fx,fy-34],'#b49ccc');
+    disc(fx,fy-48,14,(a,b)=>{const d=a*a+b*b;if(d<49)return null;const k=(Math.floor(Math.atan2(b,a)*3)+7)%3;return['#ff8fb8','#ffffff','#ffd84a'][k]});
+    disc(fx,fy-48,7,(a,b)=>a*a+b*b>=36?'#5cbf6a':null);
+    x.fillStyle='#ffffff';x.fillRect(fx-2,fy-40,4,22);x.fillStyle='#e8579b';x.fillRect(fx-1,fy-39,2,20);}});
+  // 1000 숫자 풍선(창문 앞)
+  items.push({y:P(42,12)[1],draw(){
+    const[wx,wy]=P(42,12,0);
+    '1000'.split('').forEach((d,i)=>{const ox=wx-36+i*17,oy=wy-84+(i%2)*4;
+      DIGIT[d].forEach((r,yy)=>r.split('').forEach((v,xx)=>{if(v==='X'){x.fillStyle='#c9932a';x.fillRect(ox+xx*4-1,oy+yy*4-1,6,6)}}));
+      DIGIT[d].forEach((r,yy)=>r.split('').forEach((v,xx)=>{if(v==='X'){x.fillStyle='#f5c542';x.fillRect(ox+xx*4,oy+yy*4,4,4);px(ox+xx*4,oy+yy*4,'#fff3b0')}}));
+      line([ox+6,oy+21],[wx,wy-2],'#d8c8a8');});
+    box(41,11,3,3,3,0,'#9a6ae0','#7a4ac0','#8a5ad0');}});
+  // 하트 쿠션(러그 위)
+  items.push({y:P(70,52)[1],draw(){
+    const[hx,hy]=P(68,48,0);[".XX.XX.","XPPXPPX","XPPPPPX",".XPPPX.","..XPX.."].forEach((r,yy)=>r.split('').forEach((v,xx)=>{if(v!=='.'){x.fillStyle=v==='X'?'#d2457f':'#ff8fb8';x.fillRect(hx-7+xx*2,hy-10+yy*2,2,2)}}));}});
+  // 주인 미니미(러그 가운데)
+  roomMinis=[];
+  {const[X,Y]=P(50,48);items.push({y:Y,draw(){
+    disc(X,Y,8,'rgba(150,110,80,.25)',2);
+    drawSprite(x,OWNER,BASEPAL,X-12,Y-SH+1);
+    for(let r=0;r<8;r++){const w=Math.floor(r/2.4);for(let q=-w;q<=w;q++)px(X+3+q,Y-SH-6+r,(r+q)%3===0?'#ffd84a':'#ff6fae')}px(X+3,Y-SH-7,'#ffffff');
+    roomMinis.push({x:X-12,y:Y-SH,w:24,h:SH,cx:X,top:Y-SH-8,info:{owner:true}});}})}
+  // 풍선 다발
+  items.push({y:P(16,22)[1]+10,draw(){
+    const bal=(cx,cy,col,hi)=>{disc(cx,cy,7,col,8);px(cx-4,cy-5,hi);px(cx-3,cy-5,hi);px(cx-4,cy-4,hi);};
+    const[fx,fy]=P(16,22,0);
+    [[fx-12,fy-74,'#9a6ae0','#cfa9f5'],[fx+4,fy-82,'#ff8fb8','#ffd3e4'],[fx+14,fy-68,'#ffd84a','#fff3b8'],[fx-2,fy-64,'#7ec8f0','#d8f0ff']].forEach(([bx,by,col,hi])=>{line([bx,by+9],[fx,fy-2],'#b49ccc');bal(bx,by,col,hi)});
+    box(15,21,2,2,2,0,'#9a6ae0','#7a4ac0','#8a5ad0');}});
+  items.sort((a,b)=>a.y-b.y).forEach(it=>it.draw());
+  document.getElementById('miniCnt').textContent=1;
+}
+
+/* 주인 미니미 말풍선: 클릭하면 다음 말, 가만히 두면 차례로 */
+const OWNER_LINES=()=>{const lines=['와줘서 고마워 ♡','1000일 같이 축하해줘!','방명록에 한마디 남겨줘~','오늘 방송도 놀러와 ☆'];const last=(typeof gbEntries!=='undefined'?gbEntries:[]).find(e=>!e.secret&&!e.hidden);if(last)lines.push(`${last.nickname}님 축하 고마워요!`);return lines};
+let bubbleIdx=0,bubbleTimer=null;
+function showBubble(){
+  const m=roomMinis[0];const b=document.getElementById('roomBubble');const c=document.getElementById('room');if(!m||!b)return;
+  const lines=OWNER_LINES();b.textContent=lines[bubbleIdx%lines.length];b.style.display='block';
+  b.style.left=(c.offsetLeft+m.cx)+'px';b.style.top=(c.offsetTop+m.top)+'px';
+}
+function startBubbles(){clearInterval(bubbleTimer);bubbleIdx=0;showBubble();bubbleTimer=setInterval(()=>{bubbleIdx++;showBubble()},3500)}
+document.getElementById('room').addEventListener('click',ev=>{
+  const c=ev.currentTarget,r=c.getBoundingClientRect();const X=(ev.clientX-r.left)*ROOM_W/r.width,Y=(ev.clientY-r.top)*ROOM_H/r.height;
+  const m=roomMinis[0];if(m&&X>=m.x-4&&X<m.x+m.w+4&&Y>=m.y-8&&Y<m.y+m.h){bubbleIdx++;showBubble();clearInterval(bubbleTimer);bubbleTimer=setInterval(()=>{bubbleIdx++;showBubble()},3500)}
+});
+function refreshRoom(){if(roomReady){drawRoom();startBubbles()}}
+function drawAll(){drawDeco();drawSideDeco();drawAlbum();if(roomReady)drawRoom()}
+if(document.fonts&&document.fonts.load){document.fonts.load('10px Galmuri11').then(()=>{drawAll();if(roomReady)startBubbles()},()=>{})}
+
+const IL_KEY=CONFIG.storageKey+'_ilchon';
+const IL_DEFAULT=[['레이미','팬1호','1000일 축하해 ♡'],['레이미2','팬2호','퍼가요~ ♡']];
+function renderIl(){const list=store.get(IL_KEY,IL_DEFAULT);document.getElementById('ilList').innerHTML=list.slice(0,2).map(([n,rel,m])=>`<li>· ${esc(m)} <b>(${esc(n)}${rel?' / '+esc(rel):''})</b></li>`).join('')}
+document.getElementById('ilBtn').onclick=()=>{const n=document.getElementById('ilName').value.trim(),m=document.getElementById('ilMsg').value.trim();if(!n||!m)return;const list=store.get(IL_KEY,IL_DEFAULT);list.unshift([n,'',m]);store.set(IL_KEY,list.slice(0,20));document.getElementById('ilMsg').value='';renderIl()};
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+/* ===== 방명록: Supabase(yuyeon-minihompy) 공유 저장 =====
+   방문자: 공개 뷰 읽기(숨긴 글 제외, 비밀글 내용 비움) + 정해진 칸 INSERT.
+   주인장 모드: 비밀번호를 Supabase 함수가 확인한 뒤 전체 글(비밀글 포함) 보기, 답글, 숨김. */
+const GB_API=CONFIG.supabaseUrl+'/rest/v1/';
+const GB_HEAD={apikey:CONFIG.supabaseKey};
+let gbEntries=[],gbState='loading',ownerPass='';
+try{ownerPass=sessionStorage.getItem('minihompy_owner')||''}catch(e){}
+const rpc=(fn,body)=>fetch(GB_API+'rpc/'+fn,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},GB_HEAD),body:JSON.stringify(body)});
+function setOwner(p){ownerPass=p;try{p?sessionStorage.setItem('minihompy_owner',p):sessionStorage.removeItem('minihompy_owner')}catch(e){}renderOwnerBar()}
+async function loadGb(){
+  try{
+    if(ownerPass){
+      const r=await rpc('minihompy_owner_list',{p:ownerPass});
+      if(r.ok){gbEntries=await r.json();gbState='ok';renderGb();return}
+      setOwner('');
+    }
+    const r=await fetch(GB_API+'minihompy_guestbook_public?select=*&order=created_at.desc&limit=300',{headers:GB_HEAD});
+    if(!r.ok)throw new Error(r.status);
+    gbEntries=await r.json();gbState='ok';
+  }catch(e){gbState='error'}
+  renderGb();
+}
+function renderOwnerBar(){
+  document.getElementById('ownerState').textContent=ownerPass?'🔑 주인장 모드 · 비밀글이 보이고 답글을 달 수 있어요':'';
+  document.getElementById('ownerBtn').textContent=ownerPass?'주인장 모드 끄기':'🔑 주인장';
+  document.getElementById('ownerLogin').style.display='none';
+}
+function renderGb(){
+  const wrap=document.getElementById('gbList');wrap.innerHTML='';const all=gbEntries;
+  const note=t=>wrap.innerHTML=`<p style="padding:20px 0;text-align:center;color:#9a90b0">${t}</p>`;
+  if(gbState==='loading')note('방명록을 불러오는 중이에요…');
+  else if(gbState==='error')note('방명록을 불러오지 못했어요. 잠시 후 다시 열어 주세요.');
+  else if(!all.length)note('아직 방명록이 없어요. 1000일 첫 축하글을 남겨주세요 ♡');
+  const shown=all.filter(e=>!e.hidden);
+  const isToday=e=>fmt(new Date(e.created_at))===fmt(today);
+  document.getElementById('gbCount').innerHTML=`${shown.length}/${shown.length}${shown.some(isToday)?'<i class="new">N</i>':''}`;
+  all.forEach((e,i)=>{
+    const d=document.createElement('div');d.className='entry'+(e.hidden?' hidden-entry':'');
+    d.innerHTML=`<div class="entry-h"><span>No.${all.length-i} <b>${esc(e.nickname)}</b>${e.hidden?' <i class="tagh">숨김</i>':''}</span><span>${esc(fmt(new Date(e.created_at)))}</span></div><div class="entry-b"><div class="av"></div><div class="msg ${e.secret?'secret':''}"></div></div>${e.reply?`<div class="reply">└ ${esc(CONFIG.owner)} : ${esc(e.reply)}</div>`:''}`;
+    d.querySelector('.av').appendChild(spriteCanvas(VISITOR,visitorPal(e.hair),48,70));
+    const m=d.querySelector('.msg');
+    if(e.secret&&!ownerPass){m.textContent='🔒 비밀글입니다. (주인장만 볼 수 있어요)'}
+    else{m.textContent=(e.secret?'🔒 ':'')+e.message;}
+    if(e.sticker&&(!e.secret||ownerPass)&&STICKERS[e.sticker]){const s=stickerCanvas(e.sticker,2);s.style.marginLeft='6px';s.style.verticalAlign='middle';m.appendChild(s)}
+    if(ownerPass){
+      const box=document.createElement('div');box.className='owner-tools';
+      box.innerHTML=`<input type="text" maxlength="300" placeholder="답글을 입력하세요 (비우고 저장하면 삭제)"><button class="btn pink">답글 저장</button><button class="btn">${e.hidden?'다시 보이기':'숨기기'}</button><span class="ostat"></span>`;
+      const [inp,save,hide]=box.querySelectorAll('input,button');const stat=box.querySelector('.ostat');inp.value=e.reply||'';
+      save.onclick=async()=>{stat.textContent='저장 중…';const r=await rpc('minihompy_set_reply',{p:ownerPass,entry_id:e.id,reply_text:inp.value});stat.textContent=r.ok?'':'저장하지 못했어요';if(r.ok)loadGb()};
+      hide.onclick=async()=>{stat.textContent='처리 중…';const r=await rpc('minihompy_set_hidden',{p:ownerPass,entry_id:e.id,is_hidden:!e.hidden});stat.textContent=r.ok?'':'처리하지 못했어요';if(r.ok)loadGb()};
+      d.appendChild(box);
+    }
+    wrap.appendChild(d);
+  });
+}
+document.getElementById('ownerBtn').onclick=()=>{
+  if(ownerPass){setOwner('');loadGb();return}
+  const l=document.getElementById('ownerLogin');l.style.display=l.style.display==='none'?'inline-flex':'none';document.getElementById('ownerPass').focus();
+};
+async function ownerLogin(){
+  const inp=document.getElementById('ownerPass'),stat=document.getElementById('ownerState');const p=inp.value;if(!p)return;
+  stat.textContent='확인 중…';
+  const r=await rpc('minihompy_owner_list',{p});
+  if(r.ok){inp.value='';setOwner(p);gbEntries=await r.json();gbState='ok';renderGb()}
+  else{stat.textContent='비밀번호가 맞지 않아요.'}
+}
+document.getElementById('ownerOk').onclick=ownerLogin;
+document.getElementById('ownerPass').addEventListener('keydown',ev=>{if(ev.key==='Enter')ownerLogin()});
+let selHair='갈색',selStk='heart';
+const sw=document.getElementById('swatches');
+Object.keys(HAIRS).forEach(k=>{const s=document.createElement('span');s.className='swatch'+(k===selHair?' on':'');s.style.background=HAIRS[k][0];s.title=k;s.onclick=()=>{selHair=k;sw.querySelectorAll('.swatch').forEach(z=>z.classList.toggle('on',z===s));drawForm()};sw.appendChild(s)});
+const st=document.getElementById('stickers');
+Object.keys(STICKERS).forEach(k=>{const c=stickerCanvas(k,2);c.className='stk'+(k===selStk?' on':'');c.onclick=()=>{selStk=k;st.querySelectorAll('.stk').forEach(z=>z.classList.toggle('on',z===c))};st.appendChild(c)});
+function drawForm(){const c=document.getElementById('formMini'),x=c.getContext('2d');x.clearRect(0,0,SW,SH);drawSprite(x,VISITOR,visitorPal(selHair))}
+drawForm();
+const err=document.getElementById('gbErr');
+['gbName','gbMsg'].forEach(id=>document.getElementById(id).addEventListener('input',()=>err.textContent=''));
+const GB_COOLDOWN=15000; // 같은 브라우저에서 15초에 한 번만 등록(도배 방지)
+document.getElementById('gbBtn').onclick=async()=>{
+  const btn=document.getElementById('gbBtn');
+  const name=document.getElementById('gbName').value.trim(),msg=document.getElementById('gbMsg').value.trim(),secret=document.getElementById('gbSecret').checked;
+  if(!name){err.textContent='닉네임을 입력해 주세요.';return}
+  if(!msg){err.textContent='축하 메시지를 입력해 주세요.';return}
+  const wait=GB_COOLDOWN-(Date.now()-store.get('minihompy_gb_last',0));
+  if(wait>0){err.textContent=`방금 글을 등록했어요. ${Math.ceil(wait/1000)}초 뒤에 다시 등록할 수 있어요.`;return}
+  btn.disabled=true;err.textContent='등록 중…';
+  try{
+    const r=await fetch(GB_API+'minihompy_guestbook',{method:'POST',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},GB_HEAD),body:JSON.stringify({nickname:name.slice(0,12),message:msg.slice(0,300),hair:selHair,sticker:selStk,secret})});
+    if(!r.ok)throw new Error(r.status);
+    store.set('minihompy_gb_last',Date.now());
+    document.getElementById('gbMsg').value='';document.getElementById('gbSecret').checked=false;err.textContent='';
+    await loadGb();refreshRoom();
+  }catch(e){err.textContent='등록하지 못했어요. 잠시 후 다시 시도해 주세요.'}
+  btn.disabled=false;
+};
+renderOwnerBar();
+renderIl();renderGb();roomReady=true;drawAll();startBubbles();loadGb().then(()=>refreshRoom());
+
+function openTab(t){if(t==='gb'&&typeof loadGb==='function')loadGb();document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.dataset.t===t));document.querySelectorAll('.sec').forEach(e=>e.classList.toggle('on',e.id===t))}
+document.querySelectorAll('.tab').forEach(e=>e.onclick=()=>openTab(e.dataset.t));
+
+/* ===== 쥬크박스: 직접 만든 8비트 곡 3곡 (음원 파일 없음) ===== */
+// 음표: 'C5' 음, '-' 앞 음 길게, 'R' 쉼표
+const nf=n=>{const m=/^([A-G])(#?)(\d)$/.exec(n);if(!m)return 0;const semi={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]]+(m[2]?1:0);return 440*Math.pow(2,((+m[3]+1)*12+semi-69)/12)};
+const TRACKS=[
+  {title:'천일의 왈츠 (8bit ver.)',desc:'D+1000 기념 메인 테마',step:0.22,
+    lead:['E5','R','C5','D5','E5','R','G4','R','A4','C5','B4','A4','G4','-','-','R','F4','A4','C5','R','D5','C5','B4','A4','G4','E4','G4','C5','C5','-','-','R'],
+    bass:['C3','G3','C3','G3','A3','E3','A3','E3','F3','C4','F3','C4','G3','D4','G3','D4'],bassEvery:2},
+  {title:'보라빛 새벽 (lo-fi ballad)',desc:'새벽 방송 끝나고 듣는 느린 곡',step:0.32,
+    lead:['A4','-','C5','-','E5','-','D5','C5','B4','-','-','G4','A4','B4','D5','-','C5','-','A4','-','F4','-','A4','C5','B4','-','-','-','R','G4','A4','B4',
+          'C5','-','E5','-','A5','-','G5','E5','D5','-','-','B4','D5','-','E5','-','F5','-','E5','D5','C5','-','A4','-','B4','-','C5','D5','C5','-','-','-'],
+    chords:[['F3','A3','C4','E4'],['E3','G3','B3','D4'],['D3','F3','A3','C4'],['G3','B3','D4','F4']],bass:['F2','E2','D2','G2'],bassEvery:8,soft:true},
+  {title:'D+1000 파티!',desc:'신나는 축하 파티 곡',step:0.17,
+    lead:['C5','E5','G5','E5','C6','-','G5','-','B4','D5','G5','D5','B5','-','G5','-','A4','C5','E5','C5','A5','-','E5','-','F5','E5','D5','C5','D5','-','G4','-',
+          'E5','-','E5','F5','G5','-','E5','C5','D5','-','D5','E5','F5','-','D5','B4','C5','-','E5','-','A5','G5','E5','C5','D5','E5','D5','C5','C5','-','-','R'],
+    bass:['C3','C3','G2','G2','A2','A2','F2','F2'],bassEvery:4,drums:true}
+];
+let actx=null,playing=false,timer=null,step=0,cur=0;
+function blip(f,t,d,type,vol){if(!f)return;const o=actx.createOscillator(),g=actx.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(vol,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.connect(g).connect(actx.destination);o.start(t);o.stop(t+d+0.02)}
+let noiseBuf=null;
+function hat(t,vol){if(!noiseBuf){noiseBuf=actx.createBuffer(1,actx.sampleRate*0.05,actx.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}const s=actx.createBufferSource(),g=actx.createGain(),f=actx.createBiquadFilter();f.type='highpass';f.frequency.value=6000;s.buffer=noiseBuf;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.05);s.connect(f).connect(g).connect(actx.destination);s.start(t)}
+function kick(t){const o=actx.createOscillator(),g=actx.createGain();o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(45,t+0.12);g.gain.setValueAtTime(0.18,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.15);o.connect(g).connect(actx.destination);o.start(t);o.stop(t+0.16)}
+function tick(){
+  const T=TRACKS[cur],t=actx.currentTime+0.03,L=T.lead,i=step%L.length;
+  const n=L[i];if(n!=='-'&&n!=='R'){let len=1;while(L[(i+len)%L.length]==='-'&&len<L.length)len++;blip(nf(n),t,T.step*len*0.95,T.soft?'triangle':'square',T.soft?0.09:0.045)}
+  if(step%T.bassEvery===0){const b=T.bass[(step/T.bassEvery)%T.bass.length];blip(nf(b),t,T.step*T.bassEvery*0.9,'triangle',0.08)}
+  if(T.chords&&step%8===0){T.chords[(step/8)%T.chords.length].forEach(cn=>blip(nf(cn),t,T.step*8,'sine',0.025))}
+  if(T.drums){if(step%4===0)kick(t);if(step%2===1)hat(t,0.04)}
+  step++;
+}
+function setBtn(){const b=document.getElementById('bgmBtn');b.textContent=playing?'❚❚':'▶';b.title=playing?'일시정지':'재생'}
+function renderJuke(){
+  document.getElementById('bgmTitle').textContent=`${TRACKS[cur].title} ― ${CONFIG.owner} 데뷔 1000일 기념 BGM (${cur+1}/${TRACKS.length})`;
+  document.querySelectorAll('#jlist li').forEach((li,i)=>{li.classList.toggle('on',i===cur);li.querySelector('.pl').textContent=(i===cur&&playing)?'❚❚':'▶'});
+}
+function play(){if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();actx.resume();clearInterval(timer);timer=setInterval(tick,TRACKS[cur].step*1000);playing=true;setBtn();renderJuke()}
+function stop(){clearInterval(timer);playing=false;setBtn();renderJuke()}
+function selectTrack(i){cur=(i+TRACKS.length)%TRACKS.length;step=0;if(playing)play();else renderJuke()}
+document.getElementById('bgmBtn').onclick=()=>playing?stop():play();
+document.getElementById('bgmPrev').onclick=()=>selectTrack(cur-1);
+document.getElementById('bgmNext').onclick=()=>selectTrack(cur+1);
+document.getElementById('jlist').innerHTML=TRACKS.map((T,i)=>`<li data-i="${i}"><span><button class="btn pl">▶</button> ♬ ${esc(T.title)}<br><small style="color:#9a90b0;margin-left:30px">${esc(T.desc)}</small></span><span style="color:#b0a8c2">오리지널</span></li>`).join('');
+document.querySelectorAll('#jlist li').forEach(li=>li.querySelector('.pl').onclick=()=>{const i=+li.dataset.i;if(i===cur&&playing)stop();else{selectTrack(i);play()}});
+// 추천곡: 음원은 넣지 않고 유튜브 검색으로 연결한다(저작권)
+const RECS=[['프리스타일','Y (Please Tell Me Why)'],['에픽하이','우산 (feat. 윤하)'],['넬','기억을 걷는 시간'],['izi','응급실'],['윤하','비밀번호 486'],['버즈','가시']];
+document.getElementById('recList').innerHTML=RECS.map(([a,s])=>`<li><span>♪ ${esc(a)} - ${esc(s)}</span><a href="https://www.youtube.com/results?search_query=${encodeURIComponent(a+' '+s)}" target="_blank" rel="noopener noreferrer">YouTube ▸</a></li>`).join('');
+renderJuke();
+// 부모(Windows 98 데스크톱)가 창을 닫을 때 BGM을 멈춘다.
+window.minihompyPause=()=>{if(playing)stop()};
+
+// 1000×560 무대를 창 크기에 맞춰 통째로 축소한다(스크롤 없이 한 화면).
+function fit(){const s=document.getElementById('stage');const sc=Math.min(1,window.innerWidth/1000,window.innerHeight/560);s.style.transform=`scale(${sc})`;s.style.left=Math.max(0,(window.innerWidth-1000*sc)/2)+'px';s.style.top=Math.max(0,(window.innerHeight-560*sc)/2)+'px'}
+window.addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>
