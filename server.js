@@ -14,14 +14,14 @@ const SECURITY_HEADERS = {
     "font-src 'self' https://cdn.jsdelivr.net",
     "img-src 'self' data: blob:",
     "media-src 'self' blob:",
-    "connect-src 'self'",
+    "connect-src 'self' https://vrbwzinpfmhxnpxswkbm.supabase.co", // 미니홈피 방명록(Supabase)
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-ancestors 'none'"
+    "frame-ancestors 'self'" // 미니홈피를 같은 사이트 안 iframe 창으로 띄운다
   ].join('; '),
   'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
+  'X-Frame-Options': 'SAMEORIGIN',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), display-capture=()', // 카메라·마이크·위치 등은 쓰지 않는다
   'Cross-Origin-Opener-Policy': 'same-origin'
@@ -36,7 +36,7 @@ app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // 공개 허용 목록 (vercel.json 의 builds 와 동일한 범위).
 // 프로젝트 루트 전체를 서빙하면 .git, server.js, *.md, 소스 원본(.psd) 등이 노출된다.
-const PUBLIC_DIRS = new Set(['field', 'image', 'movies']);
+const PUBLIC_DIRS = new Set(['field', 'image', 'movies', 'minihompy']);
 const ROOT_FILE = /^[^/\\]+\.(?:html|css|js|mp4|png|jpg|txt)$/i;
 const ROOT_DENY = new Set(['server.js']);
 
