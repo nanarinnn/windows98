@@ -44,11 +44,11 @@ input,select,button,textarea{font-family:inherit}
 .title{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #efe8fa;padding-bottom:4px;margin-bottom:5px;height:26px}
 .title h1{font-size:14px;color:#4b3a7a;font-weight:normal}
 .title .url{font-size:9px;color:#b0a8c2}
-.sec{display:none;height:438px;overflow-y:auto}.sec.on{display:block}
+.sec{display:none;height:432px;overflow-y:auto}.sec.on{display:block}
 #home.sec{overflow:hidden}
 .box-t{font-size:11px;color:#8e5fd4;font-weight:bold;margin:2px 0 3px;display:flex;justify-content:space-between;align-items:baseline}
 .box-t small{font-weight:normal;color:#b8a9d6;font-size:9px}
-.top2{display:flex;gap:10px;height:88px}
+.top2{display:flex;gap:10px;height:82px}
 .news{flex:1;min-width:0}
 .news ul li{list-style:none;padding:1px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tag{display:inline-block;font-size:9px;background:#e8579b;color:#fff;padding:0 3px;border-radius:2px;margin-right:4px}
@@ -128,10 +128,16 @@ input,select,button,textarea{font-family:inherit}
 .entry-b .msg{flex:1;line-height:1.6;white-space:pre-wrap;word-break:break-all;font-size:11px}
 .secret{color:#aaa}
 .reply{margin:0 8px 6px;padding:4px 8px;background:#fbeef6;border-radius:3px;font-size:10px;color:#a03a6c}
-.ownerbar{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin:-2px 0 6px;font-size:10px;color:#8e5fd4}
-.ownerbar #ownerState{margin-right:auto}
-#ownerLogin{gap:4px}
-#ownerLogin input{border:1px solid #d5c8ee;padding:1px 4px;font-size:10px;width:120px}
+.ownerbar{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin:2px 0 6px;font-size:10px;color:#8e5fd4}
+.ownerbar .ostate{margin-right:auto}
+.ownerbar .ologin{gap:4px}
+.ownerbar .ologin input{border:1px solid #d5c8ee;padding:1px 4px;font-size:10px;width:120px}
+.diary-form{border:1px solid #e3d7f6;background:#fbf8ff;border-radius:4px;padding:6px;margin-bottom:8px;display:flex;flex-direction:column;gap:4px}
+.diary-form input,.diary-form textarea{border:1px solid #d5c8ee;padding:3px;font-size:11px;width:100%;font-family:inherit}
+.diary-form textarea{height:70px;resize:none}
+.diary-form .row{justify-content:flex-end}
+.diary-item .dtools{margin-top:3px;display:flex;gap:4px}
+.diary-item .dbody{white-space:pre-wrap;word-break:break-all}
 .owner-tools{display:flex;gap:4px;align-items:center;margin:0 8px 6px;padding-top:4px;border-top:1px dashed #eee8f6}
 .owner-tools input{flex:1;border:1px solid #d5c8ee;padding:2px 4px;font-size:10px}
 .owner-tools .ostat{font-size:10px;color:#d23c3c}
@@ -166,7 +172,7 @@ input,select,button,textarea{font-family:inherit}
 
   <div class="rp">
     <div class="title">
-      <h1><span class="ownerName">유연</span>의 미니홈피 ♡ 1000일 축하 주간</h1>
+      <h1><span class="ownerName">유연</span>의 미니홈피 ♡</h1>
       <span class="url">http://minihompy.yuyeon/1000</span>
     </div>
 
@@ -174,14 +180,14 @@ input,select,button,textarea{font-family:inherit}
       <div class="top2">
         <div class="news">
           <div class="box-t">Updated news <small>TODAY STORY</small></div>
-          <ul>
+          <ul id="newsList">
             <li><span class="tag v">방명록</span>1000일 축하글을 남겨주세요 ♡</li>
             <li><span class="tag">쥬크박스</span>1000일 기념 BGM 업데이트</li>
             <li><span class="tag v">사진첩</span>도트 사진 6장 업데이트</li>
           </ul>
         </div>
         <div class="boards">
-          <div onclick="openTab('diary')">다이어리 <span>0/0</span></div>
+          <div onclick="openTab('diary')">다이어리 <span id="diaryCount">0/0</span></div>
           <div onclick="openTab('jukebox')">쥬크박스 <span>3/3</span></div>
           <div onclick="openTab('album')">사진첩 <span>6/6<i class="new">N</i></span></div>
           <div onclick="openTab('gb')">방명록 <span id="gbCount">0/0</span></div>
@@ -214,7 +220,13 @@ input,select,button,textarea{font-family:inherit}
     </section>
 
     <section class="sec" id="diary">
-      <p style="padding:20px 0;text-align:center;color:#9a90b0">아직 다이어리가 없어요.</p>
+      <div class="ownerbar"></div>
+      <div class="diary-form" id="diaryForm" style="display:none">
+        <input type="text" id="dTitle" maxlength="60" placeholder="제목" autocomplete="off">
+        <textarea id="dBody" maxlength="2000" placeholder="오늘의 다이어리를 적어 주세요"></textarea>
+        <div class="row"><span class="err" id="dErr" style="margin-right:auto"></span><button class="btn" id="dCancel" style="display:none">수정 취소</button><button class="btn pink" id="dSave">다이어리 저장</button></div>
+      </div>
+      <div id="diaryList"></div>
     </section>
 
     <section class="sec" id="jukebox">
@@ -252,7 +264,7 @@ input,select,button,textarea{font-family:inherit}
           <div class="err" id="gbErr"></div>
         </div>
       </div>
-      <div class="ownerbar"><span id="ownerState"></span><span id="ownerLogin" style="display:none"><input type="password" id="ownerPass" placeholder="주인장 비밀번호" autocomplete="current-password"><button class="btn" id="ownerOk">확인</button></span><button class="btn" id="ownerBtn">🔑 주인장</button></div>
+      <div class="ownerbar"></div>
       <div id="gbList"></div>
     </section>
   </div>
@@ -701,9 +713,20 @@ async function loadGb(){
   renderGb();
 }
 function renderOwnerBar(){
-  document.getElementById('ownerState').textContent=ownerPass?'🔑 주인장 모드 · 비밀글이 보이고 답글을 달 수 있어요':'';
-  document.getElementById('ownerBtn').textContent=ownerPass?'주인장 모드 끄기':'🔑 주인장';
-  document.getElementById('ownerLogin').style.display='none';
+  document.querySelectorAll('.ownerbar').forEach(bar=>{
+    if(!bar.dataset.ready){
+      bar.innerHTML='<span class="ostate"></span><span class="ologin" style="display:none"><input type="password" placeholder="주인장 비밀번호" autocomplete="current-password"><button class="btn">확인</button></span><button class="btn obtn"></button>';
+      const login=bar.querySelector('.ologin'),inp=login.querySelector('input');
+      bar.querySelector('.obtn').onclick=()=>{if(ownerPass){setOwner('');loadGb();loadDiary();return}login.style.display=login.style.display==='none'?'inline-flex':'none';inp.focus()};
+      login.querySelector('button').onclick=()=>ownerLogin(bar);
+      inp.addEventListener('keydown',ev=>{if(ev.key==='Enter')ownerLogin(bar)});
+      bar.dataset.ready='1';
+    }
+    bar.querySelector('.ostate').textContent=ownerPass?(bar.closest('#diary')?'🔑 주인장 모드 · 다이어리를 쓰고 고칠 수 있어요':'🔑 주인장 모드 · 비밀글이 보이고 답글을 달 수 있어요'):'';
+    bar.querySelector('.obtn').textContent=ownerPass?'주인장 모드 끄기':'🔑 주인장';
+    bar.querySelector('.ologin').style.display='none';
+  });
+  const form=document.getElementById('diaryForm');if(form)form.style.display=ownerPass?'flex':'none';
 }
 function renderGb(){
   const wrap=document.getElementById('gbList');wrap.innerHTML='';const all=gbEntries;
@@ -724,28 +747,26 @@ function renderGb(){
     if(e.sticker&&(!e.secret||ownerPass)&&STICKERS[e.sticker]){const s=stickerCanvas(e.sticker,2);s.style.marginLeft='6px';s.style.verticalAlign='middle';m.appendChild(s)}
     if(ownerPass){
       const box=document.createElement('div');box.className='owner-tools';
-      box.innerHTML=`<input type="text" maxlength="300" placeholder="답글을 입력하세요 (비우고 저장하면 삭제)"><button class="btn pink">답글 저장</button><button class="btn">${e.hidden?'다시 보이기':'숨기기'}</button><span class="ostat"></span>`;
-      const [inp,save,hide]=box.querySelectorAll('input,button');const stat=box.querySelector('.ostat');inp.value=e.reply||'';
-      save.onclick=async()=>{stat.textContent='저장 중…';const r=await rpc('minihompy_set_reply',{p:ownerPass,entry_id:e.id,reply_text:inp.value});stat.textContent=r.ok?'':'저장하지 못했어요';if(r.ok)loadGb()};
-      hide.onclick=async()=>{stat.textContent='처리 중…';const r=await rpc('minihompy_set_hidden',{p:ownerPass,entry_id:e.id,is_hidden:!e.hidden});stat.textContent=r.ok?'':'처리하지 못했어요';if(r.ok)loadGb()};
+      box.innerHTML=`<input type="text" maxlength="300" autocomplete="off" placeholder="${e.reply?'새 답글로 바꾸려면 입력하세요':'답글을 입력하세요'}"><button class="btn pink">${e.reply?'답글 수정':'답글 저장'}</button>${e.reply?'<button class="btn">답글 삭제</button>':''}<button class="btn">${e.hidden?'다시 보이기':'숨기기'}</button><span class="ostat"></span>`;
+      const inp=box.querySelector('input'),btns=box.querySelectorAll('button'),stat=box.querySelector('.ostat');
+      const save=btns[0],del=e.reply?btns[1]:null,hide=btns[btns.length-1];
+      const setReply=async txt=>{stat.textContent='저장 중…';const r=await rpc('minihompy_set_reply',{p:ownerPass,entry_id:e.id,reply_text:txt});if(r.ok){inp.value='';stat.textContent='';loadGb()}else stat.textContent='저장하지 못했어요'};
+      save.onclick=()=>{const t=inp.value.trim();if(!t){stat.textContent='답글을 입력해 주세요';return}setReply(t)};
+      inp.addEventListener('keydown',ev=>{if(ev.key==='Enter')save.onclick()});
+      if(del)del.onclick=()=>setReply('');
+      hide.onclick=async()=>{stat.textContent='처리 중…';const r=await rpc('minihompy_set_hidden',{p:ownerPass,entry_id:e.id,is_hidden:!e.hidden});if(r.ok){stat.textContent='';loadGb()}else stat.textContent='처리하지 못했어요'};
       d.appendChild(box);
     }
     wrap.appendChild(d);
   });
 }
-document.getElementById('ownerBtn').onclick=()=>{
-  if(ownerPass){setOwner('');loadGb();return}
-  const l=document.getElementById('ownerLogin');l.style.display=l.style.display==='none'?'inline-flex':'none';document.getElementById('ownerPass').focus();
-};
-async function ownerLogin(){
-  const inp=document.getElementById('ownerPass'),stat=document.getElementById('ownerState');const p=inp.value;if(!p)return;
+async function ownerLogin(bar){
+  const inp=bar.querySelector('.ologin input'),stat=bar.querySelector('.ostate');const p=inp.value;if(!p)return;
   stat.textContent='확인 중…';
   const r=await rpc('minihompy_owner_list',{p});
-  if(r.ok){inp.value='';setOwner(p);gbEntries=await r.json();gbState='ok';renderGb()}
+  if(r.ok){inp.value='';setOwner(p);gbEntries=await r.json();gbState='ok';renderGb();renderDiary()}
   else{stat.textContent='비밀번호가 맞지 않아요.'}
 }
-document.getElementById('ownerOk').onclick=ownerLogin;
-document.getElementById('ownerPass').addEventListener('keydown',ev=>{if(ev.key==='Enter')ownerLogin()});
 let selHair='갈색',selStk='heart';
 const sw=document.getElementById('swatches');
 Object.keys(HAIRS).forEach(k=>{const s=document.createElement('span');s.className='swatch'+(k===selHair?' on':'');s.style.background=HAIRS[k][0];s.title=k;s.onclick=()=>{selHair=k;sw.querySelectorAll('.swatch').forEach(z=>z.classList.toggle('on',z===s));drawForm()};sw.appendChild(s)});
@@ -773,10 +794,56 @@ document.getElementById('gbBtn').onclick=async()=>{
   }catch(e){err.textContent='등록하지 못했어요. 잠시 후 다시 시도해 주세요.'}
   btn.disabled=false;
 };
+/* ===== 다이어리: Supabase 공개 뷰 읽기, 주인장 모드에서 쓰기·수정·삭제 ===== */
+let diaryEntries=[],diaryState='loading',diaryEditId=null;
+async function loadDiary(){
+  try{const r=await fetch(GB_API+'minihompy_diary_public?select=*&order=created_at.desc&limit=200',{headers:GB_HEAD});if(!r.ok)throw new Error(r.status);diaryEntries=await r.json();diaryState='ok'}
+  catch(e){diaryState='error'}
+  renderDiary();
+}
+function renderDiary(){
+  const wrap=document.getElementById('diaryList');wrap.innerHTML='';
+  const note=t=>wrap.innerHTML=`<p style="padding:20px 0;text-align:center;color:#9a90b0">${t}</p>`;
+  if(diaryState==='loading')note('다이어리를 불러오는 중이에요…');
+  else if(diaryState==='error')note('다이어리를 불러오지 못했어요.');
+  else if(!diaryEntries.length)note('아직 다이어리가 없어요.');
+  const n=diaryEntries.length,newest=diaryEntries[0];
+  document.getElementById('diaryCount').innerHTML=`${n}/${n}${newest&&fmt(new Date(newest.created_at))===fmt(today)?'<i class="new">N</i>':''}`;
+  const news=document.getElementById('newsList'),old=document.getElementById('newsDiary');if(old)old.remove();
+  if(newest){const li=document.createElement('li');li.id='newsDiary';li.innerHTML='<span class="tag">다이어리</span>';li.appendChild(document.createTextNode(newest.title));li.style.cursor='pointer';li.onclick=()=>openTab('diary');news.prepend(li);while(news.children.length>4)news.lastElementChild.remove()}
+  diaryEntries.forEach(e=>{
+    const d=document.createElement('div');d.className='diary-item';
+    d.innerHTML=`<div class="d">${esc(fmt(new Date(e.created_at)))}</div><b></b><div class="dbody"></div>`;
+    d.querySelector('b').textContent=e.title;d.querySelector('.dbody').textContent=e.body;
+    if(ownerPass){
+      const t=document.createElement('div');t.className='dtools';t.innerHTML='<button class="btn">수정</button><button class="btn">삭제</button><span class="err"></span>';
+      const [ed,del]=t.querySelectorAll('button'),st=t.querySelector('.err');
+      ed.onclick=()=>{diaryEditId=e.id;document.getElementById('dTitle').value=e.title;document.getElementById('dBody').value=e.body;document.getElementById('dCancel').style.display='';document.getElementById('dSave').textContent='수정 저장';document.getElementById('diary').scrollTop=0;document.getElementById('dTitle').focus()};
+      del.onclick=async()=>{if(!del.dataset.sure){del.dataset.sure='1';del.textContent='정말 삭제할까요?';setTimeout(()=>{del.dataset.sure='';del.textContent='삭제'},4000);return}
+        st.textContent='삭제 중…';const r=await rpc('minihompy_diary_delete',{p:ownerPass,entry_id:e.id});if(r.ok)loadDiary();else st.textContent='삭제하지 못했어요'};
+      d.appendChild(t);
+    }
+    wrap.appendChild(d);
+  });
+}
+function resetDiaryForm(){diaryEditId=null;document.getElementById('dTitle').value='';document.getElementById('dBody').value='';document.getElementById('dCancel').style.display='none';document.getElementById('dSave').textContent='다이어리 저장';document.getElementById('dErr').textContent=''}
+document.getElementById('dCancel').onclick=resetDiaryForm;
+document.getElementById('dSave').onclick=async()=>{
+  const title=document.getElementById('dTitle').value.trim(),body=document.getElementById('dBody').value.trim(),er=document.getElementById('dErr');
+  if(!title){er.textContent='제목을 입력해 주세요.';return}
+  if(!body){er.textContent='내용을 입력해 주세요.';return}
+  const btn=document.getElementById('dSave');btn.disabled=true;er.textContent='저장 중…';
+  const r=await rpc('minihompy_diary_save',{p:ownerPass,entry_id:diaryEditId,title_text:title,body_text:body});
+  btn.disabled=false;
+  if(r.ok){resetDiaryForm();loadDiary()}else{er.textContent='저장하지 못했어요. 주인장 모드를 다시 켜 주세요.'}
+};
+// 오른쪽 패널은 스크롤하지 않는다(입력칸 포커스 때 브라우저가 패널을 밀어 올려 제목이 잘리던 문제)
+{const rp=document.querySelector('.rp');rp.addEventListener('scroll',()=>{if(rp.scrollTop)rp.scrollTop=0})}
 renderOwnerBar();
+loadDiary();
 renderIl();renderGb();roomReady=true;drawAll();startBubbles();loadGb().then(()=>refreshRoom());
 
-function openTab(t){if(t==='gb'&&typeof loadGb==='function')loadGb();document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.dataset.t===t));document.querySelectorAll('.sec').forEach(e=>e.classList.toggle('on',e.id===t))}
+function openTab(t){if(t==='gb'&&typeof loadGb==='function')loadGb();if(t==='diary'&&typeof loadDiary==='function')loadDiary();document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.dataset.t===t));document.querySelectorAll('.sec').forEach(e=>e.classList.toggle('on',e.id===t))}
 document.querySelectorAll('.tab').forEach(e=>e.onclick=()=>openTab(e.dataset.t));
 
 /* ===== 쥬크박스: 직접 만든 8비트 곡 3곡 (음원 파일 없음) ===== */
