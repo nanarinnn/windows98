@@ -36,7 +36,7 @@ app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // 공개 허용 목록 (vercel.json 의 builds 와 동일한 범위).
 // 프로젝트 루트 전체를 서빙하면 .git, server.js, *.md, 소스 원본(.psd) 등이 노출된다.
-const PUBLIC_DIRS = new Set(['field', 'image', 'movies', 'minihompy']);
+const PUBLIC_DIRS = new Set(['field', 'image', 'movies', 'minihompy', 'map']);
 const ROOT_FILE = /^[^/\\]+\.(?:html|css|js|mp4|png|jpg|txt)$/i;
 const ROOT_DENY = new Set(['server.js']);
 

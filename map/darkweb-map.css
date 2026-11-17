@@ -1,0 +1,104 @@
+/* 전국 사건 지도(Darkweb) — 기존 Darkweb 창 팔레트(#1a1a1a / #ff0000 / #00ff00)를 따른다. */
+#darkwebMapWindow {
+    width: 760px; height: 520px; top: 60px; left: 150px; z-index: 1001;
+    background-color: #1a1a1a; border-top: 2px solid #555; border-left: 2px solid #555;
+    border-right: 2px solid #000; border-bottom: 2px solid #000; box-shadow: 5px 5px 20px rgba(0,0,0,0.9);
+    color: #00ff00; font-family: monospace; overflow: hidden; position: absolute; flex-direction: column;
+}
+#darkwebMapWindow .window-header {
+    background: #333; color: #ff0000; font-weight: bold; padding: 3px 6px; font-size: 12px;
+    display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #555;
+}
+#darkwebMapWindow .win-btn { background: #222; color: #ff0000; border: 1px solid #555; cursor: pointer; padding: 0 4px; font-size: 10px; line-height: 1; }
+#darkwebMapWindow .menu-bar { display: flex; gap: 10px; padding: 2px 6px; font-size: 11px; border-bottom: 1px solid #333; background: #222; color: #888; }
+.dwm-body { flex: 1; display: flex; gap: 6px; padding: 6px; min-height: 0; background: #0d0d0d; margin: 2px; }
+.dwm-mapbox { position: relative; flex: 0 0 auto; height: 100%; aspect-ratio: 300 / 406; border: 1px solid #330000; background: #030303; }
+#dwm-svg { width: 100%; height: 100%; display: block; }
+.dwm-side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+#dwm-list { flex: 1 1 60%; overflow: auto; border: 1px solid #330000; padding: 4px; min-height: 0; }
+#dwm-detail { flex: 1 1 40%; overflow: auto; border: 1px solid #330000; padding: 6px 8px; min-height: 0; font-size: 11px; }
+.dwm-statusbar { display: flex; justify-content: space-between; gap: 8px; padding: 2px 6px; font-size: 10px; color: #888; border-top: 1px solid #333; background: #111; white-space: nowrap; overflow: hidden; }
+#dwm-ticker { color: #ff3333; overflow: hidden; text-overflow: ellipsis; }
+
+/* 지도 */
+.dwm-land polygon, .dwm-land ellipse { fill: #140000; stroke: #8a0000; stroke-width: 1.2; }
+.dwm-dmz { fill: none; stroke: #ff0000; stroke-width: 1; stroke-dasharray: 3 3; opacity: .55; }
+.dwm-wave { fill: none; stroke: #ff0000; stroke-width: 1; opacity: 0; animation: dwm-wave 4.8s linear infinite; pointer-events: none; }
+@keyframes dwm-wave { 0% { r: 20; opacity: .35; } 100% { r: 260; opacity: 0; } }
+.dwm-nation[data-state="none"] .dwm-wave { animation-duration: 7s; }
+.dwm-nation.selected .dwm-wave { stroke: #ff6666; }
+.dwm-nation-label { fill: #aa0000; font-size: 10px; cursor: default; }
+
+.dwm-est { cursor: pointer; outline: none; }
+.dwm-est circle { fill: rgba(255, 0, 0, .06); stroke: #aa0000; stroke-width: 1; stroke-dasharray: 4 3; }
+.dwm-est text { fill: #aa0000; font-size: 11px; text-anchor: middle; pointer-events: none; }
+.dwm-est[data-state="story"] circle { stroke: #ff0000; fill: rgba(255, 0, 0, .1); }
+.dwm-est[data-state="field"] circle { stroke: #00ff00; fill: rgba(0, 255, 0, .06); }
+.dwm-est:hover circle, .dwm-est:focus circle, .dwm-est.selected circle { stroke-width: 2; fill: rgba(255, 0, 0, .16); }
+
+.dwm-pin { cursor: pointer; outline: none; }
+.dwm-pin .dwm-dot { fill: #550000; stroke: #ff0000; stroke-width: 1.2; }
+.dwm-pin .dwm-halo { fill: none; stroke: #ff0000; stroke-width: 1; opacity: 0; }
+.dwm-pin .dwm-ring { fill: none; stroke: #aa0000; stroke-width: 1.5; }
+.dwm-pin text { fill: #ff4444; font-size: 10px; font-weight: bold; paint-order: stroke; stroke: #000; stroke-width: 3px; }
+.dwm-pin[data-state="story"] .dwm-dot { fill: #ff0000; }
+.dwm-pin[data-state="field"] .dwm-dot { fill: #ff0000; stroke: #00ff00; stroke-width: 2; }
+.dwm-pin[data-state="field"] .dwm-ring { stroke: #00aa00; }
+.dwm-pin:hover .dwm-halo, .dwm-pin:focus .dwm-halo, .dwm-pin.selected .dwm-halo { opacity: .9; animation: dwm-blink 1s steps(2) infinite; }
+@keyframes dwm-blink { 50% { opacity: .2; } }
+
+.dwm-link { stroke: #ff3333; stroke-width: 1.2; stroke-dasharray: 3 3; opacity: .55; }
+.dwm-link.selected { stroke: #ff6666; stroke-width: 1.6; opacity: 1; animation: dwm-march 1s linear infinite; }
+@keyframes dwm-march { to { stroke-dashoffset: -12; } }
+
+.dwm-report { cursor: pointer; outline: none; }
+.dwm-report rect { fill: #333; stroke: #777; stroke-width: 1; }
+.dwm-report.redacted rect { fill: #000; stroke: #555; }
+.dwm-report:hover rect, .dwm-report:focus rect, .dwm-report.selected rect { stroke: #ff0000; fill: #550000; }
+.dwm-report.ping rect { animation: dwm-ping 1.4s ease-out 1; }
+@keyframes dwm-ping { 0% { stroke: #ff0000; stroke-width: 6; } 100% { stroke: #777; stroke-width: 1; } }
+
+#dwm-tooltip {
+    display: none; position: absolute; z-index: 5; pointer-events: none; max-width: calc(100% - 12px); box-sizing: border-box;
+    background: #000; color: #ff3333; border: 1px solid #ff0000; padding: 2px 5px; font-size: 10px; line-height: 1.4;
+}
+
+/* 목록 */
+.dwm-group { color: #888; font-size: 10px; margin: 6px 2px 2px; border-bottom: 1px dashed #333; }
+.dwm-group:first-child { margin-top: 0; }
+.dwm-row {
+    display: block; width: 100%; text-align: left; background: none; border: 1px solid transparent; color: #aa0000;
+    font: 11px monospace; padding: 2px 4px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dwm-row::before { content: '○ '; }
+.dwm-row[data-state="story"] { color: #ff0000; }
+.dwm-row[data-state="story"]::before { content: '● '; }
+.dwm-row[data-state="field"] { color: #ff0000; }
+.dwm-row[data-state="field"]::before { content: '◉ '; color: #00ff00; }
+.dwm-row:not([data-state]) { color: #888; }
+.dwm-row:not([data-state])::before { content: '▫ '; }
+.dwm-row:hover { background: #220000; }
+.dwm-row.active { background: #330000; border-color: #ff0000; }
+
+/* 상세 */
+#dwm-detail h3 { margin: 0 0 6px; font-size: 12px; color: #ff0000; }
+.dwm-line { margin: 2px 0; display: flex; gap: 8px; }
+.dwm-k { flex: 0 0 34px; color: #888; }
+.dwm-v { flex: 1; color: #00ff00; word-break: keep-all; overflow-wrap: anywhere; }
+.dwm-line.quote .dwm-v { color: #c0c0c0; }
+.dwm-line.redacted .dwm-v { color: #444; letter-spacing: -1px; }
+.dwm-line.state-none .dwm-v { color: #aa0000; }
+.dwm-line.state-story .dwm-v { color: #ff0000; }
+.dwm-note { color: #777; margin: 4px 0; font-size: 10px; }
+.dwm-hint { color: #666; }
+.dwm-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.dwm-actions button {
+    background: #222; color: #ff0000; font: bold 11px monospace; padding: 3px 8px; cursor: pointer;
+    border-top: 1px solid #555; border-left: 1px solid #555; border-right: 2px solid #000; border-bottom: 2px solid #000;
+}
+.dwm-actions button:active { border-color: #000 #555 #555 #000; }
+
+@media (max-width: 600px) {
+    .dwm-body { flex-direction: column; overflow: auto; }
+    .dwm-mapbox { height: auto; width: 100%; max-height: 60vh; }
+}

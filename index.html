@@ -6,6 +6,8 @@
     <title>WINDOWS YUYEON</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="field/field.css">
+    <link rel="stylesheet" href="map/darkweb-map.css">
+    <link rel="stylesheet" href="darkweb-texts.css">
 </head>
 <body>
 
@@ -469,6 +471,11 @@ MBTI : ISFJ
                     <span style="font-size: 11px; color: #ff0000; text-shadow: 0 0 2px #000; font-family: monospace; font-weight: bold; word-break: break-all;">현장 관측 시스템</span>
                 </div>
 
+                <div class="icon" id="darkweb-map-icon" role="button" tabindex="0" aria-label="전국 사건 지도">
+                    <div style="width: 32px; height: 32px; font-size: 26px; margin: 0 auto; text-align: center; line-height: 32px; filter: grayscale(1) sepia(1) hue-rotate(-50deg) saturate(3);">🗺️</div>
+                    <span style="font-size: 11px; color: #ff0000; text-shadow: 0 0 2px #000; font-family: monospace; font-weight: bold; word-break: break-all;">전국 사건 지도</span>
+                </div>
+
                 <!-- [EP.01] 신규_근무자_배치완료.txt (Loop State Icon) -->
                 <div class="icon" id="loop-ep1-doc-icon" style="display: none;" onclick="openNewRecruitDocument()">
                     <div style="width: 32px; height: 32px; font-size: 26px; margin: 0 auto; text-align: center; line-height: 32px; filter: grayscale(1) sepia(1) hue-rotate(-50deg) saturate(3);">📄</div>
@@ -491,7 +498,7 @@ MBTI : ISFJ
                     <span style="font-size: 11px; color: #ff0000; text-shadow: 0 0 2px #000; font-family: monospace; font-weight: bold; word-break: break-all;">기밀터미널.exe</span>
                 </div>
 
-                <div class="icon" onclick="openMessenger()">
+                <div class="icon" id="darkweb-messenger-icon" onclick="openMessenger()">
                     <div style="width: 32px; height: 32px; font-size: 26px; margin: 0 auto; text-align: center; line-height: 32px; filter: grayscale(1) sepia(1) hue-rotate(-50deg) saturate(3);">💬</div>
                     <span style="font-size: 11px; color: #ff0000; text-shadow: 0 0 2px #000; font-family: monospace; font-weight: bold; word-break: break-all;">본부메신저.exe</span>
                 </div>
@@ -508,6 +515,23 @@ MBTI : ISFJ
             </div>
 
             
+            <!-- 수신 문자 알림 (darkweb-texts.js) -->
+            <div id="dwt-toast" role="button" tabindex="0" aria-live="polite"><div class="dwt-toast-from"><span>✉ 알 수 없는 번호</span><span>지금</span></div><div id="dwt-toast-text"></div></div>
+
+            <!-- 전국 사건 지도 (map/darkweb-map.js) -->
+            <div id="darkwebMapWindow" class="window" style="display: none;">
+                <div class="window-header">
+                    <span>🗺️ 전국 사건 지도 - 상황도</span>
+                    <div class="window-buttons"><div class="win-btn" id="dwm-close">✕</div></div>
+                </div>
+                <div class="menu-bar"><span>파일(F)</span><span>보기(V)</span><span>도움말(H)</span></div>
+                <div class="dwm-body">
+                    <div class="dwm-mapbox"><svg id="dwm-svg" role="img" aria-label="전국 사건 지도"></svg><div id="dwm-tooltip"></div></div>
+                    <div class="dwm-side"><div id="dwm-list"></div><div id="dwm-detail"></div></div>
+                </div>
+                <div class="dwm-statusbar"><span id="dwm-ticker"></span><span id="dwm-count"></span></div>
+            </div>
+
             <!-- Agent Jay Report Window (Grand Finale Part 1) -->
             <div id="jayReportWindow" class="window" style="display: none; width: 540px; height: 430px; top: 85px; left: 180px; z-index: 1005; background-color: #1a1a1a; border-top: 2px solid #555; border-left: 2px solid #555; border-right: 2px solid #000; border-bottom: 2px solid #000; box-shadow: 6px 6px 25px rgba(0,0,0,0.9); color: #00ff00; font-family: monospace; resize: both; overflow: hidden; position: absolute;">
                 <div class="window-header" style="background: linear-gradient(90deg, #4a0000, #990000); color: #fff; font-weight: bold; padding: 3px 6px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #555;">
@@ -653,8 +677,11 @@ MBTI : ISFJ
                         <div class="win-btn" onclick="closeMessenger()" style="background: #222; color: #ff0000; border: 1px solid #555; cursor: pointer; padding: 0 4px; font-size: 10px; line-height: 1;">✕</div>
                     </div>
                 </div>
+                <div class="messenger-tabs"><button type="button" id="messenger-tab-hq" class="active">상황실</button><button type="button" id="messenger-tab-texts">수신 문자</button></div>
                 <div id="messenger-chat" class="window-content" style="padding: 8px; background-color: transparent; border: none; margin: 0; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; box-sizing: border-box;"></div>
-                <div style="display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-top: 1px solid #333; background: #050505;">
+                <div id="messenger-texts"></div>
+                <div id="messenger-noreply">회신할 수 없는 번호입니다.</div>
+                <div id="messenger-inputrow" style="display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-top: 1px solid #333; background: #050505;">
                     <input id="messenger-input" type="text" placeholder="메시지를 입력하십시오..." autocomplete="off" spellcheck="false" style="flex-grow: 1; background: #000; color: #00ff00; border: 1px solid #333; outline: none; font-family: monospace; font-size: 13px; padding: 5px 8px; user-select: text; -webkit-user-select: text;">
                     <button id="messenger-send" style="background: #111; color: #ff0000; border: 1px solid #ff0000; font-family: monospace; font-size: 11px; padding: 4px 12px; cursor: pointer;">전송</button>
                 </div>
@@ -2484,6 +2511,9 @@ MBTI : ISFJ
     <script src="field/field-1110.js"></script>
     <script src="field/field-ui.js"></script>
     <script src="field/field-dev.js"></script>
+    <script src="map/map-data.js"></script>
+    <script src="map/darkweb-map.js"></script>
+    <script src="darkweb-texts.js"></script>
 
     <!-- EP.09 Glitch Overlay -->
     <div id="phone-glitch-overlay"></div>

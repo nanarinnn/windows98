@@ -1,0 +1,38 @@
+/* 본부 메신저 탭 + 수신 문자(darkweb-texts.js) */
+.messenger-tabs { display: flex; gap: 2px; padding: 3px 6px 0; background: #1a1a1a; border-bottom: 1px solid #333; }
+.messenger-tabs button {
+    background: #111; color: #888; border: 1px solid #333; border-bottom: none; font: 11px monospace;
+    padding: 3px 10px; cursor: pointer;
+}
+.messenger-tabs button.active { background: #0d0d0d; color: #ff0000; border-color: #555; font-weight: bold; }
+#messenger-texts { display: none; flex-grow: 1; overflow-y: auto; padding: 10px; box-sizing: border-box; }
+#messenger-noreply { display: none; padding: 8px 10px; border-top: 1px solid #333; background: #050505; color: #555; font-size: 11px; }
+
+.dwt-msg {
+    background: #141414; border: 1px solid #2a2a2a; border-left: 2px solid #660000; color: #bbb;
+    padding: 8px 10px; margin-bottom: 10px; font-size: 12px; line-height: 1.6; max-width: 92%;
+}
+.dwt-head { color: #777; white-space: pre-line; margin-bottom: 6px; }
+.dwt-body { white-space: pre-line; color: #ccc; }
+.dwt-foot { display: block; margin-top: 8px; color: #999; white-space: pre-line; background: none; border: none; padding: 0; font: inherit; text-align: left; }
+button.dwt-foot { cursor: pointer; text-decoration: underline dotted #666; }
+button.dwt-foot:hover { color: #ff3333; }
+.dwt-time { text-align: right; color: #555; font-size: 10px; margin-top: 4px; }
+.dwt-empty { color: #555; font-size: 11px; }
+
+#dwt-toast {
+    position: absolute; right: 12px; bottom: 40px; z-index: 2500; width: 260px; box-sizing: border-box;
+    background: #111; border: 1px solid #555; border-left: 3px solid #ff0000; color: #ccc;
+    font-family: monospace; padding: 7px 10px; cursor: pointer; box-shadow: 4px 4px 14px rgba(0,0,0,.8);
+    opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .25s, transform .25s;
+}
+#dwt-toast.show { opacity: 1; transform: none; pointer-events: auto; }
+#dwt-toast .dwt-toast-from { display: flex; justify-content: space-between; color: #ff3333; font-size: 11px; font-weight: bold; margin-bottom: 3px; }
+#dwt-toast .dwt-toast-from span:last-child { color: #666; font-weight: normal; }
+#dwt-toast-text { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+#darkweb-messenger-icon { position: relative; }
+#darkweb-messenger-icon.dwt-unread::after {
+    content: ''; position: absolute; top: 4px; right: 22px; width: 8px; height: 8px; border-radius: 50%;
+    background: #ff0000; box-shadow: 0 0 6px #ff0000; animation: blink 1s infinite;
+}

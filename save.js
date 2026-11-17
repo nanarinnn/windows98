@@ -241,6 +241,7 @@ const GameSave = (() => {
             window.FieldSave?.reset();
             window.AuthorRoute?.reset();
             window.Classified?.reset();
+            window.DarkwebTexts?.reset();
             state = blank();
             persist();
         }
