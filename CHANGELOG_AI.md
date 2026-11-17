@@ -2,6 +2,38 @@
 
 실제 파일 변경이 발생한 작업마다 갱신한다. 작업 전에 `PROJECT_CONTEXT.md`를 읽고 기존 항목을 보존한다. 날짜는 Asia/Seoul 기준이다.
 
+## 2026-11-17 — Darkweb 수신 문자(알 수 없는 번호): 메신저 탭 + 알림
+
+- 목적: 사용자 지시("문자 같은 거 반영", 참고 샘플은 복사하지 말고 느낌만, "컨텐츠가 너무 많으니 깔끔하게" → 새 아이콘/창 없이 메신저 탭 + 알림).
+- 변경 파일: `darkweb-texts.js`(신규), `darkweb-texts.css`(신규), `tests/darkweb_texts_smoke.py`(신규), `index.html`(메신저 탭 바 `#messenger-tab-hq`/`#messenger-tab-texts`, `#messenger-texts`, `#messenger-noreply`, 입력 줄 `#messenger-inputrow`, 메신저 아이콘 `#darkweb-messenger-icon`, 알림 `#dwt-toast`, CSS·스크립트 링크), `map/darkweb-map.js`(지도 열 때 `DarkwebTexts.trigger('map')`), `save.js`(`GameSave.reset()`에서 `DarkwebTexts.reset()`), `vercel.json`, `CLAUDE.md`, `PROJECT_CONTEXT.md`.
+- 핵심: 본부 메신저에 [상황실]/[수신 문자] 탭. 상황실 탭은 기존 대화 그대로(메신저를 열면 항상 상황실 탭). 수신 문자 탭은 받기만 하며 입력창 대신 `회신할 수 없는 번호입니다.` 문자가 오면 다크웹 오른쪽 아래 알림(6.5초, 클릭 시 수신 문자 탭), 메신저 아이콘에 미확인 표시. 문자 6종(각 1회): 지도 첫 열람(위치 정보 이용 안내), Field 첫 사망(근무 만족도 조사, 실제 사건명), Field 첫 생환(귀가 확인 요청), 2일 이상 미접속 후 재접속(휴면 전환 예정 안내, 실제 일수), 수신 3통 이상 후 접속(오발송 — 근무자 번호, 문장이 끊긴 문자 + 3.8초 뒤 정정 문자), Story 사건 5건 이상 클리어(열람 기록 안내, [사건 파일] 링크). 접속 시 소급 수신은 1통까지.
+- 저장: 별도 키 `yuyeon98.texts.v1`(받은 문자·읽음·마지막 접속). Story/Field 저장과 진행 조건에 쓰지 않으며 기록 초기화 시 함께 삭제. 저장 코드(v5)에는 포함하지 않음.
+- canonical 근거: 문안은 새로 쓴 분위기용 텍스트(참고 샘플 문장 미사용, 실존 업체명·번호 미사용). 발신자 정체는 정하지 않음(`알 수 없는 번호`). 수칙 문구·transcript 문장 미사용.
+- 검증: `tests/darkweb_texts_smoke.py` 통과(기본 탭 유지, 알림→탭, 읽음/미확인 표시, 1회 수신, 소급 1통, 사건명, 오발송 2통, 휴면 일수, Story 저장 불변, 초기화). `darkweb_map`·`darkweb_ui`·`save_progress`·`record_reset`·`classified_browser`·`field_browser`·`ep07`·`ep10` 스모크 통과. 헤드리스 Chrome 스크린샷 확인.
+- 보존: `terminal.js` 메신저 대화 로직·secret은 수정하지 않음.
+- Git: 미커밋(개발 서버에만 반영).
+- 미해결: 수신 문자 탭에서도 창 제목은 `상황실` 그대로.
+
+## 2026-11-17 — 전국 사건 지도: EP04 신도림 만수오피스텔을 확정 위치로
+
+- 목적: 사용자 지적("13층 엘리베이터에 신도림 아파트 내용 있지 않아?"). 첫 시안의 지명 검색이 시·군·구 위주라 EP04를 놓쳤다.
+- 변경 파일: `map/map-data.js`(EP04 `estimated` → `transcript`, 인용 `신도림 만수오피스텔 건물의 승강기에서 발견된다`), `map/darkweb-map.js`(핀 라벨 `below-left` 옵션 — EP02 고리와 겹치지 않게), `tests/darkweb_map_smoke.py`(확정 {1,2,4,5,8}, 핀 5·추정 4), `PROJECT_CONTEXT.md`.
+- canonical 근거: `EP04_불_꺼진_13층_엘리베이터.txt` 13·22행(`4화.txt` 11·15행과 일치). 표기는 원문대로 `신도림 만수오피스텔`(시·구 이름은 덧붙이지 않음). EP03·06(학교)·07·09·10은 reviewed transcript/10화.txt를 다시 훑어 위치 근거가 없음을 확인 — 추정 범위 유지.
+- 검증: `tests/darkweb_map_smoke.py` 통과, 헤드리스 Chrome 스크린샷으로 서울 부근 라벨 확인.
+- Git: 미커밋.
+
+## 2026-11-17 — Darkweb 전국 사건 지도(시안)
+
+- 목적: 사용자 지시("다크웹에 map 같은 것", "전국 사건 지도", "임의의 지역도 추가", "위치 미상 사건은 추정 범위로 두고 시안").
+- 변경 파일: `map/map-data.js`(신규), `map/darkweb-map.js`(신규), `map/darkweb-map.css`(신규), `tests/darkweb_map_smoke.py`(신규), `index.html`(Darkweb 아이콘 `#darkweb-map-icon`, 창 `#darkwebMapWindow`, CSS·스크립트 링크), `server.js`(공개 폴더에 `map`), `vercel.json`(`map/**` 정적 포함), `CLAUDE.md`(테스트 목록).
+- 핵심: 단순화한 남한 윤곽 SVG 위에 3개 레이어. ① `source:'transcript'` 확정 핀 EP01 부산 기장군·EP02 서울 지하철 2호선(노선 고리)·EP05 강원도 홍천군 살둔계곡·EP08 대전 유성, 상세에 transcript 원문 인용. ② `source:'estimated'` EP03·04·06·07·10은 점선 원 "위치 추정 중"(좌표·반경은 표시용, canon 아님), EP09는 핀 없이 "수신 범위: 전국" 파동. EP06은 transcript의 `수학여행 부산광역시 기장군 태양해안`으로 EP01과 점선 연관선. ③ `source:'report'` 미확인 신고 12건(시·군 단위, 접수 번호·한 줄·처리 상태, 울릉군 1건은 열람 권한 없음) — 사건 제목·수칙 문구·실존 시설명 없음. 상태 표시줄에 신고 접수 티커(4.2초). 목록 클릭/지도 클릭/키보드(Enter)로 선택, 상세에서 `사건 파일 열기`(`openDarkWebFolderEPn`)·`현장 관측 시스템`(`FieldUI.open`).
+- 진행 표시: Story `GameSave.ep(n).clears>0` → 조사 완료(빨강), Field `FieldSave.cleared` → 현장 생환(초록 테두리), 그 외 미조사. 읽기 전용이며 저장 데이터·진행 조건을 바꾸지 않는다.
+- canonical 근거: `docs/transcripts/reviewed/` EP01·02·05·06·08의 지명 문장. EP03·04·06(학교)·07·09·10은 transcript에 위치 근거가 없어 추정 범위로만 표시(사용자 결정).
+- 검증: `node --check`, `git diff --check`, `tests/darkweb_map_smoke.py` 통과(transcript 인용 대조, 신고 문구에 제목·수칙 미포함, 창/바로가기/작업 표시줄, 저장 데이터 불변, Story 클리어 반영, 연결 종료 시 닫힘, 콘솔 오류 0). `darkweb_ui`·`save_progress`·`field_browser` 스모크 통과. 헤드리스 Chrome 1366×768 스크린샷으로 레이아웃 확인. 나머지 EP 스모크는 실행하지 않음.
+- 보존: 기존 `app.js`·`disconnectDarkWeb`·Story/Field 코드는 수정하지 않음(닫힘은 overlay MutationObserver로 처리).
+- Git: 미커밋(개발 서버에만 반영).
+- 미해결: LOOP 02 이후 연출, 모바일(600px 이하) 세부 다듬기, 해안선 정밀도는 시안 수준.
+
 ## 2026-11-14 — 주인장 버튼 윗부분 잘림 수정, 제목 줄임
 
 - 목적: 사용자 보고("주인장 버튼이 잘린다", 제목은 "유연의 미니홈피 ♡"까지만).
