@@ -169,6 +169,7 @@ function openWindow(windowId) {
             // 미니홈피는 처음 열 때만 불러온다(시작 시 폰트/스크립트 로딩 방지).
             const frame = document.getElementById('minihompy-frame');
             if (frame && !frame.getAttribute('src')) frame.setAttribute('src', frame.dataset.src);
+            else try { frame && frame.contentWindow && frame.contentWindow.minihompyResume && frame.contentWindow.minihompyResume(); } catch (e) {}
         }
         updateTaskbar();
     }
